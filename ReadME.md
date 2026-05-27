@@ -13,7 +13,6 @@ This project attempts to replicate similar examples from the paper: `Can Large L
 
 
 # Experiment Results
-# Experiment Results
 
 | API / Function Tested | Human-Written PBT | Codex Agent PBT | Prompt | Official Documentation |
 |---|---|---|---|---|
