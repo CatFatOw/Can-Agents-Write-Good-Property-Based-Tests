@@ -16,8 +16,8 @@ This project attempts to replicate similar examples from the paper: `Can Large L
 
 | API / Function Tested | Human-Written PBT | Codex Agent PBT | Prompt | Official Documentation |
 |---|---|---|---|---|
-| `np.linspace()` | [human_test_np_linspace.py](./human_PBT/np_testing/human_test_np_linspace.py) | [test_codex_np_linspace.py](./Codex/np_testing/test_codex_np_linspace.py) | [prompt_np_linspace.md](./prompts/prompt_numpy_sort.md) | [NumPy `linspace`](https://numpy.org/doc/2.3/reference/generated/numpy.linspace.html) |
-| `torch.argmax()` | [human_test_torch_argmax.py](./human_PBT/torch_testing/human_test_torch_argmax.py) | [test_codex_torch_argmax.py](./Codex/torch_testing/test_codex_torch_argmax.py) | [prompt_torch_argmax.md](./prompts/prompt_numpy_sort.md) | [PyTorch `argmax`](https://docs.pytorch.org/docs/2.12/generated/torch.argmax.html) |
+| `np.linspace()` | [human_test_np_linspace.py](./human_PBT/np_testing/human_test_np_linspace.py) | [test_codex_np_linspace.py](./Codex/np_testing/test_codex_np_linspace.py) | [prompt_np_linspace.py](./prompt_numpy_sort.py) | [NumPy `linspace`](https://numpy.org/doc/2.3/reference/generated/numpy.linspace.html) |
+| `torch.argmax()` | [human_test_torch_argmax.py](./human_PBT/torch_testing/human_test_torch_argmax.py) | [test_codex_torch_argmax.py](./Codex/torch_testing/test_codex_torch_argmax.py) | [prompt_torch_argmax.py](./prompt_numpy_sort.py) | [PyTorch `argmax`](https://docs.pytorch.org/docs/2.12/generated/torch.argmax.html) |
 
 
 
