@@ -34,10 +34,6 @@ Generated Hypothesis tests / invariants
 Manual inspection and execution
 ```
 
-The prompt asks the model to produce Python code only, including imports,
-generators, and up to five property-based invariants. The generated files are
-then inspected and run as normal Python test files.
-
 ## Case Studies
 
 | API | Documentation input | Local-model output | OpenAI-model output |
