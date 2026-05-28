@@ -47,11 +47,15 @@ Manual inspection and execution
 
 ### Hosted Model Output
 
+GPT 5.4 mini generated output is robust and captures idiosyncratic invariants
+
 <p align="center">
   <img src="./images/gpt_generated_output.png" width="760" alt="Generated Hypothesis invariants from the hosted model">
 </p>
 
 ### Local Model Output
+
+Local model generated output is not robust, which makes sense due to the low parameter count
 
 <p align="center">
   <img src="./images/qwuen_local_generated_output.png" width="760" alt="Generated Hypothesis invariants from the local Qwen model">
