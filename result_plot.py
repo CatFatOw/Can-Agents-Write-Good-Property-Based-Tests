@@ -87,7 +87,7 @@ plot_pbt_results(
 plot_pbt_results(
     human_isoparse,
     codex_isoparse,
-    "parser.isoparse()"
+    "dateutil.parser.isoparse()"
     
 )
 

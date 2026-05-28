@@ -34,5 +34,5 @@ Previous paper results, produced by an LLM roughly 3-4 years ago, are shown abov
 <p align="center">
   <img src="./graphs/np_linspace_data.png" width="300">
   <img src="./graphs/torch_argmax_data.png" width="300">
-  <img src="./graphs/parse_isoparse_data.png" width="300">
+  <img src="./graphs/parser_isoparse_data_dateutil.png" width="300">
 </p>
