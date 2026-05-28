@@ -91,12 +91,18 @@ results = [map1, map2, map3]
 total = {
     "validity": sum(result["validity"] for result in results) / len(results),
     "soundness": sum(result["soundness"] for result in results) / len(results),
-    "validity_errors": [
-        error for result in results for error in result["validity_errors"]
-    ],
-    "soundness_errors": [
-        error for result in results for error in result["soundness_errors"]
-    ],
+
+    "validity_errors": set(
+        error
+        for result in results
+        for error in result["validity_errors"]
+    ),
+
+    "soundness_errors": set(
+        error
+        for result in results
+        for error in result["soundness_errors"]
+    ),
 }
 
 print(total)
