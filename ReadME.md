@@ -12,6 +12,9 @@ The central comparison is between:
 - human-written Hypothesis tests with hand-designed invariants and strategies
 - Codex-generated Hypothesis tests produced from API documentation and two-staged prompts
 
+# Automated_Invariant_Generator
+Generate PBT Tests Automatically via VIM in the background
+
 
 
 ## Tested Libraries
