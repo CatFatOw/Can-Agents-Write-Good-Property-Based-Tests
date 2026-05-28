@@ -15,6 +15,16 @@ codex_argmax = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': [], 'sound
 human_isoparse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 codex_isoparse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
+# dateutil.parser.parse
+human_parse = {'validity': 0.6666666666666666, 'soundness': 1.0, 'validity_errors': {'ParserError'}, 'soundness_errors': set()}
+codex_parse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+# Compute the dateutil avg metrics
+avg_human_dateutil = {"validity": (human_parse["validity"] + human_isoparse["validity"])/2, "soundness": (human_parse["soundness"] + human_isoparse["soundness"])/2}
+avg_codex_dateutil = {"validity": (codex_parse["validity"] + codex_isoparse["validity"])/2, "soundness": (codex_parse["soundness"] + codex_isoparse["soundness"])/2}
+
+
+
 def plot_pbt_results(human_results, agent_results, api_name, agent_name="Codex"):
     models = ["Human", agent_name]
 
@@ -88,6 +98,20 @@ plot_pbt_results(
     human_isoparse,
     codex_isoparse,
     "dateutil.parser.isoparse()"
+    
+)
+
+plot_pbt_results(
+    human_parse,
+    codex_parse,
+    "dateutil.parser.parse()"
+    
+)
+
+plot_pbt_results(
+    avg_human_dateutil,
+    avg_codex_dateutil,
+    "Average PBT Results for dateutil module (2 functions)"
     
 )
 
