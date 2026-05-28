@@ -1,4 +1,4 @@
-# Automated Invariant Generator
+# Automated Property-Based Testing Invariant Generator In VIM
 
 Research prototype by Michael Wu, May 2026.
 
