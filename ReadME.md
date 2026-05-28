@@ -1,6 +1,6 @@
 # Can Agents Write Good Property-Based Tests?
 
-Project for the CMU REU program by Michael Wu, May 2026.
+Project for the Carnegie Mellon University (CMU) REU program by Michael Wu, May 2026.
 
 This repository studies whether a modern coding agent can produce useful
 property-based tests (PBTs) for real Python APIs via prompts only focused on documentation. The experiment is inspired by
