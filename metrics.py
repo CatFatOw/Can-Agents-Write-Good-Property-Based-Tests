@@ -1,5 +1,5 @@
 from tqdm import tqdm 
-
+# Currently metrics only has validity and soundness. Will add mutation killing 
 def evaluate_test(test_func, n=1000):
     validity_errors = set()
     soundness_errors = set()
