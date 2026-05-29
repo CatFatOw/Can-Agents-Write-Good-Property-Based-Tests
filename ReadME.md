@@ -12,7 +12,7 @@ The central comparison is between:
 - human-written Hypothesis tests with hand-designed invariants and strategies
 - Codex-generated Hypothesis tests produced from API documentation and two-staged prompts
 
-# `Automated_Invariant_Generator`
+# Automated_Invariant_Generator
 
 Contains a lightweight VIM tool that calls GPT based on documentation. This tool provides a lightweight and fast method of generating invariants with large amounts of API documentation
 
