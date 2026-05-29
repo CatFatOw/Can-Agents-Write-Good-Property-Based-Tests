@@ -23,6 +23,11 @@ codex_parse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'sou
 avg_human_dateutil = {"validity": (human_parse["validity"] + human_isoparse["validity"])/2, "soundness": (human_parse["soundness"] + human_isoparse["soundness"])/2}
 avg_codex_dateutil = {"validity": (codex_parse["validity"] + codex_isoparse["validity"])/2, "soundness": (codex_parse["soundness"] + codex_isoparse["soundness"])/2}
 
+# Statistics mean()
+human_mean = {'validity': 0.75, 'soundness': 0.5, 'validity_errors': {'ZeroDivisionError'}, 'soundness_errors': {''}}
+codex_mean = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+VIM_mean = {'validity': 0.8333333333333334, 'soundness': 0.8333333333333334, 'validity_errors': {'FailedHealthCheck'}, 'soundness_errors': {''}}
+
 
 
 def plot_pbt_results(human_results, agent_results, api_name, agent_name="Codex"):
@@ -82,6 +87,70 @@ def plot_pbt_results(human_results, agent_results, api_name, agent_name="Codex")
 
     plt.show()
 
+
+# Plots the vim results also
+def plot_pbt_results_three(
+    human_results,
+    agent_results,
+    vim_results,
+    api_name,
+    agent_name="Codex",
+    vim_name="VIM"
+):
+    models = ["Human", agent_name, vim_name]
+
+    validity_scores = [
+        human_results["validity"] * 100,
+        agent_results["validity"] * 100,
+        vim_results["validity"] * 100
+    ]
+
+    soundness_scores = [
+        human_results["soundness"] * 100,
+        agent_results["soundness"] * 100,
+        vim_results["soundness"] * 100
+    ]
+
+    x = np.arange(len(models))
+    width = 0.35
+
+    plt.figure(figsize=(8, 5))
+
+    validity_bars = plt.bar(
+        x - width / 2,
+        validity_scores,
+        width,
+        label="Validity"
+    )
+
+    soundness_bars = plt.bar(
+        x + width / 2,
+        soundness_scores,
+        width,
+        label="Soundness"
+    )
+
+    plt.bar_label(
+        validity_bars,
+        fmt="%.1f%%",
+        padding=3
+    )
+
+    plt.bar_label(
+        soundness_bars,
+        fmt="%.1f%%",
+        padding=3
+    )
+
+    plt.xticks(x, models)
+    plt.ylim(0, 110)
+    plt.ylabel("Percentage (%)")
+    plt.title(f"Property-Based Test Evaluation for {api_name}")
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
 plot_pbt_results(
     human_linspace,
     codex_linspace,
@@ -115,4 +184,12 @@ plot_pbt_results(
     
 )
 
+
+plot_pbt_results_three(
+    human_mean,
+    codex_mean,
+    VIM_mean,
+    api_name="statistics.mean()",
+    
+)
 

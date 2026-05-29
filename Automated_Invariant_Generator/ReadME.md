@@ -1,4 +1,4 @@
-# Automated Property-Based Testing Via API Documentation Invariant Generator In VIM
+# Automated Invariant Generator
 
 Research prototype by Michael Wu, May 2026.
 
@@ -34,6 +34,10 @@ Generated Hypothesis tests / invariants
 Manual inspection and execution
 ```
 
+The prompt asks the model to produce Python code only, including imports,
+generators, and up to five property-based invariants. The generated files are
+then inspected and run as normal Python test files.
+
 ## Case Studies
 
 | API | Documentation input | Local-model output | OpenAI-model output |
@@ -47,15 +51,11 @@ Manual inspection and execution
 
 ### Hosted Model Output
 
-GPT 5.4 mini generated output is robust and captures idiosyncratic invariants
-
 <p align="center">
   <img src="./images/gpt_generated_output.png" width="760" alt="Generated Hypothesis invariants from the hosted model">
 </p>
 
 ### Local Model Output
-
-Local model generated output is not robust, which makes sense due to the low parameter count
 
 <p align="center">
   <img src="./images/qwuen_local_generated_output.png" width="760" alt="Generated Hypothesis invariants from the local Qwen model">
