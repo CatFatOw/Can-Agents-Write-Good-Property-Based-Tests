@@ -28,6 +28,10 @@ human_mean = {'validity': 0.75, 'soundness': 0.5, 'validity_errors': {'ZeroDivis
 codex_mean = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 VIM_mean = {'validity': 0.8333333333333334, 'soundness': 0.8333333333333334, 'validity_errors': {'FailedHealthCheck'}, 'soundness_errors': {''}}
 
+# Statistics geometric mean()
+human_geometric_mean = {'validity': 0.5, 'soundness': 0.75, 'validity_errors': {'ExceptionGroup', 'NameError'}, 'soundness_errors': {''}}
+codex_geometric_mean = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+VIM_geometric_mean = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
 
 def plot_pbt_results(human_results, agent_results, api_name, agent_name="Codex"):
@@ -192,4 +196,13 @@ plot_pbt_results_three(
     api_name="statistics.mean()",
     
 )
+
+plot_pbt_results_three(
+    human_geometric_mean,
+    codex_geometric_mean,
+    VIM_geometric_mean,
+    api_name="statistics.geometric_mean()",
+    
+)
+
 
