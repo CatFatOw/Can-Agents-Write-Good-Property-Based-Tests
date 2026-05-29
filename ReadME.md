@@ -24,7 +24,7 @@ Contains a lightweight VIM tool that calls GPT based on documentation. This tool
 |---|---:|---|
 | NumPy | `2.2.6` | `np.linspace()` |
 | PyTorch | `2.7.0` | `torch.argmax()` |
-| python-statistics | `3.12.7` | `statistics.mean()` |
+| python-statistics | `3.12.7` | `statistics.mean()`, `statistics.geometric_mean()` |
 | python-dateutil | `2.9.0.post0` | `dateutil.parser.isoparse()`, `dateutil.parser.parse()` |
 
 ## Methodology
@@ -51,7 +51,8 @@ the asserted property is false for at least some generated inputs.
 |---|---|---|---|---|
 | `np.linspace()` | [`human_test_np_linspace.py`](./human_PBT/np_testing/human_test_np_linspace.py) | [`test_codex_np_linspace.py`](./Codex/np_testing/test_codex_np_linspace.py) | N/A | [NumPy `linspace`](https://numpy.org/doc/2.3/reference/generated/numpy.linspace.html) |
 | `torch.argmax()` | [`human_test_torch_argmax.py`](./human_PBT/torch_testing/human_test_torch_argmax.py) | [`test_codex_torch_argmax.py`](./Codex/torch_testing/test_codex_torch_argmax.py) | N/A | [PyTorch `argmax`](https://docs.pytorch.org/docs/2.12/generated/torch.argmax.html) |
-| `statistics.mean()` | [`human_test_statistics_mean.py`](./human_PBT/statistics/human_test_statistics_mean.py) | [`test_codex_statistics_mean.py`](./Codex/statistics/test_codex_statistics_mean.py) | [`statistics_mean_gpt_1.py`](../Automated_Invariant_Generator/statistics_mean_gpt_1.py) | [Python `statistics.mean`](https://docs.python.org/3.12/library/statistics.html#statistics.mean) |
+| `statistics.mean()` | [`human_test_statistics_mean.py`](./human_PBT/statistics/human_test_statistics_mean.py) | [`test_codex_statistics_mean.py`](./Codex/statistics/test_codex_statistics_mean.py) | [`statistics_mean_gpt_1.py`](./Automated_Invariant_Generator/statistics_mean_gpt_1.py) | [Python `statistics.mean`](https://docs.python.org/3.12/library/statistics.html#statistics.mean) |
+| `statistics.geometric_mean()` | [`human_test_statistics_geometric_mean.py`](./human_PBT/statistics/human_test_statistics_geometric_mean.py) | [`test_codex_statistics_geometric_mean.py`](./Codex/statistics/test_codex_statistics_geometric_mean.py) | [`statistics_geometric_mean_gpt_1.py`](./Automated_Invariant_Generator/statistics_geometric_mean_gpt_1.py) | [Python `statistics.geometric_mean`](https://docs.python.org/3.12/library/statistics.html#statistics.geometric_mean) |
 | `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | N/A | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
 | `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | N/A | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
 
@@ -62,6 +63,7 @@ the asserted property is false for at least some generated inputs.
 | `np.linspace()` | 100.0% | 66.7% | 100.0% | 100.0% | N/A | N/A |
 | `torch.argmax()` | 99.0% | 100.0% | 100.0% | 100.0% | N/A | N/A |
 | `statistics.mean()` | 75.0% | 50.0% | 100.0% | 100.0% | 83.3% | 83.3% |
+| `statistics.geometric_mean()` | 50.0% | 75.0% | 100.0% | 100.0% | 100.0% | 100.0% |
 | `dateutil.parser.isoparse()` | 100.0% | 100.0% | 100.0% | 100.0% | N/A | N/A |
 | `dateutil.parser.parse()` | 66.7% | 100.0% | 100.0% | 100.0% | N/A | N/A |
 | **dateutil average** | **83.3%** | **100.0%** | **100.0%** | **100.0%** | **N/A** | **N/A** |
@@ -87,10 +89,11 @@ this repository.
   <img src="./graphs/torch_argmax_data.png" width="360" alt="Property-based test evaluation for torch.argmax">
 </p>
 
-### Statistics Mean
+### Statistics APIs
 
 <p align="center">
   <img src="./graphs/statistics_mean_data.png" width="480" alt="Property-based test evaluation for statistics.mean with human, GPT, and VIM-generated tests">
+  <img src="./graphs/statistics_geometric_mean_data.png" width="480" alt="Property-based test evaluation for statistics.geometric_mean with human, GPT, and VIM-generated tests">
 </p>
 
 ### Dateutil Parser APIs
@@ -112,6 +115,10 @@ From this directory:
 ```bash
 python Codex/np_testing/test_codex_np_linspace.py
 python Codex/torch_testing/test_codex_torch_argmax.py
+python Codex/statistics/test_codex_statistics_mean.py
+python Codex/statistics/test_codex_statistics_geometric_mean.py
+python Automated_Invariant_Generator/statistics_mean_gpt_1.py
+python Automated_Invariant_Generator/statistics_geometric_mean_gpt_1.py
 python Codex/dateutil_testing/test_codex_isoparse.py
 python Codex/dateutil_testing/test_codex_parse.py
 python result_plot.py
