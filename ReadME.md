@@ -5,7 +5,7 @@ Project for the CMU REU program by Michael Wu, May 2026.
 This repository studies whether a modern coding agent can produce useful
 property-based tests (PBTs) for real Python APIs. The experiment is inspired by
 the paper [Can Large Language Models Write Good Property-Based Tests?](https://doi.org/10.48550/arXiv.2307.04346)
-and adapts its prompt-driven workflow to a Codex-style coding agent.
+and adapts its prompt-driven workflow to a Codex-style coding agent and a lightweight VIM tool.
 
 The central comparison is between:
 
