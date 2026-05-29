@@ -1,4 +1,4 @@
-# Automated Property-Based Testing Invariant Generator In VIM
+# Automated Property-Based Testing Via API Documentation Invariant Generator In VIM
 
 Research prototype by Michael Wu, May 2026.
 
