@@ -1,0 +1,57 @@
+{
+    "tests_by_mangled_function_name": {
+        "statistics.x_geometric_mean": [
+            "test_human_geometric_mean_wrapper.py::test_geometric_mean",
+            "test_human_geometric_mean_wrapper.py::test_ln",
+            "test_human_geometric_mean_wrapper.py::test_scale_c",
+            "test_human_geometric_mean_wrapper.py::test_duplication"
+        ],
+        "statistics.x_fmean": [
+            "test_human_geometric_mean_wrapper.py::test_geometric_mean",
+            "test_human_geometric_mean_wrapper.py::test_ln",
+            "test_human_geometric_mean_wrapper.py::test_scale_c",
+            "test_human_geometric_mean_wrapper.py::test_duplication"
+        ],
+        "statistics.x__sum": [
+            "test_human_mean_wrapper.py::test_check_mean",
+            "test_human_mean_wrapper.py::test_check_range",
+            "test_human_mean_wrapper.py::test_shifted",
+            "test_human_mean_wrapper.py::test_check_sum"
+        ],
+        "statistics.x__exact_ratio": [
+            "test_human_mean_wrapper.py::test_check_mean",
+            "test_human_mean_wrapper.py::test_check_range",
+            "test_human_mean_wrapper.py::test_shifted",
+            "test_human_mean_wrapper.py::test_check_sum"
+        ],
+        "statistics.x__convert": [
+            "test_human_mean_wrapper.py::test_check_mean",
+            "test_human_mean_wrapper.py::test_check_range",
+            "test_human_mean_wrapper.py::test_shifted",
+            "test_human_mean_wrapper.py::test_check_sum"
+        ],
+        "statistics.x_mean": [
+            "test_human_mean_wrapper.py::test_check_mean",
+            "test_human_mean_wrapper.py::test_check_range",
+            "test_human_mean_wrapper.py::test_shifted",
+            "test_human_mean_wrapper.py::test_check_sum"
+        ],
+        "statistics.x__coerce": [
+            "test_human_mean_wrapper.py::test_check_mean",
+            "test_human_mean_wrapper.py::test_check_range",
+            "test_human_mean_wrapper.py::test_shifted",
+            "test_human_mean_wrapper.py::test_check_sum"
+        ]
+    },
+    "duration_by_test": {
+        "test_human_geometric_mean_wrapper.py::test_geometric_mean": 0.13765595800214214,
+        "test_human_geometric_mean_wrapper.py::test_duplication": 0.0935094999949797,
+        "test_human_geometric_mean_wrapper.py::test_scale_c": 0.09100895799929276,
+        "test_human_geometric_mean_wrapper.py::test_ln": 0.11614824900607346,
+        "test_human_mean_wrapper.py::test_check_sum": 0.10066691599786282,
+        "test_human_mean_wrapper.py::test_check_mean": 0.08664754199708113,
+        "test_human_mean_wrapper.py::test_check_range": 0.08574624999891967,
+        "test_human_mean_wrapper.py::test_shifted": 0.12514200100122252
+    },
+    "stats_time": 1.4480169999999999
+}

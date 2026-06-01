@@ -1,0 +1,18 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 14:04:10
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_geometric_mean_wrapper.py
++++ ./test_human_geometric_mean_wrapper.py
+@@ -36,6 +36,9 @@
+ 
+ # Invariant: calculated value == statistics.geo
+ @given(generate_values())
++@example(
++    arr=[1],  # or any other generated value
++).via("discovered failure")
+ def test_geometric_mean(arr):
+     """Checks to see if the geometric mean the API provides is the same"""
+     try:

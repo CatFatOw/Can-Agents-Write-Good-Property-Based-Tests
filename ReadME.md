@@ -40,8 +40,8 @@ unhandled parser errors, or runtime exceptions. Soundness failures indicate that
 the asserted property is false for at least some generated inputs.
 
 The additional **mutation score** metric is the fraction of generated mutants
-killed by a test suite. Mutation testing is currently recorded for
-`dateutil.parser.parse()` in
+killed by a test suite. Mutation testing is currently recorded for the
+dateutil parser APIs and the Python statistics library in
 [`mutation_testing_results.py`](./mutation_testing_results.py). The covered
 mutation score reports the fraction of tested mutants killed after excluding
 untested mutants.
@@ -73,8 +73,10 @@ untested mutants.
 
 | API | Test suite | Total mutants | Killed mutants | Untested mutants | Mutation score | Covered mutation score |
 |---|---|---:|---:|---:|---:|---:|
-| `dateutil.parser.parse()` | Human-written | 2,454 | 388 | 1,205 | 15.8% | 31.1% |
-| `dateutil.parser.parse()` | Codex-generated | 2,454 | 791 | 1,056 | 32.2% | 56.6% |
+| `dateutil` | Human-written | 2,454 | 388 | 1,205 | 15.8% | 31.1% |
+| `dateutil` | Codex-generated | 2,454 | 791 | 1,056 | 32.2% | 56.6% |
+| `statistics` | Human-written | 1,279 | 69 | 103 | 5.4% | 5.9% |
+| `statistics` | Codex-generated | 1,279 | 76 | 96 | 5.9% | 6.4% |
 
 
 ## Figures

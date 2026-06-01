@@ -1,7 +1,25 @@
+def calculate_mutation_scores(results):
+    """Adds mutation_score and covered_mutation_score to a mutation results dictionary."""
+
+    results["mutation_score"] = (
+        results["killed_mutants"]
+        / results["total_mutants"]
+    ) * 100
+
+    results["covered_mutation_score"] = (
+        results["killed_mutants"]
+        / (
+            results["total_mutants"]
+            - results["untested_mutants"]
+        )
+    ) * 100
+
+    return results
+
 # Dateutil
 
 # HUMAN
-mutation_human_dateutil_parse = {
+mutation_human_dateutil = {
     "total_mutants": 2454,
     "killed_mutants": 388,
     "survived_mutants": 810,
@@ -13,7 +31,7 @@ mutation_human_dateutil_parse = {
 }
 
 # CODEX
-mutation_codex_dateutil_parse = {
+mutation_codex_dateutil = {
     "total_mutants": 2454,
     "killed_mutants": 791,
     "survived_mutants": 594,
@@ -24,35 +42,46 @@ mutation_codex_dateutil_parse = {
     "equivalent_mutants": 0,
 }
 
-# Mutation score: Overall effectiveness of testsuite
-mutation_human_dateutil_parse["mutation_score"] = (
-    (mutation_human_dateutil_parse["killed_mutants"]
-    / mutation_human_dateutil_parse["total_mutants"]) * 100
-)
 
-mutation_codex_dateutil_parse["mutation_score"] = (
-    (mutation_codex_dateutil_parse["killed_mutants"]
-    / mutation_codex_dateutil_parse["total_mutants"]) * 100
-)
+# Statistics Library
+
+# Human 
+mutation_human_statistics = {
+    "total_mutants": 1279,
+    "killed_mutants": 69,
+    "survived_mutants": 1107,
+    "timed_out_mutants": 0,
+    "suspicious_mutants": 0,
+    "untested_mutants": 103,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 0,
+}
+
+# Codex
+mutation_codex_statistics = {
+    "total_mutants": 1279,
+    "killed_mutants": 76,
+    "survived_mutants": 1107,
+    "timed_out_mutants": 0,
+    "suspicious_mutants": 0,
+    "untested_mutants": 96,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 0,
+}
+
+calculate_mutation_scores(mutation_human_dateutil)
+calculate_mutation_scores(mutation_codex_dateutil)
+calculate_mutation_scores(mutation_human_statistics)
+calculate_mutation_scores(mutation_codex_statistics)
 
 
-# Covered mtuation_score: of the mutants discovered how many did it kill
-mutation_human_dateutil_parse["covered_mutation_score"] = (
-    mutation_human_dateutil_parse["killed_mutants"]
-    / (
-        mutation_human_dateutil_parse["total_mutants"]
-        - mutation_human_dateutil_parse["untested_mutants"]
-    )
-) * 100
 
-mutation_codex_dateutil_parse["covered_mutation_score"] = (
-    mutation_codex_dateutil_parse["killed_mutants"]
-    / (
-        mutation_codex_dateutil_parse["total_mutants"]
-        - mutation_codex_dateutil_parse["untested_mutants"]
-    )
-) * 100
 
-print(mutation_human_dateutil_parse)
+print(mutation_human_dateutil)
 print()
-print(mutation_codex_dateutil_parse)
+print(mutation_codex_dateutil)
+print()
+print()
+print(mutation_human_statistics)
+print()
+print(mutation_codex_statistics)
