@@ -1,5 +1,8 @@
 {
     "tests_by_mangled_function_name": {
+        "numpy._core.function_base.x_linspace": [
+            "test_codex_np_linspace_wrapper.py::test_linspace"
+        ],
         "numpy._core.function_base.x__add_docstring": [
             "test_codex_np_linspace_wrapper.py::test_linspace"
         ],
@@ -8,13 +11,10 @@
         ],
         "numpy._core.function_base.x_add_newdoc": [
             "test_codex_np_linspace_wrapper.py::test_linspace"
-        ],
-        "numpy._core.function_base.x_linspace": [
-            "test_codex_np_linspace_wrapper.py::test_linspace"
         ]
     },
     "duration_by_test": {
-        "test_codex_np_linspace_wrapper.py::test_linspace": 0.2238833750016056
+        "test_codex_np_linspace_wrapper.py::test_linspace": 0.11899445700692013
     },
-    "stats_time": 0.8474160000000001
+    "stats_time": 0.5576760000000003
 }

@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 18:11:03
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_geometric_mean_wrapper.py
++++ ./test_human_geometric_mean_wrapper.py
+@@ -50,6 +50,7 @@
+ 
+ # Invariant: Duplication doesn't change 
+ @given(generate_values())
++@example(arr=[1]).via("discovered failure")
+ def test_duplication(arr):
+     try:
+         duplicated = arr + arr 

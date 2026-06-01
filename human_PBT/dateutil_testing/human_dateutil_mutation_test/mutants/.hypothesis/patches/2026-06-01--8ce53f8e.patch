@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 17:42:39
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_parse_wrapper.py
++++ ./test_human_parse_wrapper.py
+@@ -312,6 +312,7 @@
+ 
+ # Invariant 3:iso representation should stay the same  
+ @given(choose_generator())
++@example(date_str="1111-01-01T01:01").via("discovered failure")
+ def test_round_trip(date_str):
+     try:
+         dt = parse(date_str)

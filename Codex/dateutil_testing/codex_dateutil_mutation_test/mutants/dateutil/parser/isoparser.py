@@ -113,319 +113,6 @@ class isoparser(object):
             For strict ISO-8601 adherence, pass ``'T'``.
         """
         if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 and sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_3(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 and ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_4(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) == 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_5(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 2 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_6(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(None) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_7(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) > 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_8(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 129 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_9(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep not in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_10(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in 'XX0123456789XX'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_11(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError(None)
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_12(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' - 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_13(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('XXSeparator must be a single, non-numeric XX' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_14(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_15(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('SEPARATOR MUST BE A SINGLE, NON-NUMERIC ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_16(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'XXASCII characterXX')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_17(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ascii character')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_18(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII CHARACTER')
-
-            sep = sep.encode('ascii')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_19(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = None
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_20(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode(None)
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_21(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('XXasciiXX')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_22(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
-            if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
-                raise ValueError('Separator must be a single, non-numeric ' +
-                                 'ASCII character')
-
-            sep = sep.encode('ASCII')
-
-        self._sep = sep
-    def xǁisoparserǁ__init____mutmut_23(self, sep=None):
-        """
-        :param sep:
-            A single character that separates date and time portions. If
-            ``None``, the parser will accept any single character.
-            For strict ISO-8601 adherence, pass ``'T'``.
-        """
-        if sep is not None:
             if (len(sep) != 1 or ord(sep) >= 128 or sep in '0123456789'):
                 raise ValueError('Separator must be a single, non-numeric ' +
                                  'ASCII character')
@@ -436,28 +123,7 @@ class isoparser(object):
     
     xǁisoparserǁ__init____mutmut_mutants : ClassVar[MutantDict] = { # type: ignore
     'xǁisoparserǁ__init____mutmut_1': xǁisoparserǁ__init____mutmut_1, 
-        'xǁisoparserǁ__init____mutmut_2': xǁisoparserǁ__init____mutmut_2, 
-        'xǁisoparserǁ__init____mutmut_3': xǁisoparserǁ__init____mutmut_3, 
-        'xǁisoparserǁ__init____mutmut_4': xǁisoparserǁ__init____mutmut_4, 
-        'xǁisoparserǁ__init____mutmut_5': xǁisoparserǁ__init____mutmut_5, 
-        'xǁisoparserǁ__init____mutmut_6': xǁisoparserǁ__init____mutmut_6, 
-        'xǁisoparserǁ__init____mutmut_7': xǁisoparserǁ__init____mutmut_7, 
-        'xǁisoparserǁ__init____mutmut_8': xǁisoparserǁ__init____mutmut_8, 
-        'xǁisoparserǁ__init____mutmut_9': xǁisoparserǁ__init____mutmut_9, 
-        'xǁisoparserǁ__init____mutmut_10': xǁisoparserǁ__init____mutmut_10, 
-        'xǁisoparserǁ__init____mutmut_11': xǁisoparserǁ__init____mutmut_11, 
-        'xǁisoparserǁ__init____mutmut_12': xǁisoparserǁ__init____mutmut_12, 
-        'xǁisoparserǁ__init____mutmut_13': xǁisoparserǁ__init____mutmut_13, 
-        'xǁisoparserǁ__init____mutmut_14': xǁisoparserǁ__init____mutmut_14, 
-        'xǁisoparserǁ__init____mutmut_15': xǁisoparserǁ__init____mutmut_15, 
-        'xǁisoparserǁ__init____mutmut_16': xǁisoparserǁ__init____mutmut_16, 
-        'xǁisoparserǁ__init____mutmut_17': xǁisoparserǁ__init____mutmut_17, 
-        'xǁisoparserǁ__init____mutmut_18': xǁisoparserǁ__init____mutmut_18, 
-        'xǁisoparserǁ__init____mutmut_19': xǁisoparserǁ__init____mutmut_19, 
-        'xǁisoparserǁ__init____mutmut_20': xǁisoparserǁ__init____mutmut_20, 
-        'xǁisoparserǁ__init____mutmut_21': xǁisoparserǁ__init____mutmut_21, 
-        'xǁisoparserǁ__init____mutmut_22': xǁisoparserǁ__init____mutmut_22, 
-        'xǁisoparserǁ__init____mutmut_23': xǁisoparserǁ__init____mutmut_23
+        'xǁisoparserǁ__init____mutmut_2': xǁisoparserǁ__init____mutmut_2
     }
     xǁisoparserǁ__init____mutmut_orig.__name__ = 'xǁisoparserǁ__init__'
 
@@ -975,170 +641,6 @@ class isoparser(object):
         components = [1, 1, 1]
 
         if len_str < 4:
-            raise ValueError(None)
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_9(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('XXISO string too shortXX')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_10(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('iso string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_11(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO STRING TOO SHORT')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_12(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
             raise ValueError('ISO string too short')
 
         # Year
@@ -1175,7 +677,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_13(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_9(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1216,7 +718,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_14(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_10(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1257,7 +759,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_15(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_11(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1298,7 +800,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_16(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_12(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1339,7 +841,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_17(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_13(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1380,7 +882,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_18(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_14(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1421,7 +923,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_19(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_15(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1462,7 +964,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_20(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_16(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1503,7 +1005,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_21(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_17(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1544,7 +1046,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_22(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_18(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1585,7 +1087,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_23(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_19(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1626,7 +1128,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_24(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_20(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1667,7 +1169,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_25(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_21(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1708,7 +1210,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_26(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_22(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1749,7 +1251,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_27(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_23(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1790,7 +1292,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_28(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_24(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1831,7 +1333,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_29(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_25(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -1872,171 +1374,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_30(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError(None)
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_31(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('XXInvalid common monthXX')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_32(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_33(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('INVALID COMMON MONTH')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_34(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_26(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2077,7 +1415,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_35(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_27(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2118,7 +1456,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_36(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_28(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2159,7 +1497,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_37(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_29(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2200,7 +1538,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_38(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_30(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2241,7 +1579,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_39(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_31(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2282,7 +1620,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_40(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_32(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2323,7 +1661,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_41(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_33(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2364,7 +1702,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_42(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_34(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2405,171 +1743,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_43(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError(None)
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_44(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('XXInvalid ISO formatXX')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_45(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('invalid iso format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_46(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('INVALID ISO FORMAT')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_47(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_35(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2610,7 +1784,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_48(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_36(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2651,7 +1825,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_49(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_37(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2692,171 +1866,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_50(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError(None)
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_51(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('XXInvalid separator in ISO stringXX')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_52(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('invalid separator in iso string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_53(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('INVALID SEPARATOR IN ISO STRING')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('Invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_54(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_38(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2897,7 +1907,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_55(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_39(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2938,7 +1948,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_56(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_40(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -2979,7 +1989,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_57(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_41(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3020,7 +2030,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_58(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_42(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3061,7 +2071,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_59(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_43(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3102,171 +2112,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_60(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError(None)
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_61(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('XXInvalid common dayXX')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_62(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('invalid common day')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_63(self, dt_str):
-        len_str = len(dt_str)
-        components = [1, 1, 1]
-
-        if len_str < 4:
-            raise ValueError('ISO string too short')
-
-        # Year
-        components[0] = int(dt_str[0:4])
-        pos = 4
-        if pos >= len_str:
-            return components, pos
-
-        has_sep = dt_str[pos:pos + 1] == self._DATE_SEP
-        if has_sep:
-            pos += 1
-
-        # Month
-        if len_str - pos < 2:
-            raise ValueError('Invalid common month')
-
-        components[1] = int(dt_str[pos:pos + 2])
-        pos += 2
-
-        if pos >= len_str:
-            if has_sep:
-                return components, pos
-            else:
-                raise ValueError('Invalid ISO format')
-
-        if has_sep:
-            if dt_str[pos:pos + 1] != self._DATE_SEP:
-                raise ValueError('Invalid separator in ISO string')
-            pos += 1
-
-        # Day
-        if len_str - pos < 2:
-            raise ValueError('INVALID COMMON DAY')
-        components[2] = int(dt_str[pos:pos + 2])
-        return components, pos + 2
-
-    def xǁisoparserǁ_parse_isodate_common__mutmut_64(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_44(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3307,7 +2153,7 @@ class isoparser(object):
         components[2] = None
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_65(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_45(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3348,7 +2194,7 @@ class isoparser(object):
         components[3] = int(dt_str[pos:pos + 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_66(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_46(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3389,7 +2235,7 @@ class isoparser(object):
         components[2] = int(None)
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_67(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_47(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3430,7 +2276,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos - 2])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_68(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_48(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3471,7 +2317,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 3])
         return components, pos + 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_69(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_49(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3512,7 +2358,7 @@ class isoparser(object):
         components[2] = int(dt_str[pos:pos + 2])
         return components, pos - 2
 
-    def xǁisoparserǁ_parse_isodate_common__mutmut_70(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_common__mutmut_50(self, dt_str):
         len_str = len(dt_str)
         components = [1, 1, 1]
 
@@ -3603,27 +2449,7 @@ class isoparser(object):
         'xǁisoparserǁ_parse_isodate_common__mutmut_47': xǁisoparserǁ_parse_isodate_common__mutmut_47, 
         'xǁisoparserǁ_parse_isodate_common__mutmut_48': xǁisoparserǁ_parse_isodate_common__mutmut_48, 
         'xǁisoparserǁ_parse_isodate_common__mutmut_49': xǁisoparserǁ_parse_isodate_common__mutmut_49, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_50': xǁisoparserǁ_parse_isodate_common__mutmut_50, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_51': xǁisoparserǁ_parse_isodate_common__mutmut_51, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_52': xǁisoparserǁ_parse_isodate_common__mutmut_52, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_53': xǁisoparserǁ_parse_isodate_common__mutmut_53, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_54': xǁisoparserǁ_parse_isodate_common__mutmut_54, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_55': xǁisoparserǁ_parse_isodate_common__mutmut_55, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_56': xǁisoparserǁ_parse_isodate_common__mutmut_56, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_57': xǁisoparserǁ_parse_isodate_common__mutmut_57, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_58': xǁisoparserǁ_parse_isodate_common__mutmut_58, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_59': xǁisoparserǁ_parse_isodate_common__mutmut_59, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_60': xǁisoparserǁ_parse_isodate_common__mutmut_60, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_61': xǁisoparserǁ_parse_isodate_common__mutmut_61, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_62': xǁisoparserǁ_parse_isodate_common__mutmut_62, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_63': xǁisoparserǁ_parse_isodate_common__mutmut_63, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_64': xǁisoparserǁ_parse_isodate_common__mutmut_64, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_65': xǁisoparserǁ_parse_isodate_common__mutmut_65, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_66': xǁisoparserǁ_parse_isodate_common__mutmut_66, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_67': xǁisoparserǁ_parse_isodate_common__mutmut_67, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_68': xǁisoparserǁ_parse_isodate_common__mutmut_68, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_69': xǁisoparserǁ_parse_isodate_common__mutmut_69, 
-        'xǁisoparserǁ_parse_isodate_common__mutmut_70': xǁisoparserǁ_parse_isodate_common__mutmut_70
+        'xǁisoparserǁ_parse_isodate_common__mutmut_50': xǁisoparserǁ_parse_isodate_common__mutmut_50
     }
     xǁisoparserǁ_parse_isodate_common__mutmut_orig.__name__ = 'xǁisoparserǁ_parse_isodate_common'
 
@@ -3766,182 +2592,6 @@ class isoparser(object):
 
     def xǁisoparserǁ_parse_isodate_uncommon__mutmut_3(self, dt_str):
         if len(dt_str) < 4:
-            raise ValueError(None)
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_4(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('XXISO string too shortXX')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_5(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('iso string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_6(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO STRING TOO SHORT')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_7(self, dt_str):
-        if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
         # All ISO formats start with the year
@@ -3984,7 +2634,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_8(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_4(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4028,7 +2678,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_9(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_5(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4072,7 +2722,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_10(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_6(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4116,7 +2766,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_11(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_7(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4160,7 +2810,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_12(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_8(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4204,7 +2854,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_13(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_9(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4248,7 +2898,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_14(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_10(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4292,7 +2942,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_15(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_11(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4336,7 +2986,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_16(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_12(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4380,7 +3030,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_17(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_13(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4424,7 +3074,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_18(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_14(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4468,7 +3118,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_19(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_15(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4512,7 +3162,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_20(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_16(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4556,7 +3206,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_21(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_17(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4600,7 +3250,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_22(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_18(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4644,7 +3294,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_23(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_19(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4688,7 +3338,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_24(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_20(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4732,7 +3382,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_25(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_21(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4776,7 +3426,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_26(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_22(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4820,7 +3470,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_27(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_23(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4864,7 +3514,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_28(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_24(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4908,7 +3558,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_29(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_25(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4952,7 +3602,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_30(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_26(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -4996,7 +3646,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_31(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_27(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5040,7 +3690,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_32(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_28(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5084,7 +3734,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_33(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_29(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5128,7 +3778,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_34(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_30(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5172,7 +3822,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_35(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_31(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5216,7 +3866,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_36(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_32(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5260,7 +3910,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_37(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_33(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5304,7 +3954,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_38(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_34(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5348,7 +3998,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_39(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_35(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5392,183 +4042,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_40(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError(None)
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_41(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('XXInconsistent use of dash separatorXX')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_42(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_43(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('INCONSISTENT USE OF DASH SEPARATOR')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_44(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_36(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5612,7 +4086,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_45(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_37(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5656,7 +4130,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_46(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_38(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5700,7 +4174,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_47(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_39(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5744,7 +4218,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_48(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_40(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5788,7 +4262,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_49(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_41(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5832,7 +4306,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_50(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_42(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5876,7 +4350,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_51(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_43(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5920,7 +4394,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_52(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_44(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -5964,7 +4438,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_53(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_45(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -6008,7 +4482,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_54(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_46(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -6052,7 +4526,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_55(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_47(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -6096,7 +4570,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_56(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_48(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -6140,7 +4614,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_57(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_49(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -6184,7 +4658,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_58(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_50(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -6228,7 +4702,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_59(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_51(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -6272,1985 +4746,7 @@ class isoparser(object):
         components = [base_date.year, base_date.month, base_date.day]
         return components, pos
 
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_60(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) + pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_61(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos <= 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_62(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 4:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_63(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError(None)
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_64(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('XXInvalid ordinal dayXX')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_65(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_66(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('INVALID ORDINAL DAY')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_67(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = None
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_68(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(None)
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_69(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos - 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_70(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 4])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_71(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos = 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_72(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos -= 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_73(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 4
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_74(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 and ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_75(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day <= 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_76(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 2 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_77(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day >= (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_78(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 - calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_79(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (366 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_80(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(None)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_81(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError(None)
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_82(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' - ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_83(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('XXInvalid ordinal dayXX' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_84(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_85(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('INVALID ORDINAL DAY' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_86(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(None, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_87(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, None))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_88(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_89(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, ))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_90(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 'XX {} for year {}XX'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_91(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} FOR YEAR {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_92(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = None
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_93(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) - timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_94(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(None, 1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_95(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, None, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_96(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, None) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_97(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(1, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_98(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_99(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, ) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_100(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 2, 1) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_101(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 2) + timedelta(days=ordinal_day - 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_102(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=None)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_103(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day + 1)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_104(self, dt_str):
-        if len(dt_str) < 4:
-            raise ValueError('ISO string too short')
-
-        # All ISO formats start with the year
-        year = int(dt_str[0:4])
-
-        has_sep = dt_str[4:5] == self._DATE_SEP
-
-        pos = 4 + has_sep       # Skip '-' if it's there
-        if dt_str[pos:pos + 1] == b'W':
-            # YYYY-?Www-?D?
-            pos += 1
-            weekno = int(dt_str[pos:pos + 2])
-            pos += 2
-
-            dayno = 1
-            if len(dt_str) > pos:
-                if (dt_str[pos:pos + 1] == self._DATE_SEP) != has_sep:
-                    raise ValueError('Inconsistent use of dash separator')
-
-                pos += has_sep
-
-                dayno = int(dt_str[pos:pos + 1])
-                pos += 1
-
-            base_date = self._calculate_weekdate(year, weekno, dayno)
-        else:
-            # YYYYDDD or YYYY-DDD
-            if len(dt_str) - pos < 3:
-                raise ValueError('Invalid ordinal day')
-
-            ordinal_day = int(dt_str[pos:pos + 3])
-            pos += 3
-
-            if ordinal_day < 1 or ordinal_day > (365 + calendar.isleap(year)):
-                raise ValueError('Invalid ordinal day' +
-                                 ' {} for year {}'.format(ordinal_day, year))
-
-            base_date = date(year, 1, 1) + timedelta(days=ordinal_day - 2)
-
-        components = [base_date.year, base_date.month, base_date.day]
-        return components, pos
-
-    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_105(self, dt_str):
+    def xǁisoparserǁ_parse_isodate_uncommon__mutmut_52(self, dt_str):
         if len(dt_str) < 4:
             raise ValueError('ISO string too short')
 
@@ -8346,60 +4842,7 @@ class isoparser(object):
         'xǁisoparserǁ_parse_isodate_uncommon__mutmut_49': xǁisoparserǁ_parse_isodate_uncommon__mutmut_49, 
         'xǁisoparserǁ_parse_isodate_uncommon__mutmut_50': xǁisoparserǁ_parse_isodate_uncommon__mutmut_50, 
         'xǁisoparserǁ_parse_isodate_uncommon__mutmut_51': xǁisoparserǁ_parse_isodate_uncommon__mutmut_51, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_52': xǁisoparserǁ_parse_isodate_uncommon__mutmut_52, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_53': xǁisoparserǁ_parse_isodate_uncommon__mutmut_53, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_54': xǁisoparserǁ_parse_isodate_uncommon__mutmut_54, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_55': xǁisoparserǁ_parse_isodate_uncommon__mutmut_55, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_56': xǁisoparserǁ_parse_isodate_uncommon__mutmut_56, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_57': xǁisoparserǁ_parse_isodate_uncommon__mutmut_57, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_58': xǁisoparserǁ_parse_isodate_uncommon__mutmut_58, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_59': xǁisoparserǁ_parse_isodate_uncommon__mutmut_59, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_60': xǁisoparserǁ_parse_isodate_uncommon__mutmut_60, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_61': xǁisoparserǁ_parse_isodate_uncommon__mutmut_61, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_62': xǁisoparserǁ_parse_isodate_uncommon__mutmut_62, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_63': xǁisoparserǁ_parse_isodate_uncommon__mutmut_63, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_64': xǁisoparserǁ_parse_isodate_uncommon__mutmut_64, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_65': xǁisoparserǁ_parse_isodate_uncommon__mutmut_65, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_66': xǁisoparserǁ_parse_isodate_uncommon__mutmut_66, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_67': xǁisoparserǁ_parse_isodate_uncommon__mutmut_67, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_68': xǁisoparserǁ_parse_isodate_uncommon__mutmut_68, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_69': xǁisoparserǁ_parse_isodate_uncommon__mutmut_69, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_70': xǁisoparserǁ_parse_isodate_uncommon__mutmut_70, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_71': xǁisoparserǁ_parse_isodate_uncommon__mutmut_71, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_72': xǁisoparserǁ_parse_isodate_uncommon__mutmut_72, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_73': xǁisoparserǁ_parse_isodate_uncommon__mutmut_73, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_74': xǁisoparserǁ_parse_isodate_uncommon__mutmut_74, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_75': xǁisoparserǁ_parse_isodate_uncommon__mutmut_75, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_76': xǁisoparserǁ_parse_isodate_uncommon__mutmut_76, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_77': xǁisoparserǁ_parse_isodate_uncommon__mutmut_77, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_78': xǁisoparserǁ_parse_isodate_uncommon__mutmut_78, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_79': xǁisoparserǁ_parse_isodate_uncommon__mutmut_79, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_80': xǁisoparserǁ_parse_isodate_uncommon__mutmut_80, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_81': xǁisoparserǁ_parse_isodate_uncommon__mutmut_81, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_82': xǁisoparserǁ_parse_isodate_uncommon__mutmut_82, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_83': xǁisoparserǁ_parse_isodate_uncommon__mutmut_83, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_84': xǁisoparserǁ_parse_isodate_uncommon__mutmut_84, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_85': xǁisoparserǁ_parse_isodate_uncommon__mutmut_85, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_86': xǁisoparserǁ_parse_isodate_uncommon__mutmut_86, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_87': xǁisoparserǁ_parse_isodate_uncommon__mutmut_87, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_88': xǁisoparserǁ_parse_isodate_uncommon__mutmut_88, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_89': xǁisoparserǁ_parse_isodate_uncommon__mutmut_89, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_90': xǁisoparserǁ_parse_isodate_uncommon__mutmut_90, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_91': xǁisoparserǁ_parse_isodate_uncommon__mutmut_91, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_92': xǁisoparserǁ_parse_isodate_uncommon__mutmut_92, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_93': xǁisoparserǁ_parse_isodate_uncommon__mutmut_93, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_94': xǁisoparserǁ_parse_isodate_uncommon__mutmut_94, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_95': xǁisoparserǁ_parse_isodate_uncommon__mutmut_95, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_96': xǁisoparserǁ_parse_isodate_uncommon__mutmut_96, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_97': xǁisoparserǁ_parse_isodate_uncommon__mutmut_97, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_98': xǁisoparserǁ_parse_isodate_uncommon__mutmut_98, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_99': xǁisoparserǁ_parse_isodate_uncommon__mutmut_99, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_100': xǁisoparserǁ_parse_isodate_uncommon__mutmut_100, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_101': xǁisoparserǁ_parse_isodate_uncommon__mutmut_101, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_102': xǁisoparserǁ_parse_isodate_uncommon__mutmut_102, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_103': xǁisoparserǁ_parse_isodate_uncommon__mutmut_103, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_104': xǁisoparserǁ_parse_isodate_uncommon__mutmut_104, 
-        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_105': xǁisoparserǁ_parse_isodate_uncommon__mutmut_105
+        'xǁisoparserǁ_parse_isodate_uncommon__mutmut_52': xǁisoparserǁ_parse_isodate_uncommon__mutmut_52
     }
     xǁisoparserǁ_parse_isodate_uncommon__mutmut_orig.__name__ = 'xǁisoparserǁ_parse_isodate_uncommon'
 
@@ -8626,171 +5069,6 @@ class isoparser(object):
             Returns a :class:`datetime.date`
         """
         if not 0 < week < 54:
-            raise ValueError(None)
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError('Invalid weekday: {}'.format(day))
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_7(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
-            raise ValueError('Invalid week: {}'.format(None))
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError('Invalid weekday: {}'.format(day))
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_8(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
-            raise ValueError('XXInvalid week: {}XX'.format(week))
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError('Invalid weekday: {}'.format(day))
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_9(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
-            raise ValueError('invalid week: {}'.format(week))
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError('Invalid weekday: {}'.format(day))
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_10(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
-            raise ValueError('INVALID WEEK: {}'.format(week))
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError('Invalid weekday: {}'.format(day))
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_11(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
             raise ValueError('Invalid week: {}'.format(week))
 
         if 0 < day < 8:     # Range is 1-7
@@ -8804,7 +5082,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_12(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_7(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -8837,7 +5115,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_13(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_8(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -8870,7 +5148,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_14(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_9(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -8903,7 +5181,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_15(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_10(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -8936,172 +5214,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_16(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
-            raise ValueError('Invalid week: {}'.format(week))
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError(None)
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_17(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
-            raise ValueError('Invalid week: {}'.format(week))
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError('Invalid weekday: {}'.format(None))
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_18(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
-            raise ValueError('Invalid week: {}'.format(week))
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError('XXInvalid weekday: {}XX'.format(day))
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_19(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
-            raise ValueError('Invalid week: {}'.format(week))
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError('invalid weekday: {}'.format(day))
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_20(self, year, week, day):
-        """
-        Calculate the day of corresponding to the ISO year-week-day calendar.
-
-        This function is effectively the inverse of
-        :func:`datetime.date.isocalendar`.
-
-        :param year:
-            The year in the ISO calendar
-
-        :param week:
-            The week in the ISO calendar - range is [1, 53]
-
-        :param day:
-            The day in the ISO calendar - range is [1 (MON), 7 (SUN)]
-
-        :return:
-            Returns a :class:`datetime.date`
-        """
-        if not 0 < week < 54:
-            raise ValueError('Invalid week: {}'.format(week))
-
-        if not 0 < day < 8:     # Range is 1-7
-            raise ValueError('INVALID WEEKDAY: {}'.format(day))
-
-        # Get week 1 for the specific year:
-        jan_4 = date(year, 1, 4)   # Week 1 always has January 4th in it
-        week_1 = jan_4 - timedelta(days=jan_4.isocalendar()[2] - 1)
-
-        # Now add the specific number of weeks and days to get what we want
-        week_offset = (week - 1) * 7 + (day - 1)
-        return week_1 + timedelta(days=week_offset)
-
-    def xǁisoparserǁ_calculate_weekdate__mutmut_21(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_11(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9134,7 +5247,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_22(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_12(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9167,7 +5280,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_23(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_13(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9200,7 +5313,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_24(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_14(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9233,7 +5346,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_25(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_15(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9266,7 +5379,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_26(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_16(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9299,7 +5412,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_27(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_17(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9332,7 +5445,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_28(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_18(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9365,7 +5478,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_29(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_19(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9398,7 +5511,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_30(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_20(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9431,7 +5544,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_31(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_21(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9464,7 +5577,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_32(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_22(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9497,7 +5610,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_33(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_23(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9530,7 +5643,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_34(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_24(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9563,7 +5676,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_35(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_25(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9596,7 +5709,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_36(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_26(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9629,7 +5742,7 @@ class isoparser(object):
         week_offset = None
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_37(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_27(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9662,7 +5775,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 - (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_38(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_28(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9695,7 +5808,7 @@ class isoparser(object):
         week_offset = (week - 1) / 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_39(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_29(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9728,7 +5841,7 @@ class isoparser(object):
         week_offset = (week + 1) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_40(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_30(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9761,7 +5874,7 @@ class isoparser(object):
         week_offset = (week - 2) * 7 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_41(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_31(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9794,7 +5907,7 @@ class isoparser(object):
         week_offset = (week - 1) * 8 + (day - 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_42(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_32(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9827,7 +5940,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day + 1)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_43(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_33(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9860,7 +5973,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 2)
         return week_1 + timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_44(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_34(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9893,7 +6006,7 @@ class isoparser(object):
         week_offset = (week - 1) * 7 + (day - 1)
         return week_1 - timedelta(days=week_offset)
 
-    def xǁisoparserǁ_calculate_weekdate__mutmut_45(self, year, week, day):
+    def xǁisoparserǁ_calculate_weekdate__mutmut_35(self, year, week, day):
         """
         Calculate the day of corresponding to the ISO year-week-day calendar.
 
@@ -9961,17 +6074,7 @@ class isoparser(object):
         'xǁisoparserǁ_calculate_weekdate__mutmut_32': xǁisoparserǁ_calculate_weekdate__mutmut_32, 
         'xǁisoparserǁ_calculate_weekdate__mutmut_33': xǁisoparserǁ_calculate_weekdate__mutmut_33, 
         'xǁisoparserǁ_calculate_weekdate__mutmut_34': xǁisoparserǁ_calculate_weekdate__mutmut_34, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_35': xǁisoparserǁ_calculate_weekdate__mutmut_35, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_36': xǁisoparserǁ_calculate_weekdate__mutmut_36, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_37': xǁisoparserǁ_calculate_weekdate__mutmut_37, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_38': xǁisoparserǁ_calculate_weekdate__mutmut_38, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_39': xǁisoparserǁ_calculate_weekdate__mutmut_39, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_40': xǁisoparserǁ_calculate_weekdate__mutmut_40, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_41': xǁisoparserǁ_calculate_weekdate__mutmut_41, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_42': xǁisoparserǁ_calculate_weekdate__mutmut_42, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_43': xǁisoparserǁ_calculate_weekdate__mutmut_43, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_44': xǁisoparserǁ_calculate_weekdate__mutmut_44, 
-        'xǁisoparserǁ_calculate_weekdate__mutmut_45': xǁisoparserǁ_calculate_weekdate__mutmut_45
+        'xǁisoparserǁ_calculate_weekdate__mutmut_35': xǁisoparserǁ_calculate_weekdate__mutmut_35
     }
     xǁisoparserǁ_calculate_weekdate__mutmut_orig.__name__ = 'xǁisoparserǁ_calculate_weekdate'
 
@@ -10729,218 +6832,6 @@ class isoparser(object):
         comp = -1
 
         if len_str < 2:
-            raise ValueError(None)
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_15(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('XXISO time too shortXX')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_16(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('iso time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_17(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO TIME TOO SHORT')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_18(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
             raise ValueError('ISO time too short')
 
         has_sep = None
@@ -10987,7 +6878,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_19(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_15(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11040,7 +6931,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_20(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_16(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11093,7 +6984,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_21(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_17(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11146,7 +7037,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_22(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_18(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11199,7 +7090,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_23(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_19(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11252,7 +7143,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_24(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_20(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11305,7 +7196,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_25(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_21(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11358,7 +7249,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_26(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_22(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11411,7 +7302,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_27(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_23(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11464,7 +7355,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_28(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_24(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11517,7 +7408,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_29(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_25(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11570,7 +7461,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_30(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_26(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11623,7 +7514,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_31(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_27(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11676,7 +7567,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_32(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_28(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11729,7 +7620,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_33(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_29(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11782,7 +7673,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_34(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_30(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11835,7 +7726,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_35(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_31(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11888,7 +7779,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_36(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_32(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11941,7 +7832,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_37(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_33(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -11994,7 +7885,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_38(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_34(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12047,7 +7938,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_39(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_35(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12100,7 +7991,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_40(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_36(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12153,7 +8044,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_41(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_37(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12206,7 +8097,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_42(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_38(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12259,7 +8150,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_43(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_39(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12312,7 +8203,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_44(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_40(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12365,7 +8256,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_45(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_41(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12418,7 +8309,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_46(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_42(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12471,7 +8362,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_47(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_43(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12524,7 +8415,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_48(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_44(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12577,7 +8468,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_49(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_45(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12630,7 +8521,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_50(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_46(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12683,7 +8574,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_51(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_47(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12736,7 +8627,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_52(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_48(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12789,7 +8680,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_53(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_49(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12842,7 +8733,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_54(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_50(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12895,7 +8786,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_55(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_51(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -12948,219 +8839,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_56(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError(None)
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_57(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('XXInconsistent use of colon separatorXX')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_58(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_59(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('INCONSISTENT USE OF COLON SEPARATOR')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_60(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_52(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13213,7 +8892,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_61(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_53(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13266,7 +8945,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_62(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_54(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13319,7 +8998,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_63(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_55(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13372,7 +9051,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_64(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_56(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13425,7 +9104,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_65(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_57(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13478,7 +9157,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_66(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_58(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13531,7 +9210,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_67(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_59(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13584,7 +9263,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_68(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_60(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13637,7 +9316,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_69(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_61(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13690,7 +9369,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_70(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_62(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13743,7 +9422,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_71(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_63(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13796,7 +9475,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_72(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_64(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13849,7 +9528,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_73(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_65(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13902,7 +9581,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_74(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_66(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -13955,7 +9634,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_75(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_67(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14008,7 +9687,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_76(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_68(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14061,60 +9740,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_77(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    break
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_78(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_69(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14167,7 +9793,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_79(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_70(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14220,7 +9846,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_80(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_71(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14273,7 +9899,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_81(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_72(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14326,7 +9952,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_82(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_73(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14379,7 +10005,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_83(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_74(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14432,7 +10058,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_84(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_75(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14485,7 +10111,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_85(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_76(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14538,7 +10164,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_86(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_77(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14591,7 +10217,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_87(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_78(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14644,7 +10270,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_88(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_79(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14697,7 +10323,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_89(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_80(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14750,7 +10376,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_90(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_81(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14803,7 +10429,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_91(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_82(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -14856,219 +10482,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_92(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError(None)
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_93(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('XXUnused components in ISO stringXX')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_94(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('unused components in iso string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_95(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('UNUSED COMPONENTS IN ISO STRING')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_96(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_83(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -15121,7 +10535,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_97(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_84(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -15174,7 +10588,7 @@ class isoparser(object):
 
         return components
 
-    def xǁisoparserǁ_parse_isotime__mutmut_98(self, timestr):
+    def xǁisoparserǁ_parse_isotime__mutmut_85(self, timestr):
         len_str = len(timestr)
         components = [0, 0, 0, 0, None]
         pos = 0
@@ -15224,483 +10638,6 @@ class isoparser(object):
             # Standard supports 00:00 and 24:00 as representations of midnight
             if any(component != 0 for component in components[1:4]):
                 raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_99(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(None):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_100(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component == 0 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_101(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 1 for component in components[1:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_102(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[2:4]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_103(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:5]):
-                raise ValueError('Hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_104(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError(None)
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_105(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('XXHour may only be 24 at 24:00:00.000XX')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_106(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('hour may only be 24 at 24:00:00.000')
-
-        return components
-
-    def xǁisoparserǁ_parse_isotime__mutmut_107(self, timestr):
-        len_str = len(timestr)
-        components = [0, 0, 0, 0, None]
-        pos = 0
-        comp = -1
-
-        if len_str < 2:
-            raise ValueError('ISO time too short')
-
-        has_sep = False
-
-        while pos < len_str and comp < 5:
-            comp += 1
-
-            if timestr[pos:pos + 1] in b'-+Zz':
-                # Detect time zone boundary
-                components[-1] = self._parse_tzstr(timestr[pos:])
-                pos = len_str
-                break
-
-            if comp == 1 and timestr[pos:pos+1] == self._TIME_SEP:
-                has_sep = True
-                pos += 1
-            elif comp == 2 and has_sep:
-                if timestr[pos:pos+1] != self._TIME_SEP:
-                    raise ValueError('Inconsistent use of colon separator')
-                pos += 1
-
-            if comp < 3:
-                # Hour, minute, second
-                components[comp] = int(timestr[pos:pos + 2])
-                pos += 2
-
-            if comp == 3:
-                # Fraction of a second
-                frac = self._FRACTION_REGEX.match(timestr[pos:])
-                if not frac:
-                    continue
-
-                us_str = frac.group(1)[:6]  # Truncate to microseconds
-                components[comp] = int(us_str) * 10**(6 - len(us_str))
-                pos += len(frac.group())
-
-        if pos < len_str:
-            raise ValueError('Unused components in ISO string')
-
-        if components[0] == 24:
-            # Standard supports 00:00 and 24:00 as representations of midnight
-            if any(component != 0 for component in components[1:4]):
-                raise ValueError('HOUR MAY ONLY BE 24 AT 24:00:00.000')
 
         return components
     
@@ -15789,29 +10726,7 @@ class isoparser(object):
         'xǁisoparserǁ_parse_isotime__mutmut_82': xǁisoparserǁ_parse_isotime__mutmut_82, 
         'xǁisoparserǁ_parse_isotime__mutmut_83': xǁisoparserǁ_parse_isotime__mutmut_83, 
         'xǁisoparserǁ_parse_isotime__mutmut_84': xǁisoparserǁ_parse_isotime__mutmut_84, 
-        'xǁisoparserǁ_parse_isotime__mutmut_85': xǁisoparserǁ_parse_isotime__mutmut_85, 
-        'xǁisoparserǁ_parse_isotime__mutmut_86': xǁisoparserǁ_parse_isotime__mutmut_86, 
-        'xǁisoparserǁ_parse_isotime__mutmut_87': xǁisoparserǁ_parse_isotime__mutmut_87, 
-        'xǁisoparserǁ_parse_isotime__mutmut_88': xǁisoparserǁ_parse_isotime__mutmut_88, 
-        'xǁisoparserǁ_parse_isotime__mutmut_89': xǁisoparserǁ_parse_isotime__mutmut_89, 
-        'xǁisoparserǁ_parse_isotime__mutmut_90': xǁisoparserǁ_parse_isotime__mutmut_90, 
-        'xǁisoparserǁ_parse_isotime__mutmut_91': xǁisoparserǁ_parse_isotime__mutmut_91, 
-        'xǁisoparserǁ_parse_isotime__mutmut_92': xǁisoparserǁ_parse_isotime__mutmut_92, 
-        'xǁisoparserǁ_parse_isotime__mutmut_93': xǁisoparserǁ_parse_isotime__mutmut_93, 
-        'xǁisoparserǁ_parse_isotime__mutmut_94': xǁisoparserǁ_parse_isotime__mutmut_94, 
-        'xǁisoparserǁ_parse_isotime__mutmut_95': xǁisoparserǁ_parse_isotime__mutmut_95, 
-        'xǁisoparserǁ_parse_isotime__mutmut_96': xǁisoparserǁ_parse_isotime__mutmut_96, 
-        'xǁisoparserǁ_parse_isotime__mutmut_97': xǁisoparserǁ_parse_isotime__mutmut_97, 
-        'xǁisoparserǁ_parse_isotime__mutmut_98': xǁisoparserǁ_parse_isotime__mutmut_98, 
-        'xǁisoparserǁ_parse_isotime__mutmut_99': xǁisoparserǁ_parse_isotime__mutmut_99, 
-        'xǁisoparserǁ_parse_isotime__mutmut_100': xǁisoparserǁ_parse_isotime__mutmut_100, 
-        'xǁisoparserǁ_parse_isotime__mutmut_101': xǁisoparserǁ_parse_isotime__mutmut_101, 
-        'xǁisoparserǁ_parse_isotime__mutmut_102': xǁisoparserǁ_parse_isotime__mutmut_102, 
-        'xǁisoparserǁ_parse_isotime__mutmut_103': xǁisoparserǁ_parse_isotime__mutmut_103, 
-        'xǁisoparserǁ_parse_isotime__mutmut_104': xǁisoparserǁ_parse_isotime__mutmut_104, 
-        'xǁisoparserǁ_parse_isotime__mutmut_105': xǁisoparserǁ_parse_isotime__mutmut_105, 
-        'xǁisoparserǁ_parse_isotime__mutmut_106': xǁisoparserǁ_parse_isotime__mutmut_106, 
-        'xǁisoparserǁ_parse_isotime__mutmut_107': xǁisoparserǁ_parse_isotime__mutmut_107
+        'xǁisoparserǁ_parse_isotime__mutmut_85': xǁisoparserǁ_parse_isotime__mutmut_85
     }
     xǁisoparserǁ_parse_isotime__mutmut_orig.__name__ = 'xǁisoparserǁ_parse_isotime'
 
@@ -16228,130 +11143,6 @@ class isoparser(object):
             return tz.UTC
 
         if len(tzstr) not in {3, 5, 6}:
-            raise ValueError(None)
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_14(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('XXTime zone offset must be 1, 3, 5 or 6 charactersXX')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_15(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_16(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('TIME ZONE OFFSET MUST BE 1, 3, 5 OR 6 CHARACTERS')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_17(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
             raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
 
         if tzstr[1:1] == b'-':
@@ -16378,7 +11169,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_18(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_14(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16409,7 +11200,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_19(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_15(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16440,7 +11231,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_20(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_16(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16471,100 +11262,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_21(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = None
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_22(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = +1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_23(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -2
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_24(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_17(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16595,7 +11293,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_25(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_18(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16626,7 +11324,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_26(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_19(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16657,7 +11355,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_27(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_20(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16688,7 +11386,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_28(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_21(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16719,7 +11417,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_29(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_22(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16750,131 +11448,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_30(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError(None)
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_31(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('XXTime zone offset requires signXX')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_32(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_33(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('TIME ZONE OFFSET REQUIRES SIGN')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_34(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_23(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16905,7 +11479,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_35(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_24(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16936,7 +11510,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_36(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_25(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16967,7 +11541,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_37(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_26(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -16998,7 +11572,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_38(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_27(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17029,7 +11603,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_39(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_28(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17060,7 +11634,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_40(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_29(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17091,7 +11665,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_41(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_30(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17122,224 +11696,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_42(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = None
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_43(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(None)
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_44(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(5 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_45(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[4:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_46(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:5] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_47(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] != self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_48(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 4):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_49(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_31(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17370,7 +11727,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_50(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_32(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17401,7 +11758,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_51(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_33(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17432,7 +11789,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_52(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_34(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17463,7 +11820,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_53(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_35(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17494,7 +11851,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_54(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_36(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17525,7 +11882,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_55(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_37(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17556,7 +11913,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_56(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_38(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17587,131 +11944,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_57(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError(None)
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_58(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('XXInvalid minutes in time zone offsetXX')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_59(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_60(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('INVALID MINUTES IN TIME ZONE OFFSET')
-
-            if hours > 23:
-                raise ValueError('Invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_61(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_39(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17742,7 +11975,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_62(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_40(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17773,131 +12006,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_63(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError(None)
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_64(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('XXInvalid hours in time zone offsetXX')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_65(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('invalid hours in time zone offset')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_66(self, tzstr, zero_as_utc=True):
-        if tzstr == b'Z' or tzstr == b'z':
-            return tz.UTC
-
-        if len(tzstr) not in {3, 5, 6}:
-            raise ValueError('Time zone offset must be 1, 3, 5 or 6 characters')
-
-        if tzstr[0:1] == b'-':
-            mult = -1
-        elif tzstr[0:1] == b'+':
-            mult = 1
-        else:
-            raise ValueError('Time zone offset requires sign')
-
-        hours = int(tzstr[1:3])
-        if len(tzstr) == 3:
-            minutes = 0
-        else:
-            minutes = int(tzstr[(4 if tzstr[3:4] == self._TIME_SEP else 3):])
-
-        if zero_as_utc and hours == 0 and minutes == 0:
-            return tz.UTC
-        else:
-            if minutes > 59:
-                raise ValueError('Invalid minutes in time zone offset')
-
-            if hours > 23:
-                raise ValueError('INVALID HOURS IN TIME ZONE OFFSET')
-
-            return tz.tzoffset(None, mult * (hours * 60 + minutes) * 60)
-
-    def xǁisoparserǁ_parse_tzstr__mutmut_67(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_41(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17928,7 +12037,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, None)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_68(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_42(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17959,7 +12068,7 @@ class isoparser(object):
 
             return tz.tzoffset(mult * (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_69(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_43(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -17990,7 +12099,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, )
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_70(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_44(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -18021,7 +12130,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 + minutes) / 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_71(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_45(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -18052,7 +12161,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult / (hours * 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_72(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_46(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -18083,7 +12192,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 60 - minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_73(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_47(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -18114,7 +12223,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours / 60 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_74(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_48(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -18145,7 +12254,7 @@ class isoparser(object):
 
             return tz.tzoffset(None, mult * (hours * 61 + minutes) * 60)
 
-    def xǁisoparserǁ_parse_tzstr__mutmut_75(self, tzstr, zero_as_utc=True):
+    def xǁisoparserǁ_parse_tzstr__mutmut_49(self, tzstr, zero_as_utc=True):
         if tzstr == b'Z' or tzstr == b'z':
             return tz.UTC
 
@@ -18225,33 +12334,7 @@ class isoparser(object):
         'xǁisoparserǁ_parse_tzstr__mutmut_46': xǁisoparserǁ_parse_tzstr__mutmut_46, 
         'xǁisoparserǁ_parse_tzstr__mutmut_47': xǁisoparserǁ_parse_tzstr__mutmut_47, 
         'xǁisoparserǁ_parse_tzstr__mutmut_48': xǁisoparserǁ_parse_tzstr__mutmut_48, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_49': xǁisoparserǁ_parse_tzstr__mutmut_49, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_50': xǁisoparserǁ_parse_tzstr__mutmut_50, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_51': xǁisoparserǁ_parse_tzstr__mutmut_51, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_52': xǁisoparserǁ_parse_tzstr__mutmut_52, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_53': xǁisoparserǁ_parse_tzstr__mutmut_53, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_54': xǁisoparserǁ_parse_tzstr__mutmut_54, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_55': xǁisoparserǁ_parse_tzstr__mutmut_55, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_56': xǁisoparserǁ_parse_tzstr__mutmut_56, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_57': xǁisoparserǁ_parse_tzstr__mutmut_57, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_58': xǁisoparserǁ_parse_tzstr__mutmut_58, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_59': xǁisoparserǁ_parse_tzstr__mutmut_59, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_60': xǁisoparserǁ_parse_tzstr__mutmut_60, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_61': xǁisoparserǁ_parse_tzstr__mutmut_61, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_62': xǁisoparserǁ_parse_tzstr__mutmut_62, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_63': xǁisoparserǁ_parse_tzstr__mutmut_63, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_64': xǁisoparserǁ_parse_tzstr__mutmut_64, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_65': xǁisoparserǁ_parse_tzstr__mutmut_65, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_66': xǁisoparserǁ_parse_tzstr__mutmut_66, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_67': xǁisoparserǁ_parse_tzstr__mutmut_67, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_68': xǁisoparserǁ_parse_tzstr__mutmut_68, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_69': xǁisoparserǁ_parse_tzstr__mutmut_69, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_70': xǁisoparserǁ_parse_tzstr__mutmut_70, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_71': xǁisoparserǁ_parse_tzstr__mutmut_71, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_72': xǁisoparserǁ_parse_tzstr__mutmut_72, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_73': xǁisoparserǁ_parse_tzstr__mutmut_73, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_74': xǁisoparserǁ_parse_tzstr__mutmut_74, 
-        'xǁisoparserǁ_parse_tzstr__mutmut_75': xǁisoparserǁ_parse_tzstr__mutmut_75
+        'xǁisoparserǁ_parse_tzstr__mutmut_49': xǁisoparserǁ_parse_tzstr__mutmut_49
     }
     xǁisoparserǁ_parse_tzstr__mutmut_orig.__name__ = 'xǁisoparserǁ_parse_tzstr'
 

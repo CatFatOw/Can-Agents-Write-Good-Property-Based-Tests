@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 18:11:04
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_mean_wrapper.py
++++ ./test_human_mean_wrapper.py
+@@ -35,6 +35,7 @@
+ 
+ # Invariant: Mean * len(arr) = sum(arr) 
+ @given(generate_values())
++@example(arr=[1]).via("discovered failure")
+ def test_check_sum(arr):
+     try:
+         mean_val = statistics.mean(arr)

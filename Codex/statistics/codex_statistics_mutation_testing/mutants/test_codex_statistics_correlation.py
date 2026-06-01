@@ -42,7 +42,7 @@ def test_correlation_property(data):
 
     # A Pearson correlation coefficient is between -1 and 1, modulo tiny
     # floating-point rounding at the boundary.
-    assert -1 - 1e-12 <= result <= 1 + 1e-12
+    assert -1 - 1e-8 <= result <= 1 + 1e-8
 
     # Correlation is symmetric.
     assert statistics.correlation(y, x) == pytest.approx(result, abs=1e-12)

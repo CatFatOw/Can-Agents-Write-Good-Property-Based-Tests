@@ -1,179 +1,175 @@
 {
     "tests_by_mangled_function_name": {
-        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isotime": [
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isodate": [
+            "test_human_isoparse_wrapper.py::test_midnight",
             "test_human_isoparse_wrapper.py::test_h_m_s",
-            "test_human_isoparse_wrapper.py::test_split_len",
-            "test_human_isoparse_wrapper.py::test_midnight"
-        ],
-        "dateutil.parser._parser.x\u01c1parserinfo\u01c1__init__": [
             "test_human_isoparse_wrapper.py::test_split_len"
         ],
-        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isodate": [
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1__init__": [
+            "test_human_isoparse_wrapper.py::test_split_len"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isotime": [
+            "test_human_isoparse_wrapper.py::test_midnight",
             "test_human_isoparse_wrapper.py::test_h_m_s",
-            "test_human_isoparse_wrapper.py::test_split_len",
-            "test_human_isoparse_wrapper.py::test_midnight"
+            "test_human_isoparse_wrapper.py::test_split_len"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isodate_common": [
+            "test_human_isoparse_wrapper.py::test_midnight",
+            "test_human_isoparse_wrapper.py::test_h_m_s",
+            "test_human_isoparse_wrapper.py::test_split_len"
         ],
         "dateutil.parser._parser.x\u01c1parserinfo\u01c1_convert": [
+            "test_human_isoparse_wrapper.py::test_split_len"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1__init__": [
             "test_human_isoparse_wrapper.py::test_split_len"
         ],
         "dateutil.parser._parser.x\u01c1parser\u01c1__init__": [
             "test_human_isoparse_wrapper.py::test_split_len"
         ],
-        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isodate_common": [
-            "test_human_isoparse_wrapper.py::test_h_m_s",
-            "test_human_isoparse_wrapper.py::test_split_len",
-            "test_human_isoparse_wrapper.py::test_midnight"
-        ],
-        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1__init__": [
-            "test_human_isoparse_wrapper.py::test_split_len"
-        ],
         "dateutil.parser._parser.x\u01c1_ymd\u01c1__init__": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1_ymd\u01c1resolve_ymd": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1_parse_min_sec": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1_timelex\u01c1__next__": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1_resultbase\u01c1__len__": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parserinfo\u01c1hms": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1_ymd\u01c1append": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
         ],
         "dateutil.parser._parser.x\u01c1parserinfo\u01c1ampm": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1_ymd\u01c1could_be_day": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1_ymd\u01c1_resolve_from_stridxs": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1_parse_numeric_token": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1_find_hms_idx": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parserinfo\u01c1validate": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1_build_naive": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1_to_decimal": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parserinfo\u01c1month": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
         ],
         "dateutil.parser._parser.x\u01c1parserinfo\u01c1jump": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
         ],
-        "dateutil.parser._parser.x\u01c1_timelex\u01c1__init__": [
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1resolve_ymd": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
         ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1parse": [
+        "dateutil.parser._parser.x\u01c1_resultbase\u01c1__len__": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
         ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1_could_be_tzname": [
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1hms": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1_build_tzaware": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1_timelex\u01c1get_token": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
         ],
         "dateutil.parser._parser.x_parse": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1parse": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_build_tzaware": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_could_be_tzname": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1_resolve_from_stridxs": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1append": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
         ],
         "dateutil.parser._parser.x\u01c1_resultbase\u01c1__init__": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1_parsems": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
-        ],
-        "dateutil.parser._parser.x\u01c1parser\u01c1_parse": [
-            "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
         ],
         "dateutil.parser._parser.x\u01c1parserinfo\u01c1convertyear": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parse_numeric_token": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_build_naive": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1month": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1validate": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parse": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1_timelex\u01c1__init__": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_to_decimal": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
         ],
         "dateutil.parser._parser.x\u01c1parserinfo\u01c1weekday": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
             "test_human_parse_wrapper.py::test_deterministic",
-            "test_human_parse_wrapper.py::test_round_trip",
-            "test_human_parse_wrapper.py::test_datetime_obj"
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1_timelex\u01c1__next__": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_find_hms_idx": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parse_min_sec": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1_timelex\u01c1get_token": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parsems": [
+            "test_human_parse_wrapper.py::test_datetime_obj",
+            "test_human_parse_wrapper.py::test_deterministic",
+            "test_human_parse_wrapper.py::test_round_trip"
         ]
     },
     "duration_by_test": {
-        "test_human_isoparse_wrapper.py::test_split_len": 0.062388250004005386,
-        "test_human_isoparse_wrapper.py::test_midnight": 0.047861249000561656,
-        "test_human_isoparse_wrapper.py::test_h_m_s": 0.03729441600080463,
-        "test_human_parse_wrapper.py::test_datetime_obj": 0.05105045899836114,
-        "test_human_parse_wrapper.py::test_deterministic": 0.05115237499921932,
-        "test_human_parse_wrapper.py::test_round_trip": 0.05617108399383142
+        "test_human_isoparse_wrapper.py::test_split_len": 0.06225112600077409,
+        "test_human_isoparse_wrapper.py::test_midnight": 0.06289874999492895,
+        "test_human_isoparse_wrapper.py::test_h_m_s": 0.04107670801022323,
+        "test_human_parse_wrapper.py::test_datetime_obj": 0.053640250996977556,
+        "test_human_parse_wrapper.py::test_deterministic": 0.05847091699979501,
+        "test_human_parse_wrapper.py::test_round_trip": 0.05630974900122965
     },
-    "stats_time": 1.378695
+    "stats_time": 0.986292
 }

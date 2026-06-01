@@ -37,6 +37,13 @@ VIM_geometric_mean = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(
 human_correlation = {'validity': 0.75, 'soundness': 0.5, 'validity_errors': {'FailedHealthCheck'}, 'soundness_errors': {''}}
 codex_correlation = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
+# Statistics linear_regression
+human_linear_regression = {'validity': 1.0, 'soundness': 0.6743333333333333, 'validity_errors': set(), 'soundness_errors': {''}}
+codex_linear_regression = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+
+
+
 def plot_pbt_results(human_results, agent_results, api_name, agent_name="Codex"):
     models = ["Human", agent_name]
 
@@ -210,6 +217,12 @@ plot_pbt_results(
     human_correlation,
     codex_correlation,
     "statistics.correlation()"
+)
+
+plot_pbt_results(
+    human_linear_regression,
+    codex_linear_regression,
+    "statistics.linear_regression()"
 )
 
 

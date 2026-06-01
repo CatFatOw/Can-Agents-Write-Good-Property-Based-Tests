@@ -1798,826 +1798,6 @@ def x_linspace__mutmut_10(start, stop, num=50, endpoint=True, retstep=False, dty
     num = operator.index(num)
     if num < 0:
         raise ValueError(
-            None
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_11(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." / num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_12(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "XXNumber of samples, %s, must be non-negative.XX" % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_13(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_14(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "NUMBER OF SAMPLES, %S, MUST BE NON-NEGATIVE." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_15(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
             "Number of samples, %s, must be non-negative." % num
         )
     div = None
@@ -2684,7 +1864,7 @@ def x_linspace__mutmut_15(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_16(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_11(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -2848,7 +2028,7 @@ def x_linspace__mutmut_16(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_17(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_12(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -3012,7 +2192,7 @@ def x_linspace__mutmut_17(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_18(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_13(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -3176,7 +2356,7 @@ def x_linspace__mutmut_18(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_19(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_14(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -3340,7 +2520,7 @@ def x_linspace__mutmut_19(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_20(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_15(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -3504,7 +2684,7 @@ def x_linspace__mutmut_20(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_21(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_16(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -3668,7 +2848,7 @@ def x_linspace__mutmut_21(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_22(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_17(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -3832,7 +3012,7 @@ def x_linspace__mutmut_22(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_23(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_18(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -3996,7 +3176,7 @@ def x_linspace__mutmut_23(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_24(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_19(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -4160,7 +3340,7 @@ def x_linspace__mutmut_24(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_25(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_20(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -4324,7 +3504,7 @@ def x_linspace__mutmut_25(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_26(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_21(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -4488,7 +3668,7 @@ def x_linspace__mutmut_26(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_27(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_22(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -4652,7 +3832,7 @@ def x_linspace__mutmut_27(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_28(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_23(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -4816,7 +3996,7 @@ def x_linspace__mutmut_28(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_29(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_24(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -4980,7 +4160,7 @@ def x_linspace__mutmut_29(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_30(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_25(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -5144,827 +4324,7 @@ def x_linspace__mutmut_30(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_31(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = None
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_32(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(None, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_33(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, None)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_34(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(_nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_35(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, )
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_36(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_26(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -6128,7 +4488,7 @@ def x_linspace__mutmut_36(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_37(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_27(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -6292,7 +4652,7 @@ def x_linspace__mutmut_37(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_38(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_28(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -6456,7 +4816,7 @@ def x_linspace__mutmut_38(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_39(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_29(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -6620,7 +4980,7 @@ def x_linspace__mutmut_39(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_40(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_30(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -6784,7 +5144,7 @@ def x_linspace__mutmut_40(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_41(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_31(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -6948,7 +5308,7 @@ def x_linspace__mutmut_41(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_42(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_32(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -7112,7 +5472,7 @@ def x_linspace__mutmut_42(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_43(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_33(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -7276,7 +5636,7 @@ def x_linspace__mutmut_43(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_44(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_34(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -7438,7 +5798,7 @@ def x_linspace__mutmut_44(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_45(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_35(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -7602,7 +5962,7 @@ def x_linspace__mutmut_45(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_46(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_36(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -7766,7 +6126,7 @@ def x_linspace__mutmut_46(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_47(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_37(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -7930,7 +6290,7 @@ def x_linspace__mutmut_47(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_48(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_38(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -8094,7 +6454,7 @@ def x_linspace__mutmut_48(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_49(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_39(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -8258,7 +6618,7 @@ def x_linspace__mutmut_49(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_50(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_40(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -8422,7 +6782,7 @@ def x_linspace__mutmut_50(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_51(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_41(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -8586,7 +6946,7 @@ def x_linspace__mutmut_51(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_52(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_42(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -8750,7 +7110,7 @@ def x_linspace__mutmut_52(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_53(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_43(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -8913,7 +7273,7 @@ def x_linspace__mutmut_53(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_54(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_44(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -9077,7 +7437,7 @@ def x_linspace__mutmut_54(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_55(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_45(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -9241,7 +7601,7 @@ def x_linspace__mutmut_55(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_56(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_46(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -9405,7 +7765,7 @@ def x_linspace__mutmut_56(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_57(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_47(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -9569,7 +7929,7 @@ def x_linspace__mutmut_57(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_58(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_48(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -9733,7 +8093,7 @@ def x_linspace__mutmut_58(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_59(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_49(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -9897,7 +8257,7 @@ def x_linspace__mutmut_59(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_60(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_50(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -10061,7 +8421,7 @@ def x_linspace__mutmut_60(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_61(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_51(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -10225,7 +8585,7 @@ def x_linspace__mutmut_61(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_62(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_52(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -10389,7 +8749,7 @@ def x_linspace__mutmut_62(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_63(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_53(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -10553,7 +8913,7 @@ def x_linspace__mutmut_63(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_64(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_54(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -10717,7 +9077,7 @@ def x_linspace__mutmut_64(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_65(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_55(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -10881,7 +9241,7 @@ def x_linspace__mutmut_65(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_66(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_56(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -11045,7 +9405,7 @@ def x_linspace__mutmut_66(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_67(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_57(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -11208,7 +9568,7 @@ def x_linspace__mutmut_67(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_68(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_58(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -11372,7 +9732,7 @@ def x_linspace__mutmut_68(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_69(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_59(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -11536,7 +9896,7 @@ def x_linspace__mutmut_69(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_70(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_60(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -11700,7 +10060,7 @@ def x_linspace__mutmut_70(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_71(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_61(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -11864,7 +10224,7 @@ def x_linspace__mutmut_71(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_72(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_62(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -12028,7 +10388,7 @@ def x_linspace__mutmut_72(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_73(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_63(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -12192,7 +10552,7 @@ def x_linspace__mutmut_73(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_74(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_64(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -12356,7 +10716,7 @@ def x_linspace__mutmut_74(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_75(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_65(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -12520,7 +10880,7 @@ def x_linspace__mutmut_75(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_76(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_66(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -12684,335 +11044,7 @@ def x_linspace__mutmut_76(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_77(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = None
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_78(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y / delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_79(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_67(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -13176,7 +11208,7 @@ def x_linspace__mutmut_79(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_80(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_68(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -13340,335 +11372,7 @@ def x_linspace__mutmut_80(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_81(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = None
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_82(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y / step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_83(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_69(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -13832,7 +11536,7 @@ def x_linspace__mutmut_83(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_84(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_70(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -13996,7 +11700,7 @@ def x_linspace__mutmut_84(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_85(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_71(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -14160,7 +11864,7 @@ def x_linspace__mutmut_85(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_86(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_72(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -14324,7 +12028,7 @@ def x_linspace__mutmut_86(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_87(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_73(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -14488,7 +12192,7 @@ def x_linspace__mutmut_87(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_88(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_74(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -14652,7 +12356,7 @@ def x_linspace__mutmut_88(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_89(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_75(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -14816,7 +12520,7 @@ def x_linspace__mutmut_89(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_90(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_76(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -14980,7 +12684,7 @@ def x_linspace__mutmut_90(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_91(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_77(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -15144,7 +12848,7 @@ def x_linspace__mutmut_91(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_92(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_78(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -15308,7 +13012,7 @@ def x_linspace__mutmut_92(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_93(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_79(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -15472,7 +13176,7 @@ def x_linspace__mutmut_93(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_94(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_80(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -15636,7 +13340,7 @@ def x_linspace__mutmut_94(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_95(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_81(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -15800,1975 +13504,7 @@ def x_linspace__mutmut_95(start, stop, num=50, endpoint=True, retstep=False, dty
         return y
 
 
-def x_linspace__mutmut_96(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = None
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_97(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(None, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_98(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, None, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_99(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, None)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_100(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_101(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_102(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, )
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_103(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 1, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_104(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(None, out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_105(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, out=None)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_106(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(out=y)
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_107(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
-             axis=0, *, device=None):
-    """
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop`].
-
-    The endpoint of the interval can optionally be excluded.
-
-    .. versionchanged:: 1.20.0
-        Values are rounded towards ``-inf`` instead of ``0`` when an
-        integer ``dtype`` is specified. The old behavior can
-        still be obtained with ``np.linspace(start, stop, num).astype(int)``
-
-    Parameters
-    ----------
-    start : array_like
-        The starting value of the sequence.
-    stop : array_like
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50. Must be non-negative.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-    dtype : dtype, optional
-        The type of the output array.  If `dtype` is not given, the data type
-        is inferred from `start` and `stop`. The inferred dtype will never be
-        an integer; `float` is chosen even if the arguments would produce an
-        array of integers.
-    axis : int, optional
-        The axis in the result to store the samples.  Relevant only if start
-        or stop are array-like.  By default (0), the samples will be along a
-        new axis inserted at the beginning. Use -1 to get an axis at the end.
-    device : str, optional
-        The device on which to place the created array. Default: None.
-        For Array-API interoperability only, so must be ``"cpu"`` if passed.
-
-        .. versionadded:: 2.0.0
-
-    Returns
-    -------
-    samples : ndarray
-        There are `num` equally spaced samples in the closed interval
-        ``[start, stop]`` or the half-open interval ``[start, stop)``
-        (depending on whether `endpoint` is True or False).
-    step : float, optional
-        Only returned if `retstep` is True
-
-        Size of spacing between samples.
-
-
-    See Also
-    --------
-    arange : Similar to `linspace`, but uses a step size (instead of the
-             number of samples).
-    geomspace : Similar to `linspace`, but with numbers spaced evenly on a log
-                scale (a geometric progression).
-    logspace : Similar to `geomspace`, but with the end points specified as
-               logarithms.
-    :ref:`how-to-partition`
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.linspace(2.0, 3.0, num=5)
-    array([2.  , 2.25, 2.5 , 2.75, 3.  ])
-    >>> np.linspace(2.0, 3.0, num=5, endpoint=False)
-    array([2. ,  2.2,  2.4,  2.6,  2.8])
-    >>> np.linspace(2.0, 3.0, num=5, retstep=True)
-    (array([2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
-
-    Graphical illustration:
-
-    >>> import matplotlib.pyplot as plt
-    >>> N = 8
-    >>> y = np.zeros(N)
-    >>> x1 = np.linspace(0, 10, N, endpoint=True)
-    >>> x2 = np.linspace(0, 10, N, endpoint=False)
-    >>> plt.plot(x1, y, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.plot(x2, y + 0.5, 'o')
-    [<matplotlib.lines.Line2D object at 0x...>]
-    >>> plt.ylim([-0.5, 1])
-    (-0.5, 1)
-    >>> plt.show()
-
-    """
-    num = operator.index(num)
-    if num < 0:
-        raise ValueError(
-            "Number of samples, %s, must be non-negative." % num
-        )
-    div = (num - 1) if endpoint else num
-
-    conv = _array_converter(start, stop)
-    start, stop = conv.as_arrays()
-    dt = conv.result_type(ensure_inexact=True)
-
-    if dtype is None:
-        dtype = dt
-        integer_dtype = False
-    else:
-        integer_dtype = _nx.issubdtype(dtype, _nx.integer)
-
-    # Use `dtype=type(dt)` to enforce a floating point evaluation:
-    delta = np.subtract(stop, start, dtype=type(dt))
-    y = _nx.arange(
-        0, num, dtype=dt, device=device
-    ).reshape((-1,) + (1,) * ndim(delta))
-
-    # In-place multiplication y *= delta/div is faster, but prevents
-    # the multiplicant from overriding what class is produced, and thus
-    # prevents, e.g. use of Quantities, see gh-7142. Hence, we multiply
-    # in place only for standard scalar types.
-    if div > 0:
-        _mult_inplace = _nx.isscalar(delta)
-        step = delta / div
-        any_step_zero = (
-            step == 0 if _mult_inplace else _nx.asanyarray(step == 0).any())
-        if any_step_zero:
-            # Special handling for denormal numbers, gh-5437
-            y /= div
-            if _mult_inplace:
-                y *= delta
-            else:
-                y = y * delta
-        else:
-            if _mult_inplace:
-                y *= step
-            else:
-                y = y * step
-    else:
-        # sequences with 0 items or 1 item with endpoint=True (i.e. div <= 0)
-        # have an undefined step
-        step = nan
-        # Multiply with delta to allow possible override of output class.
-        y = y * delta
-
-    y += start
-
-    if endpoint and num > 1:
-        y[-1, ...] = stop
-
-    if axis != 0:
-        y = _nx.moveaxis(y, 0, axis)
-
-    if integer_dtype:
-        _nx.floor(y, )
-
-    y = conv.wrap(y.astype(dtype, copy=False))
-    if retstep:
-        return y, step
-    else:
-        return y
-
-
-def x_linspace__mutmut_108(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_82(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -17932,7 +13668,7 @@ def x_linspace__mutmut_108(start, stop, num=50, endpoint=True, retstep=False, dt
         return y
 
 
-def x_linspace__mutmut_109(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_83(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -18096,7 +13832,7 @@ def x_linspace__mutmut_109(start, stop, num=50, endpoint=True, retstep=False, dt
         return y
 
 
-def x_linspace__mutmut_110(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_84(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -18260,7 +13996,7 @@ def x_linspace__mutmut_110(start, stop, num=50, endpoint=True, retstep=False, dt
         return y
 
 
-def x_linspace__mutmut_111(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_85(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -18424,7 +14160,7 @@ def x_linspace__mutmut_111(start, stop, num=50, endpoint=True, retstep=False, dt
         return y
 
 
-def x_linspace__mutmut_112(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_86(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -18588,7 +14324,7 @@ def x_linspace__mutmut_112(start, stop, num=50, endpoint=True, retstep=False, dt
         return y
 
 
-def x_linspace__mutmut_113(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_87(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -18752,7 +14488,7 @@ def x_linspace__mutmut_113(start, stop, num=50, endpoint=True, retstep=False, dt
         return y
 
 
-def x_linspace__mutmut_114(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
+def x_linspace__mutmut_88(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0, *, device=None):
     """
     Return evenly spaced numbers over a specified interval.
@@ -19003,33 +14739,7 @@ x_linspace__mutmut_mutants : ClassVar[MutantDict] = { # type: ignore
     'x_linspace__mutmut_85': x_linspace__mutmut_85, 
     'x_linspace__mutmut_86': x_linspace__mutmut_86, 
     'x_linspace__mutmut_87': x_linspace__mutmut_87, 
-    'x_linspace__mutmut_88': x_linspace__mutmut_88, 
-    'x_linspace__mutmut_89': x_linspace__mutmut_89, 
-    'x_linspace__mutmut_90': x_linspace__mutmut_90, 
-    'x_linspace__mutmut_91': x_linspace__mutmut_91, 
-    'x_linspace__mutmut_92': x_linspace__mutmut_92, 
-    'x_linspace__mutmut_93': x_linspace__mutmut_93, 
-    'x_linspace__mutmut_94': x_linspace__mutmut_94, 
-    'x_linspace__mutmut_95': x_linspace__mutmut_95, 
-    'x_linspace__mutmut_96': x_linspace__mutmut_96, 
-    'x_linspace__mutmut_97': x_linspace__mutmut_97, 
-    'x_linspace__mutmut_98': x_linspace__mutmut_98, 
-    'x_linspace__mutmut_99': x_linspace__mutmut_99, 
-    'x_linspace__mutmut_100': x_linspace__mutmut_100, 
-    'x_linspace__mutmut_101': x_linspace__mutmut_101, 
-    'x_linspace__mutmut_102': x_linspace__mutmut_102, 
-    'x_linspace__mutmut_103': x_linspace__mutmut_103, 
-    'x_linspace__mutmut_104': x_linspace__mutmut_104, 
-    'x_linspace__mutmut_105': x_linspace__mutmut_105, 
-    'x_linspace__mutmut_106': x_linspace__mutmut_106, 
-    'x_linspace__mutmut_107': x_linspace__mutmut_107, 
-    'x_linspace__mutmut_108': x_linspace__mutmut_108, 
-    'x_linspace__mutmut_109': x_linspace__mutmut_109, 
-    'x_linspace__mutmut_110': x_linspace__mutmut_110, 
-    'x_linspace__mutmut_111': x_linspace__mutmut_111, 
-    'x_linspace__mutmut_112': x_linspace__mutmut_112, 
-    'x_linspace__mutmut_113': x_linspace__mutmut_113, 
-    'x_linspace__mutmut_114': x_linspace__mutmut_114
+    'x_linspace__mutmut_88': x_linspace__mutmut_88
 }
 x_linspace__mutmut_orig.__name__ = 'x_linspace'
 
@@ -19405,9 +15115,9 @@ def x__needs_add_docstring__mutmut_5(obj):
     Py_TPFLAGS_HEAPTYPE = 1 << 9
 
     if isinstance(obj, (types.FunctionType, types.MethodType, property)):
-        return True
+        return False
 
-    if isinstance(obj, type) and obj.__flags__ & Py_TPFLAGS_HEAPTYPE:
+    if isinstance(obj, type) or obj.__flags__ & Py_TPFLAGS_HEAPTYPE:
         return False
 
     return True
@@ -19425,49 +15135,13 @@ def x__needs_add_docstring__mutmut_6(obj):
     if isinstance(obj, (types.FunctionType, types.MethodType, property)):
         return False
 
-    if isinstance(obj, type) or obj.__flags__ & Py_TPFLAGS_HEAPTYPE:
-        return False
-
-    return True
-
-
-def x__needs_add_docstring__mutmut_7(obj):
-    """
-    Returns true if the only way to set the docstring of `obj` from python is
-    via add_docstring.
-
-    This function errs on the side of being overly conservative.
-    """
-    Py_TPFLAGS_HEAPTYPE = 1 << 9
-
-    if isinstance(obj, (types.FunctionType, types.MethodType, property)):
-        return False
-
     if isinstance(obj, type) and obj.__flags__ | Py_TPFLAGS_HEAPTYPE:
         return False
 
     return True
 
 
-def x__needs_add_docstring__mutmut_8(obj):
-    """
-    Returns true if the only way to set the docstring of `obj` from python is
-    via add_docstring.
-
-    This function errs on the side of being overly conservative.
-    """
-    Py_TPFLAGS_HEAPTYPE = 1 << 9
-
-    if isinstance(obj, (types.FunctionType, types.MethodType, property)):
-        return False
-
-    if isinstance(obj, type) and obj.__flags__ & Py_TPFLAGS_HEAPTYPE:
-        return True
-
-    return True
-
-
-def x__needs_add_docstring__mutmut_9(obj):
+def x__needs_add_docstring__mutmut_7(obj):
     """
     Returns true if the only way to set the docstring of `obj` from python is
     via add_docstring.
@@ -19491,9 +15165,7 @@ x__needs_add_docstring__mutmut_mutants : ClassVar[MutantDict] = { # type: ignore
     'x__needs_add_docstring__mutmut_4': x__needs_add_docstring__mutmut_4, 
     'x__needs_add_docstring__mutmut_5': x__needs_add_docstring__mutmut_5, 
     'x__needs_add_docstring__mutmut_6': x__needs_add_docstring__mutmut_6, 
-    'x__needs_add_docstring__mutmut_7': x__needs_add_docstring__mutmut_7, 
-    'x__needs_add_docstring__mutmut_8': x__needs_add_docstring__mutmut_8, 
-    'x__needs_add_docstring__mutmut_9': x__needs_add_docstring__mutmut_9
+    'x__needs_add_docstring__mutmut_7': x__needs_add_docstring__mutmut_7
 }
 x__needs_add_docstring__mutmut_orig.__name__ = 'x__needs_add_docstring'
 
@@ -19563,182 +15235,6 @@ def x__add_docstring__mutmut_3(obj, doc, warn_on_python):
 def x__add_docstring__mutmut_4(obj, doc, warn_on_python):
     if warn_on_python and not _needs_add_docstring(obj):
         warnings.warn(
-            None,
-            UserWarning,
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_5(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "add_newdoc was used on a pure-python object {}. "
-            "Prefer to attach it directly to the source."
-            .format(obj),
-            None,
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_6(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "add_newdoc was used on a pure-python object {}. "
-            "Prefer to attach it directly to the source."
-            .format(obj),
-            UserWarning,
-            stacklevel=None)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_7(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            UserWarning,
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_8(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "add_newdoc was used on a pure-python object {}. "
-            "Prefer to attach it directly to the source."
-            .format(obj),
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_9(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "add_newdoc was used on a pure-python object {}. "
-            "Prefer to attach it directly to the source."
-            .format(obj),
-            UserWarning,
-            )
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_10(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "add_newdoc was used on a pure-python object {}. "
-            "Prefer to attach it directly to the source."
-            .format(None),
-            UserWarning,
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_11(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "XXadd_newdoc was used on a pure-python object {}. XX"
-            "Prefer to attach it directly to the source."
-            .format(obj),
-            UserWarning,
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_12(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "ADD_NEWDOC WAS USED ON A PURE-PYTHON OBJECT {}. "
-            "Prefer to attach it directly to the source."
-            .format(obj),
-            UserWarning,
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_13(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "add_newdoc was used on a pure-python object {}. "
-            "XXPrefer to attach it directly to the source.XX"
-            .format(obj),
-            UserWarning,
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_14(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "add_newdoc was used on a pure-python object {}. "
-            "prefer to attach it directly to the source."
-            .format(obj),
-            UserWarning,
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_15(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "add_newdoc was used on a pure-python object {}. "
-            "PREFER TO ATTACH IT DIRECTLY TO THE SOURCE."
-            .format(obj),
-            UserWarning,
-            stacklevel=3)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_16(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
-            "add_newdoc was used on a pure-python object {}. "
-            "Prefer to attach it directly to the source."
-            .format(obj),
-            UserWarning,
-            stacklevel=4)
-    try:
-        add_docstring(obj, doc)
-    except Exception:
-        pass
-
-
-def x__add_docstring__mutmut_17(obj, doc, warn_on_python):
-    if warn_on_python and not _needs_add_docstring(obj):
-        warnings.warn(
             "add_newdoc was used on a pure-python object {}. "
             "Prefer to attach it directly to the source."
             .format(obj),
@@ -19750,7 +15246,7 @@ def x__add_docstring__mutmut_17(obj, doc, warn_on_python):
         pass
 
 
-def x__add_docstring__mutmut_18(obj, doc, warn_on_python):
+def x__add_docstring__mutmut_5(obj, doc, warn_on_python):
     if warn_on_python and not _needs_add_docstring(obj):
         warnings.warn(
             "add_newdoc was used on a pure-python object {}. "
@@ -19764,7 +15260,7 @@ def x__add_docstring__mutmut_18(obj, doc, warn_on_python):
         pass
 
 
-def x__add_docstring__mutmut_19(obj, doc, warn_on_python):
+def x__add_docstring__mutmut_6(obj, doc, warn_on_python):
     if warn_on_python and not _needs_add_docstring(obj):
         warnings.warn(
             "add_newdoc was used on a pure-python object {}. "
@@ -19778,7 +15274,7 @@ def x__add_docstring__mutmut_19(obj, doc, warn_on_python):
         pass
 
 
-def x__add_docstring__mutmut_20(obj, doc, warn_on_python):
+def x__add_docstring__mutmut_7(obj, doc, warn_on_python):
     if warn_on_python and not _needs_add_docstring(obj):
         warnings.warn(
             "add_newdoc was used on a pure-python object {}. "
@@ -19798,20 +15294,7 @@ x__add_docstring__mutmut_mutants : ClassVar[MutantDict] = { # type: ignore
     'x__add_docstring__mutmut_4': x__add_docstring__mutmut_4, 
     'x__add_docstring__mutmut_5': x__add_docstring__mutmut_5, 
     'x__add_docstring__mutmut_6': x__add_docstring__mutmut_6, 
-    'x__add_docstring__mutmut_7': x__add_docstring__mutmut_7, 
-    'x__add_docstring__mutmut_8': x__add_docstring__mutmut_8, 
-    'x__add_docstring__mutmut_9': x__add_docstring__mutmut_9, 
-    'x__add_docstring__mutmut_10': x__add_docstring__mutmut_10, 
-    'x__add_docstring__mutmut_11': x__add_docstring__mutmut_11, 
-    'x__add_docstring__mutmut_12': x__add_docstring__mutmut_12, 
-    'x__add_docstring__mutmut_13': x__add_docstring__mutmut_13, 
-    'x__add_docstring__mutmut_14': x__add_docstring__mutmut_14, 
-    'x__add_docstring__mutmut_15': x__add_docstring__mutmut_15, 
-    'x__add_docstring__mutmut_16': x__add_docstring__mutmut_16, 
-    'x__add_docstring__mutmut_17': x__add_docstring__mutmut_17, 
-    'x__add_docstring__mutmut_18': x__add_docstring__mutmut_18, 
-    'x__add_docstring__mutmut_19': x__add_docstring__mutmut_19, 
-    'x__add_docstring__mutmut_20': x__add_docstring__mutmut_20
+    'x__add_docstring__mutmut_7': x__add_docstring__mutmut_7
 }
 x__add_docstring__mutmut_orig.__name__ = 'x__add_docstring'
 
@@ -22301,625 +17784,6 @@ def x_add_newdoc__mutmut_39(place, obj, doc, warn_on_python=True):
                 getattr(new, attr), docstring.strip(), warn_on_python
             )
 
-
-def x_add_newdoc__mutmut_40(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                None, docstring.strip(), warn_on_python
-            )
-
-
-def x_add_newdoc__mutmut_41(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                getattr(new, attr), None, warn_on_python
-            )
-
-
-def x_add_newdoc__mutmut_42(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                getattr(new, attr), docstring.strip(), None
-            )
-
-
-def x_add_newdoc__mutmut_43(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                docstring.strip(), warn_on_python
-            )
-
-
-def x_add_newdoc__mutmut_44(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                getattr(new, attr), warn_on_python
-            )
-
-
-def x_add_newdoc__mutmut_45(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                getattr(new, attr), docstring.strip(), )
-
-
-def x_add_newdoc__mutmut_46(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                getattr(None, attr), docstring.strip(), warn_on_python
-            )
-
-
-def x_add_newdoc__mutmut_47(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                getattr(new, None), docstring.strip(), warn_on_python
-            )
-
-
-def x_add_newdoc__mutmut_48(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                getattr(attr), docstring.strip(), warn_on_python
-            )
-
-
-def x_add_newdoc__mutmut_49(place, obj, doc, warn_on_python=True):
-    """
-    Add documentation to an existing object, typically one defined in C
-
-    The purpose is to allow easier editing of the docstrings without requiring
-    a re-compile. This exists primarily for internal use within numpy itself.
-
-    Parameters
-    ----------
-    place : str
-        The absolute name of the module to import from
-    obj : str or None
-        The name of the object to add documentation to, typically a class or
-        function name.
-    doc : {str, Tuple[str, str], List[Tuple[str, str]]}
-        If a string, the documentation to apply to `obj`
-
-        If a tuple, then the first element is interpreted as an attribute
-        of `obj` and the second as the docstring to apply -
-        ``(method, docstring)``
-
-        If a list, then each element of the list should be a tuple of length
-        two - ``[(method1, docstring1), (method2, docstring2), ...]``
-    warn_on_python : bool
-        If True, the default, emit `UserWarning` if this is used to attach
-        documentation to a pure-python object.
-
-    Notes
-    -----
-    This routine never raises an error if the docstring can't be written, but
-    will raise an error if the object being documented does not exist.
-
-    This routine cannot modify read-only docstrings, as appear
-    in new-style classes or built-in functions. Because this
-    routine never raises an error the caller must check manually
-    that the docstrings were changed.
-
-    Since this function grabs the ``char *`` from a c-level str object and puts
-    it into the ``tp_doc`` slot of the type of `obj`, it violates a number of
-    C-API best-practices, by:
-
-    - modifying a `PyTypeObject` after calling `PyType_Ready`
-    - calling `Py_INCREF` on the str and losing the reference, so the str
-      will never be released
-
-    If possible it should be avoided.
-    """
-    new = getattr(__import__(place, globals(), {}, [obj]), obj)
-    if isinstance(doc, str):
-        if "${ARRAY_FUNCTION_LIKE}" in doc:
-            doc = overrides.get_array_function_like_doc(new, doc)
-        _add_docstring(new, doc.strip(), warn_on_python)
-    elif isinstance(doc, tuple):
-        attr, docstring = doc
-        _add_docstring(getattr(new, attr), docstring.strip(), warn_on_python)
-    elif isinstance(doc, list):
-        for attr, docstring in doc:
-            _add_docstring(
-                getattr(new, ), docstring.strip(), warn_on_python
-            )
-
 x_add_newdoc__mutmut_mutants : ClassVar[MutantDict] = { # type: ignore
 'x_add_newdoc__mutmut_1': x_add_newdoc__mutmut_1, 
     'x_add_newdoc__mutmut_2': x_add_newdoc__mutmut_2, 
@@ -22959,16 +17823,6 @@ x_add_newdoc__mutmut_mutants : ClassVar[MutantDict] = { # type: ignore
     'x_add_newdoc__mutmut_36': x_add_newdoc__mutmut_36, 
     'x_add_newdoc__mutmut_37': x_add_newdoc__mutmut_37, 
     'x_add_newdoc__mutmut_38': x_add_newdoc__mutmut_38, 
-    'x_add_newdoc__mutmut_39': x_add_newdoc__mutmut_39, 
-    'x_add_newdoc__mutmut_40': x_add_newdoc__mutmut_40, 
-    'x_add_newdoc__mutmut_41': x_add_newdoc__mutmut_41, 
-    'x_add_newdoc__mutmut_42': x_add_newdoc__mutmut_42, 
-    'x_add_newdoc__mutmut_43': x_add_newdoc__mutmut_43, 
-    'x_add_newdoc__mutmut_44': x_add_newdoc__mutmut_44, 
-    'x_add_newdoc__mutmut_45': x_add_newdoc__mutmut_45, 
-    'x_add_newdoc__mutmut_46': x_add_newdoc__mutmut_46, 
-    'x_add_newdoc__mutmut_47': x_add_newdoc__mutmut_47, 
-    'x_add_newdoc__mutmut_48': x_add_newdoc__mutmut_48, 
-    'x_add_newdoc__mutmut_49': x_add_newdoc__mutmut_49
+    'x_add_newdoc__mutmut_39': x_add_newdoc__mutmut_39
 }
 x_add_newdoc__mutmut_orig.__name__ = 'x_add_newdoc'

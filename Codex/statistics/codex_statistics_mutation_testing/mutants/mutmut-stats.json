@@ -1,34 +1,39 @@
 {
     "tests_by_mangled_function_name": {
-        "statistics.x_geometric_mean": [
-            "test_codex_statistics_geometric_mean.py::test_geometric_mean_property"
+        "statistics.x_correlation": [
+            "test_codex_statistics_correlation.py::test_correlation_property"
         ],
         "statistics.x_fmean": [
             "test_codex_statistics_geometric_mean.py::test_geometric_mean_property"
         ],
-        "statistics.x__convert": [
-            "test_codex_statistics_mean.py::test_mean"
+        "statistics.x_geometric_mean": [
+            "test_codex_statistics_geometric_mean.py::test_geometric_mean_property"
         ],
-        "statistics.x__sum": [
-            "test_codex_statistics_mean.py::test_mean"
+        "statistics.x__convert": [
+            "test_codex_statistics_mean.py::test_mean",
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property"
+        ],
+        "statistics.x_linear_regression": [
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property"
         ],
         "statistics.x__coerce": [
-            "test_codex_statistics_mean.py::test_mean"
+            "test_codex_statistics_mean.py::test_mean",
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property"
         ],
-        "statistics.x__exact_ratio": [
-            "test_codex_statistics_mean.py::test_mean"
+        "statistics.x__sum": [
+            "test_codex_statistics_mean.py::test_mean",
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property"
         ],
         "statistics.x_mean": [
-            "test_codex_statistics_mean.py::test_mean"
-        ],
-        "statistics.x_correlation": [
-            "test_codex_statistics_correlation.py::test_correlation_property"
+            "test_codex_statistics_mean.py::test_mean",
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property"
         ]
     },
     "duration_by_test": {
-        "test_codex_statistics_geometric_mean.py::test_geometric_mean_property": 0.06270458299695747,
-        "test_codex_statistics_mean.py::test_mean": 0.11594850099936593,
-        "test_codex_statistics_correlation.py::test_correlation_property": 0.07462212500831811
+        "test_codex_statistics_correlation.py::test_correlation_property": 0.10067687601258513,
+        "test_codex_statistics_geometric_mean.py::test_geometric_mean_property": 0.031858666996413376,
+        "test_codex_statistics_linear_regression.py::test_linear_regression_property": 0.029795417009154335,
+        "test_codex_statistics_mean.py::test_mean": 0.08646491699619219
     },
-    "stats_time": 0.7318509999999999
+    "stats_time": 0.6786340000000002
 }

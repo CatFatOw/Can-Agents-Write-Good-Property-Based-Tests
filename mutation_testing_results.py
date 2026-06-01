@@ -20,24 +20,24 @@ def calculate_mutation_scores(results):
 
 # HUMAN
 mutation_human_dateutil = {
-    "total_mutants": 2454,
-    "killed_mutants": 388,
-    "survived_mutants": 810,
-    "timed_out_mutants": 51,
+    "total_mutants": 973,
+    "killed_mutants": 366,
+    "survived_mutants": 591,
+    "timed_out_mutants": 10,
     "suspicious_mutants": 0,
-    "untested_mutants": 1205,
+    "untested_mutants": 6,
     "skipped_mutants": 0,
     "equivalent_mutants": 0,
 }
 
 # CODEX
 mutation_codex_dateutil = {
-    "total_mutants": 2454,
-    "killed_mutants": 791,
-    "survived_mutants": 594,
+    "total_mutants": 1178,
+    "killed_mutants": 777,
+    "survived_mutants": 388,
     "timed_out_mutants": 13,
     "suspicious_mutants": 0,
-    "untested_mutants": 1056,
+    "untested_mutants": 0,
     "skipped_mutants": 0,
     "equivalent_mutants": 0,
 }
@@ -48,25 +48,25 @@ mutation_codex_dateutil = {
 # Human 
 
 mutation_human_statistics = {
-    "total_mutants": 1268,
-    "killed_mutants": 95,
-    "survived_mutants": 1039,
+    "total_mutants": 185,
+    "killed_mutants": 130,
+    "survived_mutants": 42,
     "timed_out_mutants": 0,
     "suspicious_mutants": 0,
-    "untested_mutants": 0,
-    "skipped_mutants": 134,
+    "untested_mutants": 13,
+    "skipped_mutants": 0,
     "equivalent_mutants": 0,
 }
 
 # Codex
 mutation_codex_statistics = {
-    "total_mutants": 1279,
-    "killed_mutants": 112,
-    "survived_mutants": 1039,
-    "timed_out_mutants": 0,
+    "total_mutants": 193,
+    "killed_mutants": 142,
+    "survived_mutants": 32,
+    "timed_out_mutants": 6,
     "suspicious_mutants": 0,
-    "untested_mutants": 0,
-    "skipped_mutants": 128,
+    "untested_mutants": 13,
+    "skipped_mutants": 0,
     "equivalent_mutants": 0,
 }
 
@@ -75,25 +75,25 @@ mutation_codex_statistics = {
 # NP
 
 # Human 
-mutation_human_np_linspace = {
-    "total_mutants": 192,
-    "killed_mutants": 54,
-    "survived_mutants": 0,
+mutation_human_np = {
+    "total_mutants": 141,
+    "killed_mutants": 50,
+    "survived_mutants": 91,
     "timed_out_mutants": 0,
     "suspicious_mutants": 0,
-    "untested_mutants": 138,
+    "untested_mutants": 0,
     "skipped_mutants": 0,
     "equivalent_mutants": 0,
 }
 
 
-mutation_codex_np_linspace = {
-    "total_mutants": 192,
-    "killed_mutants": 51,
-    "survived_mutants": 0,
+mutation_codex_np = {
+    "total_mutants": 141,
+    "killed_mutants": 50,
+    "survived_mutants": 91,
     "timed_out_mutants": 0,
     "suspicious_mutants": 0,
-    "untested_mutants": 141,
+    "untested_mutants": 0,
     "skipped_mutants": 0,
     "equivalent_mutants": 0,
 }
@@ -101,8 +101,8 @@ calculate_mutation_scores(mutation_human_dateutil)
 calculate_mutation_scores(mutation_codex_dateutil)
 calculate_mutation_scores(mutation_human_statistics)
 calculate_mutation_scores(mutation_codex_statistics)
-calculate_mutation_scores(mutation_human_np_linspace)
-calculate_mutation_scores(mutation_codex_np_linspace)
+calculate_mutation_scores(mutation_human_np)
+calculate_mutation_scores(mutation_codex_np)
 
 
 
@@ -118,6 +118,6 @@ print()
 print(mutation_codex_statistics)
 print()
 print("np")
-print(mutation_human_np_linspace)
+print(mutation_human_np)
 print()
-print(mutation_codex_np_linspace)
+print(mutation_codex_np)
