@@ -1,0 +1,24 @@
+{
+    "tests_by_mangled_function_name": {
+        "numpy._core.function_base.x_linspace": [
+            "test_human_np_linalg_wrapper.py::test_monotonic_increasing",
+            "test_human_np_linalg_wrapper.py::test_eq_spacing",
+            "test_human_np_linalg_wrapper.py::test_endpoint_included_original"
+        ],
+        "numpy._core.function_base.x_add_newdoc": [
+            "test_human_np_linalg_wrapper.py::test_eq_spacing"
+        ],
+        "numpy._core.function_base.x__add_docstring": [
+            "test_human_np_linalg_wrapper.py::test_eq_spacing"
+        ],
+        "numpy._core.function_base.x__needs_add_docstring": [
+            "test_human_np_linalg_wrapper.py::test_eq_spacing"
+        ]
+    },
+    "duration_by_test": {
+        "test_human_np_linalg_wrapper.py::test_eq_spacing": 1.2507327499988605,
+        "test_human_np_linalg_wrapper.py::test_endpoint_included_original": 0.044917875005921815,
+        "test_human_np_linalg_wrapper.py::test_monotonic_increasing": 0.04691316599928541
+    },
+    "stats_time": 0.8915909999999999
+}

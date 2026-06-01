@@ -1,0 +1,4 @@
+# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/np_testing/human_np_mutation_testing/numpy/core/function_base.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1.0, 10.0, 'geomspace', 'linspace', 'logspace', 'numpy']

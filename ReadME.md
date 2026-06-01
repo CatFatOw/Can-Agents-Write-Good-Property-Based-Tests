@@ -42,7 +42,7 @@ the asserted property is false for at least some generated inputs.
 
 The additional **mutation score** metric is the fraction of generated mutants
 killed by a test suite. Mutation testing is currently recorded for the
-dateutil parser APIs and the Python statistics library in
+dateutil parser APIs, the Python statistics library, and `np.linspace()` in
 [`mutation_testing_results.py`](./mutation_testing_results.py). The covered
 mutation score reports the fraction of tested mutants killed after excluding
 untested mutants.
@@ -74,6 +74,8 @@ untested mutants.
 
 | API | Test suite | Total mutants | Killed mutants | Untested mutants | Mutation score | Covered mutation score |
 |---|---|---:|---:|---:|---:|---:|
+| `np.linspace()` | Human-written | 192 | 54 | 138 | 28.1% | 100.0% |
+| `np.linspace()` | Codex-generated | 192 | 51 | 141 | 26.6% | 100.0% |
 | `dateutil` | Human-written | 2,454 | 388 | 1,205 | 15.8% | 31.1% |
 | `dateutil` | Codex-generated | 2,454 | 791 | 1,056 | 32.2% | 56.6% |
 | `statistics` | Human-written | 1,279 | 69 | 103 | 5.4% | 5.9% |

@@ -1,0 +1,4 @@
+# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/Codex/np_testing/codex_np_mutation_testing/mutants/numpy/_core/memmap.py
+# hypothesis_version: 6.151.9
+
+[b'\x00', -100.0, 'C', '_mmap', 'b', 'c', 'copyonwrite', 'flush', 'memmap', 'name', 'numpy', 'r', 'r+', 'read', 'readonly', 'readwrite', 'w+', 'write']

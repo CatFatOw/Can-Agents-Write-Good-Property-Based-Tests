@@ -1,0 +1,4 @@
+# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/np_testing/human_np_mutation_testing/numpy/lib/nanfunctions.py
+# hypothesis_version: 6.151.9
+
+[100.0, 600, 'Mean of empty slice', 'NaT', 'c', 'dtype', 'fc', 'ignore', 'initial', 'keepdims', 'linear', 'm', 'nanargmax', 'nanargmin', 'nancumprod', 'nancumsum', 'nanmax', 'nanmean', 'nanmedian', 'nanmin', 'nanpercentile', 'nanprod', 'nanquantile', 'nanstd', 'nansum', 'nanvar', 'numpy', 'unsafe', 'where']

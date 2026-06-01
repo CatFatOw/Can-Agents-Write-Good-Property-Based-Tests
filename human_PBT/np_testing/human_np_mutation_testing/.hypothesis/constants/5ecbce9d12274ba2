@@ -1,0 +1,4 @@
+# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/np_testing/human_np_mutation_testing/numpy/polynomial/polyutils.py
+# hypothesis_version: 6.151.9
+
+[0.0, 100000000.0, '(', ')', '+', '0', 'Complex', 'Power is too large', 'RankWarning', 'as_series', 'expected deg >= 0', 'fixed', 'floatmode', 'format_float', 'getdomain', 'infstr', 'iu', 'k', 'mapdomain', 'mapparms', 'nanstr', 'precision', 'sign', 'trimcoef', 'trimseq']

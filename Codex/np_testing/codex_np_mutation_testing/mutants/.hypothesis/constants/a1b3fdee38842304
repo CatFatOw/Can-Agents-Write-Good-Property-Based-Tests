@@ -1,0 +1,4 @@
+# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/Codex/np_testing/codex_np_mutation_testing/mutants/numpy/_typing/_array_like.py
+# hypothesis_version: 6.151.9
+
+['_DType', '_DType_co', '_ScalarType', '_ScalarType_co', '_T']

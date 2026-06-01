@@ -1,0 +1,4 @@
+# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/np_testing/human_np_mutation_testing/mutants/numpy/_core/printoptions.py
+# hypothesis_version: 6.151.9
+
+[1000, '-', 'edgeitems', 'floatmode', 'format_options', 'formatter', 'inf', 'infstr', 'legacy', 'linewidth', 'maxprec', 'nan', 'nanstr', 'override_repr', 'precision', 'sign', 'suppress', 'threshold']

@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 14:51:18
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_np_linalg_wrapper.py
++++ ./test_human_np_linalg_wrapper.py
+@@ -75,6 +75,7 @@
+ 
+ # Invariant 3: Test for monotonic increasing 
+ @given(generate_parameters())
++@example(params=(25, 25, 2, False, False)).via("discovered failure")
+ def test_monotonic_increasing(params):
+     start, stop, num, endpoint, retstep = params
+     retstep = False

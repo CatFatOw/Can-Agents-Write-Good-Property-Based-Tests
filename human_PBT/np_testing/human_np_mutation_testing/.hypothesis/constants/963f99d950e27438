@@ -1,0 +1,4 @@
+# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/np_testing/human_np_mutation_testing/numpy/__config__.py
+# hypothesis_version: 6.151.9
+
+['/opt/anaconda3/lib', '0.3.21', '1.26.4', '14.0.6', '3.0.8', '3.12', 'Build Dependencies', 'Compilers', 'False', 'Machine Information', 'Python Information', 'SIMD Extensions', 'True', 'aarch64', 'args', 'baseline', 'blas', 'build', 'c', 'c++', 'clang', 'commands', 'cpu', 'cross-compiled', 'cython', 'darwin', 'dep4347739648', 'detection method', 'dicts', 'endian', 'false', 'family', 'found', 'host', 'include directory', 'internal', 'lapack', 'ld64', 'lib directory', 'linker', 'linker args', 'little', 'name', 'not found', 'openblas', 'path', 'pc file directory', 'pkgconfig', 'show', 'stdout', 'system', 'unknown', 'version']
