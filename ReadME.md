@@ -34,6 +34,7 @@ The evaluation harness in [`metrics.py`](./metrics.py) runs each test function
 
 - **Validity**: fraction of executions that do not raise unexpected exceptions.
 - **Soundness**: fraction of executions that do not fail an assertion.
+- **Mutation Score/Coverage**: killed/total mutations or kill / (total-untested)
 
 In this setup, validity failures usually indicate malformed strategies,
 unhandled parser errors, or runtime exceptions. Soundness failures indicate that
