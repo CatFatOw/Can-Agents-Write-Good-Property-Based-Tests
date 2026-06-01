@@ -52,12 +52,13 @@ def test_geometric_mean_property(data):
             ).filter(lambda values: any(value <= 0 for value in values)),
         )
     )
+    # raises statistics error
     with pytest.raises(StatisticsError):
         statistics.geometric_mean(invalid_values)
 
     values = data.draw(st.lists(positive_number, min_size=1, max_size=50))
     result = statistics.geometric_mean(values)
-
+    # geometric sequence == log def
     expected = math.exp(math.fsum(math.log(value) for value in values) / len(values))
     assert result == pytest.approx(expected, rel=1e-12, abs=1e-12)
 

@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 13:20:03
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_isoparse_wrapper.py
++++ ./test_human_isoparse_wrapper.py
+@@ -191,6 +191,7 @@
+ # Invariant: if time included, parsed outputs must match 
+ @given(generate_date_time())
+ @settings(print_blob=True, verbosity=Verbosity.verbose)
++@example(date_str="2276-07-01T07:18:51.6227111").via("discovered failure")
+ def test_h_m_s(date_str):
+     dt = parser.isoparse(date_str)
+     date_arr = date_str.split("T")

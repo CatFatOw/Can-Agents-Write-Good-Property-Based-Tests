@@ -7,7 +7,7 @@ from pathlib import Path
 
 from hypothesis import given, assume, strategies as st
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1] / "PBT_Agents"
+PROJECT_ROOT = Path(__file__).resolve().parents[1] 
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from metrics import evaluate_test

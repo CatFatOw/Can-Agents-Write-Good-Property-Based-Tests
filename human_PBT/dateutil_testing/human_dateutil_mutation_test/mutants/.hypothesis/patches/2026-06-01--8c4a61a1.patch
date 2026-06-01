@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 13:22:03
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_parse_wrapper.py
++++ ./test_human_parse_wrapper.py
+@@ -303,6 +303,7 @@
+ 
+ # invariant 2: parse the same string twice should get same result
+ @given(choose_generator())
++@example(date_str="1:111-01-01").via("discovered failure")
+ def test_deterministic(date_str):
+     try:
+         assert parse(date_str) == parse(date_str)

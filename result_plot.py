@@ -189,20 +189,20 @@ plot_pbt_results(
 )
 
 
-plot_pbt_results_three(
+plot_pbt_results(
     human_mean,
     codex_mean,
-    VIM_mean,
-    api_name="statistics.mean()",
+    "statistics.mean()"
     
 )
 
-plot_pbt_results_three(
+plot_pbt_results(
     human_geometric_mean,
     codex_geometric_mean,
-    VIM_geometric_mean,
-    api_name="statistics.geometric_mean()",
+    "statistics.geometric_mean()"
     
 )
+
+
 
 

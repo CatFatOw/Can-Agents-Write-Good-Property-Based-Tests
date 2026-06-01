@@ -1,0 +1,4 @@
+# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/dateutil_testing/human_dateutil_mutation_test/mutants/dateutil/_common.py
+# hypothesis_version: 6.151.9
+
+['%s(%+d)', 'FR', 'MO', 'SA', 'SU', 'TH', 'TU', 'WE', 'n', 'weekday']
