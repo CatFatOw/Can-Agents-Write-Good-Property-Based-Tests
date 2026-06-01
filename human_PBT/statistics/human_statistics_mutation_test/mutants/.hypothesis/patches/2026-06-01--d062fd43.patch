@@ -1,6 +1,6 @@
 From HEAD Mon Sep 17 00:00:00 2001
 From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
-Date: Mon, 01 Jun 2026 16:21:59
+Date: Mon, 01 Jun 2026 16:21:49
 Subject: [PATCH] Hypothesis: add explicit examples
 
 ---
@@ -10,7 +10,7 @@ Subject: [PATCH] Hypothesis: add explicit examples
  
  # Invariant: sum(arr) / len(arr) == mean
  @given(generate_values())
-+@example(arr=[0, 1]).via("discovered failure")
++@example(arr=[0, 27, 27, 0, 0]).via("discovered failure")
  def test_check_mean(arr):
      try:
          calculated_mean = sum(arr) / len(arr)

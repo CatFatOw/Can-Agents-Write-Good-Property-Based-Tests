@@ -46,26 +46,27 @@ mutation_codex_dateutil = {
 # Statistics Library
 
 # Human 
+
 mutation_human_statistics = {
-    "total_mutants": 1279,
-    "killed_mutants": 69,
-    "survived_mutants": 1107,
+    "total_mutants": 1268,
+    "killed_mutants": 95,
+    "survived_mutants": 1039,
     "timed_out_mutants": 0,
     "suspicious_mutants": 0,
-    "untested_mutants": 103,
-    "skipped_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 134,
     "equivalent_mutants": 0,
 }
 
 # Codex
 mutation_codex_statistics = {
     "total_mutants": 1279,
-    "killed_mutants": 76,
-    "survived_mutants": 1107,
+    "killed_mutants": 112,
+    "survived_mutants": 1039,
     "timed_out_mutants": 0,
     "suspicious_mutants": 0,
-    "untested_mutants": 96,
-    "skipped_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 128,
     "equivalent_mutants": 0,
 }
 
@@ -105,16 +106,18 @@ calculate_mutation_scores(mutation_codex_np_linspace)
 
 
 
-
+print("dateutil")
 print(mutation_human_dateutil)
 print()
 print(mutation_codex_dateutil)
 print()
 print()
+print("stats")
 print(mutation_human_statistics)
 print()
 print(mutation_codex_statistics)
 print()
+print("np")
 print(mutation_human_np_linspace)
 print()
 print(mutation_codex_np_linspace)

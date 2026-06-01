@@ -6,11 +6,14 @@ Subject: [PATCH] Hypothesis: add explicit examples
 ---
 --- ./test_human_mean_wrapper.py
 +++ ./test_human_mean_wrapper.py
-@@ -44,6 +44,7 @@
+@@ -44,6 +44,10 @@
  
  # Invariant: sum(arr) / len(arr) == mean
  @given(generate_values())
-+@example(arr=[0, 1]).via("discovered failure")
++@example(
++    arr=[0.0],  # or any other generated value
++).via("discovered failure")
++@example(arr=[0]).via("discovered failure")
  def test_check_mean(arr):
      try:
          calculated_mean = sum(arr) / len(arr)

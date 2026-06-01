@@ -33,6 +33,9 @@ human_geometric_mean = {'validity': 0.5, 'soundness': 0.75, 'validity_errors': {
 codex_geometric_mean = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 VIM_geometric_mean = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
+# Statistics correlation()
+human_correlation = {'validity': 0.75, 'soundness': 0.5, 'validity_errors': {'FailedHealthCheck'}, 'soundness_errors': {''}}
+codex_correlation = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
 def plot_pbt_results(human_results, agent_results, api_name, agent_name="Codex"):
     models = ["Human", agent_name]
@@ -201,6 +204,12 @@ plot_pbt_results(
     codex_geometric_mean,
     "statistics.geometric_mean()"
     
+)
+
+plot_pbt_results(
+    human_correlation,
+    codex_correlation,
+    "statistics.correlation()"
 )
 
 

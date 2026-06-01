@@ -20,11 +20,15 @@
         ],
         "statistics.x_mean": [
             "test_codex_statistics_mean.py::test_mean"
+        ],
+        "statistics.x_correlation": [
+            "test_codex_statistics_correlation.py::test_correlation_property"
         ]
     },
     "duration_by_test": {
         "test_codex_statistics_geometric_mean.py::test_geometric_mean_property": 0.06270458299695747,
-        "test_codex_statistics_mean.py::test_mean": 0.11594850099936593
+        "test_codex_statistics_mean.py::test_mean": 0.11594850099936593,
+        "test_codex_statistics_correlation.py::test_correlation_property": 0.07462212500831811
     },
     "stats_time": 0.7318509999999999
 }

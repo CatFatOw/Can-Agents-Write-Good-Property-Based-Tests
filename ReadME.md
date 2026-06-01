@@ -18,7 +18,7 @@ The central comparison is between:
 |---|---:|---|
 | NumPy | `2.2.6` | `np.linspace()` |
 | PyTorch | `2.7.0` | `torch.argmax()` |
-| python-statistics | `3.12.7` | `statistics.mean()`, `statistics.geometric_mean()` |
+| python-statistics | `3.12.7` | `statistics.mean()`, `statistics.geometric_mean()`, `statistics.correlation()` |
 | python-dateutil | `2.9.0.post0` | `dateutil.parser.isoparse()`, `dateutil.parser.parse()` |
 
 ## Methodology
@@ -55,6 +55,7 @@ untested mutants.
 | `torch.argmax()` | [`human_test_torch_argmax.py`](./human_PBT/torch_testing/human_test_torch_argmax.py) | [`test_codex_torch_argmax.py`](./Codex/torch_testing/test_codex_torch_argmax.py) | [PyTorch `argmax`](https://docs.pytorch.org/docs/2.12/generated/torch.argmax.html) |
 | `statistics.mean()` | [`human_test_statistics_mean.py`](./human_PBT/statistics/human_test_statistics_mean.py) | [`test_codex_statistics_mean.py`](./Codex/statistics/test_codex_statistics_mean.py) | [Python `statistics.mean`](https://docs.python.org/3.12/library/statistics.html#statistics.mean) |
 | `statistics.geometric_mean()` | [`human_test_statistics_geometric_mean.py`](./human_PBT/statistics/human_test_statistics_geometric_mean.py) | [`test_codex_statistics_geometric_mean.py`](./Codex/statistics/test_codex_statistics_geometric_mean.py) | [Python `statistics.geometric_mean`](https://docs.python.org/3.12/library/statistics.html#statistics.geometric_mean) |
+| `statistics.correlation()` | [`test_human_test_statistics_correlation.py`](./human_PBT/statistics/test_human_test_statistics_correlation.py) | [`test_codex_statistics_correlation.py`](./Codex/statistics/test_codex_statistics_correlation.py) | [Python `statistics.correlation`](https://docs.python.org/3.12/library/statistics.html#statistics.correlation) |
 | `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
 | `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
 
@@ -66,6 +67,7 @@ untested mutants.
 | `torch.argmax()` | 99.0% | 100.0% | 100.0% | 100.0% |
 | `statistics.mean()` | 75.0% | 50.0% | 100.0% | 100.0% |
 | `statistics.geometric_mean()` | 50.0% | 75.0% | 100.0% | 100.0% |
+| `statistics.correlation()` | 75.0% | 50.0% | 100.0% | 100.0% |
 | `dateutil.parser.isoparse()` | 100.0% | 100.0% | 100.0% | 100.0% |
 | `dateutil.parser.parse()` | 66.7% | 100.0% | 100.0% | 100.0% |
 | **dateutil average** | **83.3%** | **100.0%** | **100.0%** | **100.0%** |
@@ -78,8 +80,8 @@ untested mutants.
 | `np` | Codex-generated | 192 | 51 | 141 | 26.6% | 100.0% |
 | `dateutil` | Human-written | 2,454 | 388 | 1,205 | 15.8% | 31.1% |
 | `dateutil` | Codex-generated | 2,454 | 791 | 1,056 | 32.2% | 56.6% |
-| `statistics` | Human-written | 1,279 | 69 | 103 | 5.4% | 5.9% |
-| `statistics` | Codex-generated | 1,279 | 76 | 96 | 5.9% | 6.4% |
+| `statistics` | Human-written | 1,268 | 95 | 0 | 7.5% | 7.5% |
+| `statistics` | Codex-generated | 1,279 | 112 | 0 | 8.8% | 8.8% |
 
 
 ## Figures
@@ -108,6 +110,10 @@ this repository.
   <img src="./graphs/statistic_geometric_mean_data.png" width="360" alt="Property-based test evaluation for statistics.geometric_mean">
 </p>
 
+<p align="center">
+  <img src="./graphs/statistics_correlation_data.png" width="360" alt="Property-based test evaluation for statistics.correlation">
+</p>
+
 ### Dateutil Parser APIs
 
 <p align="center">
@@ -129,6 +135,7 @@ python Codex/np_testing/test_codex_np_linspace.py
 python Codex/torch_testing/test_codex_torch_argmax.py
 python Codex/statistics/test_codex_statistics_mean.py
 python Codex/statistics/test_codex_statistics_geometric_mean.py
+python Codex/statistics/test_codex_statistics_correlation.py
 python Codex/dateutil_testing/test_codex_isoparse.py
 python Codex/dateutil_testing/test_codex_parse.py
 python mutation_testing_results.py
