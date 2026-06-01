@@ -1,0 +1,123 @@
+{
+    "tests_by_mangled_function_name": {
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1_convert": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isodate": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isodate_common": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_calculate_weekdate": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1__init__": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_tzstr": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isodate_uncommon": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isotime": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1__init__": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1__init__": [
+            "test_codex_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1convertyear": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_build_tzaware": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1_resultbase\u01c1__len__": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1parse": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1_timelex\u01c1__next__": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1resolve_ymd": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1_timelex\u01c1__init__": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_could_be_tzname": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parsems": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1weekday": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1jump": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1month": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_build_naive": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1append": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parse_numeric_token": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1ampm": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1_resolve_from_stridxs": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1_timelex\u01c1get_token": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parse_min_sec": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_find_hms_idx": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1hms": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1__init__": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_to_decimal": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1validate": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parse": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x_parse": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_recombine_skipped": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ],
+        "dateutil.parser._parser.x\u01c1_resultbase\u01c1__init__": [
+            "test_codex_parse_wrapper.py::test_parse"
+        ]
+    },
+    "duration_by_test": {
+        "test_codex_isoparse_wrapper.py::test_isoparse": 0.17330649900395656,
+        "test_codex_parse_wrapper.py::test_parse": 0.06865537400153698
+    },
+    "stats_time": 1.4697989999999999
+}
