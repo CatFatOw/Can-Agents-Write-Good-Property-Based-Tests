@@ -41,6 +41,55 @@ codex_correlation = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set()
 human_linear_regression = {'validity': 1.0, 'soundness': 0.6743333333333333, 'validity_errors': set(), 'soundness_errors': {''}}
 codex_linear_regression = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
+# Statistics Median
+human_median = {'validity': 0.6666666666666666, 'soundness': 1.0, 'validity_errors': {'ExceptionGroup'}, 'soundness_errors': set()}
+codex_median = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+# Statistics Variance 
+human_variance = {'validity': 1.0, 'soundness': 0.6666666666666666, 'validity_errors': set(), 'soundness_errors': {''}}
+codex_variance = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+avg_human_statistics = {
+    "validity": (
+        human_mean["validity"] +
+        human_geometric_mean["validity"] +
+        human_correlation["validity"] +
+        human_linear_regression["validity"] +
+        human_median["validity"] +
+        human_variance["validity"]
+    ) / 6,
+
+    "soundness": (
+        human_mean["soundness"] +
+        human_geometric_mean["soundness"] +
+        human_correlation["soundness"] +
+        human_linear_regression["soundness"] +
+        human_median["soundness"] +
+        human_variance["soundness"]
+    ) / 6,
+}
+
+avg_codex_statistics = {
+    "validity": (
+        codex_mean["validity"] +
+        codex_geometric_mean["validity"] +
+        codex_correlation["validity"] +
+        codex_linear_regression["validity"] +
+        codex_median["validity"] +
+        codex_variance["validity"]
+    ) / 6,
+
+    "soundness": (
+        codex_mean["soundness"] +
+        codex_geometric_mean["soundness"] +
+        codex_correlation["soundness"] +
+        codex_linear_regression["soundness"] +
+        codex_median["soundness"] +
+        codex_variance["soundness"]
+    ) / 6,
+}
+
+
 
 
 
@@ -223,6 +272,24 @@ plot_pbt_results(
     human_linear_regression,
     codex_linear_regression,
     "statistics.linear_regression()"
+)
+
+plot_pbt_results(
+    human_median,
+    codex_median,
+    "statistics.median()"
+)
+
+plot_pbt_results(
+    human_variance,
+    codex_variance,
+    "statistics.variance()"
+)
+
+plot_pbt_results(
+    avg_human_statistics,
+    avg_codex_statistics,
+    "AVG METRICS for statistics API"
 )
 
 

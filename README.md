@@ -18,7 +18,7 @@ The central comparison is between:
 |---|---:|---|
 | NumPy | `2.2.6` | `np.linspace()` |
 | PyTorch | `2.7.0` | `torch.argmax()` |
-| python-statistics | `3.12.7` | `statistics.mean()`, `statistics.geometric_mean()`, `statistics.correlation()`, `statistics.linear_regression()` |
+| python-statistics | `3.12.7` | `statistics.mean()`, `statistics.geometric_mean()`, `statistics.correlation()`, `statistics.linear_regression()`, `statistics.median()`, `statistics.variance()` |
 | python-dateutil | `2.9.0.post0` | `dateutil.parser.isoparse()`, `dateutil.parser.parse()` |
 
 ## Methodology
@@ -59,6 +59,8 @@ from every function in each vendored library.
 | `statistics.geometric_mean()` | [`human_test_statistics_geometric_mean.py`](./human_PBT/statistics/human_test_statistics_geometric_mean.py) | [`test_codex_statistics_geometric_mean.py`](./Codex/statistics/test_codex_statistics_geometric_mean.py) | [Python `statistics.geometric_mean`](https://docs.python.org/3.12/library/statistics.html#statistics.geometric_mean) |
 | `statistics.correlation()` | [`test_human_test_statistics_correlation.py`](./human_PBT/statistics/test_human_test_statistics_correlation.py) | [`test_codex_statistics_correlation.py`](./Codex/statistics/test_codex_statistics_correlation.py) | [Python `statistics.correlation`](https://docs.python.org/3.12/library/statistics.html#statistics.correlation) |
 | `statistics.linear_regression()` | [`test_human_test_statistics_linear_regression.py`](./human_PBT/statistics/test_human_test_statistics_linear_regression.py) | [`test_codex_statistics_linear_regression.py`](./Codex/statistics/test_codex_statistics_linear_regression.py) | [Python `statistics.linear_regression`](https://docs.python.org/3.12/library/statistics.html#statistics.linear_regression) |
+| `statistics.median()` | [`test_human_test_statistics_median.py`](./human_PBT/statistics/test_human_test_statistics_median.py) | [`test_codex_statistics_median.py`](./Codex/statistics/test_codex_statistics_median.py) | [Python `statistics.median`](https://docs.python.org/3.12/library/statistics.html#statistics.median) |
+| `statistics.variance()` | [`test_human_test_statistics_variance.py`](./human_PBT/statistics/test_human_test_statistics_variance.py) | [`test_codex_statistics_variance.py`](./Codex/statistics/test_codex_statistics_variance.py) | [Python `statistics.variance`](https://docs.python.org/3.12/library/statistics.html#statistics.variance) |
 | `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
 | `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
 
@@ -72,6 +74,9 @@ from every function in each vendored library.
 | `statistics.geometric_mean()` | 50.0% | 75.0% | 100.0% | 100.0% |
 | `statistics.correlation()` | 75.0% | 50.0% | 100.0% | 100.0% |
 | `statistics.linear_regression()` | 100.0% | 67.4% | 100.0% | 100.0% |
+| `statistics.median()` | 66.7% | 100.0% | 100.0% | 100.0% |
+| `statistics.variance()` | 100.0% | 66.7% | 100.0% | 100.0% |
+| **statistics average** | **77.8%** | **68.2%** | **100.0%** | **100.0%** |
 | `dateutil.parser.isoparse()` | 100.0% | 100.0% | 100.0% | 100.0% |
 | `dateutil.parser.parse()` | 66.7% | 100.0% | 100.0% | 100.0% |
 | **dateutil average** | **83.3%** | **100.0%** | **100.0%** | **100.0%** |
@@ -84,8 +89,8 @@ from every function in each vendored library.
 | `np` | Codex-generated | 141 | 50 | 0 | 35.5% | 35.5% |
 | `dateutil` | Human-written | 973 | 366 | 6 | 37.6% | 37.8% |
 | `dateutil` | Codex-generated | 1,178 | 777 | 0 | 66.0% | 66.0% |
-| `statistics` | Human-written | 185 | 130 | 13 | 70.3% | 75.6% |
-| `statistics` | Codex-generated | 193 | 142 | 13 | 73.6% | 79.0% |
+| `statistics` | Human-written | 270 | 204 | 13 | 75.6% | 79.4% |
+| `statistics` | Codex-generated | 290 | 226 | 13 | 77.9% | 81.6% |
 
 
 ## Figures
@@ -118,6 +123,15 @@ this repository.
   <img src="./graphs/statistics_linearregression_data.png" width="360" alt="Property-based test evaluation for statistics.linear_regression">
 </p>
 
+<p align="center">
+  <img src="./graphs/statistics_median_data.png" width="360" alt="Property-based test evaluation for statistics.median">
+  <img src="./graphs/statistics_data_variance.png" width="360" alt="Property-based test evaluation for statistics.variance">
+</p>
+
+<p align="center">
+  <img src="./graphs/avg_stats_api_data.png" width="480" alt="Average property-based test evaluation for statistics APIs">
+</p>
+
 ### Dateutil Parser APIs
 
 <p align="center">
@@ -141,6 +155,8 @@ python Codex/statistics/test_codex_statistics_mean.py
 python Codex/statistics/test_codex_statistics_geometric_mean.py
 python Codex/statistics/test_codex_statistics_correlation.py
 python Codex/statistics/test_codex_statistics_linear_regression.py
+python Codex/statistics/test_codex_statistics_median.py
+python Codex/statistics/test_codex_statistics_variance.py
 python Codex/dateutil_testing/test_codex_isoparse.py
 python Codex/dateutil_testing/test_codex_parse.py
 python mutation_testing_results.py

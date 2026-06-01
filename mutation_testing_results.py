@@ -48,9 +48,9 @@ mutation_codex_dateutil = {
 # Human 
 
 mutation_human_statistics = {
-    "total_mutants": 185,
-    "killed_mutants": 130,
-    "survived_mutants": 42,
+    "total_mutants": 270,
+    "killed_mutants": 204,
+    "survived_mutants": 53,
     "timed_out_mutants": 0,
     "suspicious_mutants": 0,
     "untested_mutants": 13,
@@ -60,10 +60,10 @@ mutation_human_statistics = {
 
 # Codex
 mutation_codex_statistics = {
-    "total_mutants": 193,
-    "killed_mutants": 142,
-    "survived_mutants": 32,
-    "timed_out_mutants": 6,
+    "total_mutants": 290,
+    "killed_mutants": 226,
+    "survived_mutants": 51,
+    "timed_out_mutants": 0,
     "suspicious_mutants": 0,
     "untested_mutants": 13,
     "skipped_mutants": 0,

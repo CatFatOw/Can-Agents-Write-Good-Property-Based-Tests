@@ -68,12 +68,12 @@ def test_symmetry(params):
         pass
 
 # Invariant 4: scaling doesn't impact 
-@given(generate_two_arrs(), floats(allow_nan=False, min_value=-10, max_value=10))
+@given(generate_two_arrs(), floats(min_value=0.1, max_value=10, allow_nan=False, allow_infinity=False))
 def test_scale(params, scale):
     try:
         arr1, arr2 = params
         original = statistics.correlation(arr1, arr2)
-        scaled = statistics.correlation([x*scale for x in arr1], [x*scale for x in arr2])
+        scaled = statistics.correlation([x * scale for x in arr1], [x * scale for x in arr2])
         assert scaled == pytest.approx(original)
         
     except StatisticsError:

@@ -1,0 +1,20 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 19:45:38
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_linear_regression_wrapper.py
++++ ./test_human_linear_regression_wrapper.py
+@@ -56,6 +56,11 @@
+ 
+ # Invariant: scaling y by constant scales the slope by k
+ @given(generate_data_points(), floats(min_value=-10, max_value=10,allow_nan=False))
++@example(
++    # The test always failed when commented parts were varied together.
++    params=([0, 1], [0.0, 0.0]),  # or any other generated value
++    constant=0.0,  # or any other generated value
++).via("discovered failure")
+ def test_scale_slope(params, constant):
+     try:
+         x, y = params 

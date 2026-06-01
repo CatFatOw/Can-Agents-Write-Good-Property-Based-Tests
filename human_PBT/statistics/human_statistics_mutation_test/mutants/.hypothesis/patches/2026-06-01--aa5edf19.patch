@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 19:45:36
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_linear_regression_wrapper.py
++++ ./test_human_linear_regression_wrapper.py
+@@ -43,6 +43,7 @@
+ 
+ # Invariant: Adding constant to every x-value should keep slope the same
+ @given(generate_data_points(), floats(min_value=-10, max_value=10, allow_nan=False))
++@example(params=([0, 1], [0.0, 1.0]), constant=1.0).via("discovered failure")
+ def test_same_slope(params, constant):
+     try:
+         x, y = params

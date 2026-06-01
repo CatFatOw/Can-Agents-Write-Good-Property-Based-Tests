@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 19:45:43
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_variance_wrapper.py
++++ ./test_human_variance_wrapper.py
+@@ -21,6 +21,7 @@
+ 
+ # Invariant: multiple arr by k and variance scaled by k^2
+ @given(lists(integers(), min_size=2), integers())
++@example(arr=[0, 1], k=2).via("discovered failure")
+ def test_scale_k(arr, k):
+     original_var = statistics.variance(arr)
+     scaled_arr = [k * val for val in arr]

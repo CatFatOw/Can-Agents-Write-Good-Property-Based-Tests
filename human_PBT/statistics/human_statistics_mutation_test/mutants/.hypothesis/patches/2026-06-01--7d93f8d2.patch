@@ -1,0 +1,25 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 19:45:38
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_correlation_wrapper.py
++++ ./test_human_correlation_wrapper.py
+@@ -47,12 +47,15 @@
+ 
+ # invariant 2: The correlation of itself should be 1
+ @given(generate_two_arrs())
++@example(params=([8456, 5686, 3811, -6626], [-2568, -3446, 2144, 7873])).via(
++    "discovered failure"
++)
+ def test_same(params):
+     try:
+         arr1, arr2 = params
+         correlation = statistics.correlation(arr1, arr1)
+         assert correlation == pytest.approx(1)
+-    
++
+     except StatisticsError:
+         pass
+ 

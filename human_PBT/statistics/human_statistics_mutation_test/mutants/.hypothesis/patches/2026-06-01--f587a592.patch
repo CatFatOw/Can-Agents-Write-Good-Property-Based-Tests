@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 19:45:34
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_variance_wrapper.py
++++ ./test_human_variance_wrapper.py
+@@ -29,6 +29,7 @@
+ 
+ # Invairant: adding a number results in same var
+ @given(lists(integers(), min_size=2), integers())
++@example(arr=[0, 0], k=1).via("discovered failure")
+ def test_add(arr, k):
+     original_var = statistics.variance(arr)
+     new_arr = [val + k for val in arr]

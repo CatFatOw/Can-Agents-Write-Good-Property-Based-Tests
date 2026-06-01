@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Mon, 01 Jun 2026 19:45:33
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_median_wrapper.py
++++ ./test_human_median_wrapper.py
+@@ -31,6 +31,7 @@
+ 
+ # Invariant 2: if odd, its the middle index, else it should be the two for even
+ @given(lists(integers(), min_size=1))
++@example(arr=[0, 1]).via("discovered failure")
+ def test_correct_idx(arr):
+     arr = sorted(arr)
+ 
