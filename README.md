@@ -1,4 +1,4 @@
-# Can Agents Write Good Property-Based Tests?
+# Can Agents Write Good Property-Based Tests Via Documentation?
 
 Research for the Carnegie Mellon University (CMU) REU program by Michael Wu, May 2026.
 
