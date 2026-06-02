@@ -82,6 +82,7 @@ from every function in each vendored library.
 | **statistics average** | **77.8%** | **68.2%** | **100.0%** | **100.0%** |
 | `html.escape()` | 75.0% | 100.0% | 100.0% | 100.0% |
 | `html.unescape()` | 66.7% | 66.7% | 100.0% | 100.0% |
+| **html average** | **70.8%** | **83.3%** | **100.0%** | **100.0%** |
 | `dateutil.parser.isoparse()` | 100.0% | 100.0% | 100.0% | 100.0% |
 | `dateutil.parser.parse()` | 66.7% | 100.0% | 100.0% | 100.0% |
 | **dateutil average** | **83.3%** | **100.0%** | **100.0%** | **100.0%** |
@@ -144,6 +145,10 @@ this repository.
 <p align="center">
   <img src="./graphs/html_escape_data.png" width="360" alt="Property-based test evaluation for html.escape">
   <img src="./graphs/html_unescape_data.png" width="360" alt="Property-based test evaluation for html.unescape">
+</p>
+
+<p align="center">
+  <img src="./graphs/avg_html_metrics_data.png" width="480" alt="Average property-based test evaluation for html APIs">
 </p>
 
 ### Dateutil Parser APIs

@@ -96,11 +96,20 @@ avg_codex_statistics = {
 human_escape = {'validity': 0.75, 'soundness': 1.0, 'validity_errors': {'AttributeError'}, 'soundness_errors': set()}
 codex_escape = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
+
 # Html unescape 
 human_unescape = {'validity': 0.6666666666666666, 'soundness': 0.6666666666666666, 'validity_errors': {'ExceptionGroup'}, 'soundness_errors': {''}}
 codex_unescape = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
+avg_human_html = {
+    "validity": (human_escape["validity"] + human_unescape["validity"]) / 2,
+    "soundness": (human_escape["soundness"] + human_unescape["soundness"]) / 2,
+}
 
+avg_codex_html = {
+    "validity": (codex_escape["validity"] + codex_unescape["validity"]) / 2,
+    "soundness": (codex_escape["soundness"] + codex_unescape["soundness"]) / 2,
+}
 
 
 
@@ -314,6 +323,12 @@ plot_pbt_results(
     human_unescape,
     codex_unescape,
     "html.unescape()"
+)
+
+plot_pbt_results(
+    avg_human_html,
+    avg_codex_html,
+    "avg html"
 )
 
 
