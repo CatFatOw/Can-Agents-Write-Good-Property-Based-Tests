@@ -1,4 +1,0 @@
-# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/Codex/np_testing/codex_np_mutation_testing/mutants/numpy/_core/_asarray.py
-# hypothesis_version: 6.151.9
-
-['A', 'ALIGNED', 'C', 'CONTIGUOUS', 'C_CONTIGUOUS', 'E', 'ENSUREARRAY', 'F', 'FORTRAN', 'F_CONTIGUOUS', 'O', 'OWNDATA', 'W', 'WRITEABLE', 'numpy', 'require']

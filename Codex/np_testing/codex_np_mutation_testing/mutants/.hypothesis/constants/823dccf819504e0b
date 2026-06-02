@@ -1,4 +1,0 @@
-# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/Codex/np_testing/codex_np_mutation_testing/mutants/numpy/_core/_methods.py
-# hypothesis_version: 6.151.9
-
-['K', 'Mean of empty slice.', 'bool', 'dtype', 'f4', 'f8', 'iu', 'same_kind', 'unsafe', 'wb', 'write']

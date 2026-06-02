@@ -20,6 +20,7 @@ The central comparison is between:
 | PyTorch | `2.7.0` | `torch.argmax()` |
 | python-statistics | `3.12.7` | `statistics.mean()`, `statistics.geometric_mean()`, `statistics.correlation()`, `statistics.linear_regression()`, `statistics.median()`, `statistics.variance()` |
 | python-html | `3.12.7` | `html.escape()`, `html.unescape()` |
+| zlib | `1.2.13` | `zlib.compress()`, `zlib.decompress()`, `zlib.adler32()` |
 | python-dateutil | `2.9.0.post0` | `dateutil.parser.isoparse()`, `dateutil.parser.parse()` |
 
 ## Methodology
@@ -43,12 +44,16 @@ the asserted property is false for at least some generated inputs.
 
 The additional **mutation score** metric is the fraction of generated mutants
 killed by a test suite. Mutation testing is currently recorded for the
-dateutil parser APIs, the Python statistics and html libraries, and `np.linspace()` in
+dateutil parser APIs, the Python statistics and html libraries, zlib, and `np.linspace()` in
 [`mutation_testing_results.py`](./mutation_testing_results.py). The covered
 mutation score reports the fraction of tested mutants killed after excluding
 untested mutants. The mutation runs use covered-line filtering so mutants are
 generated from source lines reached by the selected API wrappers rather than
 from every function in each vendored library.
+
+Python's `zlib` module is a compiled C extension, so its `mutmut` results apply
+to the selected Python adapter functions rather than direct mutations of the
+underlying zlib C implementation.
 
 ## Test Artifacts
 
@@ -64,6 +69,9 @@ from every function in each vendored library.
 | `statistics.variance()` | [`test_human_test_statistics_variance.py`](./human_PBT/statistics/test_human_test_statistics_variance.py) | [`test_codex_statistics_variance.py`](./Codex/statistics/test_codex_statistics_variance.py) | [Python `statistics.variance`](https://docs.python.org/3.12/library/statistics.html#statistics.variance) |
 | `html.escape()` | [`test_human_html_escape.py`](./human_PBT/html/test_human_html_escape.py) | [`test_codex_html_escape.py`](./Codex/html/test_codex_html_escape.py) | [Python `html.escape`](https://docs.python.org/3.12/library/html.html#html.escape) |
 | `html.unescape()` | [`test_human_html_unescape.py`](./human_PBT/html/test_human_html_unescape.py) | [`test_codex_html_unescape.py`](./Codex/html/test_codex_html_unescape.py) | [Python `html.unescape`](https://docs.python.org/3.12/library/html.html#html.unescape) |
+| `zlib.compress()` | [`test_human_zlib_compress.py`](./human_PBT/zlib/test_human_zlib_compress.py) | [`test_codex_zlib_compress.py`](./Codex/zlib/test_codex_zlib_compress.py) | [Python `zlib.compress`](https://docs.python.org/3.12/library/zlib.html#zlib.compress) |
+| `zlib.decompress()` | [`test_human_zlib_decompress.py`](./human_PBT/zlib/test_human_zlib_decompress.py) | [`test_codex_zlib_decompress.py`](./Codex/zlib/test_codex_zlib_decompress.py) | [Python `zlib.decompress`](https://docs.python.org/3.12/library/zlib.html#zlib.decompress) |
+| `zlib.adler32()` | [`test_human_zlib_adler32.py`](./human_PBT/zlib/test_human_zlib_adler32.py) | [`test_codex_zlib_adler32.py`](./Codex/zlib/test_codex_zlib_adler32.py) | [Python `zlib.adler32`](https://docs.python.org/3.12/library/zlib.html#zlib.adler32) |
 | `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
 | `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
 
@@ -83,6 +91,10 @@ from every function in each vendored library.
 | `html.escape()` | 75.0% | 100.0% | 100.0% | 100.0% |
 | `html.unescape()` | 66.7% | 66.7% | 100.0% | 100.0% |
 | **html average** | **70.8%** | **83.3%** | **100.0%** | **100.0%** |
+| `zlib.compress()` | 66.7% | 100.0% | 100.0% | 100.0% |
+| `zlib.decompress()` | 100.0% | 100.0% | 100.0% | 100.0% |
+| `zlib.adler32()` | 100.0% | 100.0% | 100.0% | 100.0% |
+| **zlib average** | **88.9%** | **100.0%** | **100.0%** | **100.0%** |
 | `dateutil.parser.isoparse()` | 100.0% | 100.0% | 100.0% | 100.0% |
 | `dateutil.parser.parse()` | 66.7% | 100.0% | 100.0% | 100.0% |
 | **dateutil average** | **83.3%** | **100.0%** | **100.0%** | **100.0%** |
@@ -99,6 +111,8 @@ from every function in each vendored library.
 | `statistics` | Codex-generated | 290 | 226 | 13 | 77.9% | 81.6% |
 | `html` | Human-written | 92 | 73 | 0 | 79.3% | 79.3% |
 | `html` | Codex-generated | 85 | 73 | 0 | 85.9% | 85.9% |
+| `zlib` adapter | Human-written | 17 | 12 | 0 | 70.6% | 70.6% |
+| `zlib` adapter | Codex-generated | 17 | 14 | 0 | 82.4% | 82.4% |
 
 
 ## Figures
@@ -151,6 +165,21 @@ this repository.
   <img src="./graphs/avg_html_metrics_data.png" width="480" alt="Average property-based test evaluation for html APIs">
 </p>
 
+### Zlib APIs
+
+<p align="center">
+  <img src="./graphs/zlib_compress_data.png" width="360" alt="Property-based test evaluation for zlib.compress">
+  <img src="./graphs/zlib_decompress_data.png" width="360" alt="Property-based test evaluation for zlib.decompress">
+</p>
+
+<p align="center">
+  <img src="./graphs/zlib_adler32_data.png" width="360" alt="Property-based test evaluation for zlib.adler32">
+</p>
+
+<p align="center">
+  <img src="./graphs/avg_zlib_data.png" width="480" alt="Average property-based test evaluation for zlib APIs">
+</p>
+
 ### Dateutil Parser APIs
 
 <p align="center">
@@ -178,6 +207,9 @@ python Codex/statistics/test_codex_statistics_median.py
 python Codex/statistics/test_codex_statistics_variance.py
 python Codex/html/test_codex_html_escape.py
 python Codex/html/test_codex_html_unescape.py
+python Codex/zlib/test_codex_zlib_compress.py
+python Codex/zlib/test_codex_zlib_decompress.py
+python Codex/zlib/test_codex_zlib_adler32.py
 python Codex/dateutil_testing/test_codex_isoparse.py
 python Codex/dateutil_testing/test_codex_parse.py
 python mutation_testing_results.py

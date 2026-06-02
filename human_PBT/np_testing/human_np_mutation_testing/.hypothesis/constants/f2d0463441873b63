@@ -1,4 +1,0 @@
-# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/np_testing/human_np_mutation_testing/numpy/lib/_stride_tricks_impl.py
-# hypothesis_version: 6.151.9
-
-['C', 'broadcast_arrays', 'broadcast_shapes', 'broadcast_to', 'multi_index', 'numpy', 'readonly', 'refs_ok', 'shape', 'strides', 'zerosize_ok']

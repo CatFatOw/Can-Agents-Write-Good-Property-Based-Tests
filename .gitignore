@@ -1,0 +1,6 @@
+.DS_Store
+.hypothesis/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+mutants/

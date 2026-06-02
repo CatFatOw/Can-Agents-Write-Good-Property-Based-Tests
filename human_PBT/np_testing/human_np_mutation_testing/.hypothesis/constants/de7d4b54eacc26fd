@@ -1,4 +1,0 @@
-# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/np_testing/human_np_mutation_testing/numpy/lib/_scimath_impl.py
-# hypothesis_version: 6.151.9
-
-[1.0, 2.0, 'arccos', 'arcsin', 'arctanh', 'log', 'log10', 'log2', 'logn', 'numpy.lib.scimath', 'power', 'sqrt']

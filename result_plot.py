@@ -49,6 +49,7 @@ codex_median = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'so
 human_variance = {'validity': 1.0, 'soundness': 0.6666666666666666, 'validity_errors': set(), 'soundness_errors': {''}}
 codex_variance = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
+
 avg_human_statistics = {
     "validity": (
         human_mean["validity"] +
@@ -109,6 +110,31 @@ avg_human_html = {
 avg_codex_html = {
     "validity": (codex_escape["validity"] + codex_unescape["validity"]) / 2,
     "soundness": (codex_escape["soundness"] + codex_unescape["soundness"]) / 2,
+}
+
+# ZLIB compress
+# HUMAN
+human_compress = {'validity': 0.6666666666666666, 'soundness': 1.0, 'validity_errors': {'error'}, 'soundness_errors': set()}
+codex_compress = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+# ZLIB decompress
+human_decompress = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+codex_decompress = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+
+# Zlib adler 32
+human_adler32 = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+codex_adler32 = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+
+avg_human_zlib = {
+    "validity": (human_compress["validity"] + human_decompress["validity"] + human_adler32["validity"]) / 3,
+    "soundness": (human_compress["soundness"] + human_decompress["soundness"] + human_adler32["validity"]) / 3,
+}
+
+avg_codex_zlib = {
+    "validity": (codex_compress["validity"] + codex_decompress["validity"] + codex_adler32["validity"]) / 3,
+    "soundness": (codex_compress["soundness"] + codex_decompress["soundness"] + codex_adler32["validity"]) / 3,
 }
 
 
@@ -329,6 +355,30 @@ plot_pbt_results(
     avg_human_html,
     avg_codex_html,
     "avg html"
+)
+
+plot_pbt_results(
+    human_compress,
+    codex_compress,
+    "zlib.compress()"
+)
+
+plot_pbt_results(
+    human_decompress,
+    codex_decompress,
+    "zlib.decompress()"
+)
+
+plot_pbt_results(
+    human_adler32,
+    codex_adler32,
+    "zlib.adler32()"
+)
+
+plot_pbt_results(
+    avg_human_zlib,
+    avg_codex_zlib,
+    "AVG zlib"
 )
 
 

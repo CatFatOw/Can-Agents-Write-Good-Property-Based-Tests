@@ -1,4 +1,0 @@
-# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/np_testing/human_np_mutation_testing/numpy/core/_ufunc_config.py
-# hypothesis_version: 6.151.9
-
-[10000000.0, '_no_nep50_warning', 'call', 'divide', 'errstate', 'getbufsize', 'geterr', 'geterrcall', 'ignore', 'invalid', 'log', 'numpy', 'over', 'print', 'raise', 'setbufsize', 'seterr', 'seterrcall', 'under', 'warn', 'write']

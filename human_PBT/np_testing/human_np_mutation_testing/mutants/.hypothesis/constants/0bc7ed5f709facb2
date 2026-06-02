@@ -1,4 +1,0 @@
-# file: /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/human_PBT/np_testing/human_np_mutation_testing/mutants/numpy/version.py
-# hypothesis_version: 6.151.9
-
-['+', '2.2.6', 'dev']

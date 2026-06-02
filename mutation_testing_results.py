@@ -121,6 +121,31 @@ mutation_codex_html = {
     "equivalent_mutants": 0,
 }
 
+# Zlib
+mutation_human_zlib = {
+    "total_mutants": 17,
+    "killed_mutants": 12,
+    "survived_mutants": 5,
+    "timed_out_mutants": 0,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 0,
+}
+
+mutation_codex_zlib = {
+    "total_mutants": 17,
+    "killed_mutants": 14,
+    "survived_mutants": 3,
+    "timed_out_mutants": 0,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 0,
+}
+
+
+
 calculate_mutation_scores(mutation_human_dateutil)
 calculate_mutation_scores(mutation_codex_dateutil)
 calculate_mutation_scores(mutation_human_statistics)
@@ -129,7 +154,8 @@ calculate_mutation_scores(mutation_human_np)
 calculate_mutation_scores(mutation_codex_np)
 calculate_mutation_scores(mutation_human_html)
 calculate_mutation_scores(mutation_codex_html)
-
+calculate_mutation_scores(mutation_human_zlib)
+calculate_mutation_scores(mutation_codex_zlib)
 
 
 print("dateutil")
@@ -151,3 +177,8 @@ print("html")
 print(mutation_human_html)
 print()
 print(mutation_codex_html)
+print()
+print("zlib")
+print(mutation_human_zlib)
+print()
+print(mutation_codex_zlib)
