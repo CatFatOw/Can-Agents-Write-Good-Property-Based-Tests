@@ -1,0 +1,21 @@
+{
+    "tests_by_mangled_function_name": {
+        "html.x_escape": [
+            "test_codex_html_unescape_wrapper.py::test_unescape_property",
+            "test_codex_html_escape_wrapper.py::test_escape_property"
+        ],
+        "html.x__replace_charref": [
+            "test_codex_html_unescape_wrapper.py::test_unescape_property",
+            "test_codex_html_escape_wrapper.py::test_escape_property"
+        ],
+        "html.x_unescape": [
+            "test_codex_html_unescape_wrapper.py::test_unescape_property",
+            "test_codex_html_escape_wrapper.py::test_escape_property"
+        ]
+    },
+    "duration_by_test": {
+        "test_codex_html_escape_wrapper.py::test_escape_property": 0.06243500097480137,
+        "test_codex_html_unescape_wrapper.py::test_unescape_property": 0.07950562500627711
+    },
+    "stats_time": 0.512886
+}

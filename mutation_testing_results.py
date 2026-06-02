@@ -97,12 +97,38 @@ mutation_codex_np = {
     "skipped_mutants": 0,
     "equivalent_mutants": 0,
 }
+
+# HTML
+mutation_human_html = {
+    "total_mutants": 92,
+    "killed_mutants": 73,
+    "survived_mutants": 19,
+    "timed_out_mutants": 0,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 0,
+}
+# Codex
+mutation_codex_html = {
+    "total_mutants": 85,
+    "killed_mutants": 73,
+    "survived_mutants": 12,
+    "timed_out_mutants": 0,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 0,
+}
+
 calculate_mutation_scores(mutation_human_dateutil)
 calculate_mutation_scores(mutation_codex_dateutil)
 calculate_mutation_scores(mutation_human_statistics)
 calculate_mutation_scores(mutation_codex_statistics)
 calculate_mutation_scores(mutation_human_np)
 calculate_mutation_scores(mutation_codex_np)
+calculate_mutation_scores(mutation_human_html)
+calculate_mutation_scores(mutation_codex_html)
 
 
 
@@ -121,3 +147,7 @@ print("np")
 print(mutation_human_np)
 print()
 print(mutation_codex_np)
+print("html")
+print(mutation_human_html)
+print()
+print(mutation_codex_html)

@@ -90,6 +90,17 @@ avg_codex_statistics = {
 }
 
 
+# HTML 
+
+# html Escape 
+human_escape = {'validity': 0.75, 'soundness': 1.0, 'validity_errors': {'AttributeError'}, 'soundness_errors': set()}
+codex_escape = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+# Html unescape 
+human_unescape = {'validity': 0.6666666666666666, 'soundness': 0.6666666666666666, 'validity_errors': {'ExceptionGroup'}, 'soundness_errors': {''}}
+codex_unescape = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+
 
 
 
@@ -290,6 +301,19 @@ plot_pbt_results(
     avg_human_statistics,
     avg_codex_statistics,
     "AVG METRICS for statistics API"
+)
+
+plot_pbt_results(
+    human_escape,
+    codex_escape,
+    "html.escape()"
+)
+
+
+plot_pbt_results(
+    human_unescape,
+    codex_unescape,
+    "html.unescape()"
 )
 
 

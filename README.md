@@ -19,6 +19,7 @@ The central comparison is between:
 | NumPy | `2.2.6` | `np.linspace()` |
 | PyTorch | `2.7.0` | `torch.argmax()` |
 | python-statistics | `3.12.7` | `statistics.mean()`, `statistics.geometric_mean()`, `statistics.correlation()`, `statistics.linear_regression()`, `statistics.median()`, `statistics.variance()` |
+| python-html | `3.12.7` | `html.escape()`, `html.unescape()` |
 | python-dateutil | `2.9.0.post0` | `dateutil.parser.isoparse()`, `dateutil.parser.parse()` |
 
 ## Methodology
@@ -42,7 +43,7 @@ the asserted property is false for at least some generated inputs.
 
 The additional **mutation score** metric is the fraction of generated mutants
 killed by a test suite. Mutation testing is currently recorded for the
-dateutil parser APIs, the Python statistics library, and `np.linspace()` in
+dateutil parser APIs, the Python statistics and html libraries, and `np.linspace()` in
 [`mutation_testing_results.py`](./mutation_testing_results.py). The covered
 mutation score reports the fraction of tested mutants killed after excluding
 untested mutants. The mutation runs use covered-line filtering so mutants are
@@ -61,6 +62,8 @@ from every function in each vendored library.
 | `statistics.linear_regression()` | [`test_human_test_statistics_linear_regression.py`](./human_PBT/statistics/test_human_test_statistics_linear_regression.py) | [`test_codex_statistics_linear_regression.py`](./Codex/statistics/test_codex_statistics_linear_regression.py) | [Python `statistics.linear_regression`](https://docs.python.org/3.12/library/statistics.html#statistics.linear_regression) |
 | `statistics.median()` | [`test_human_test_statistics_median.py`](./human_PBT/statistics/test_human_test_statistics_median.py) | [`test_codex_statistics_median.py`](./Codex/statistics/test_codex_statistics_median.py) | [Python `statistics.median`](https://docs.python.org/3.12/library/statistics.html#statistics.median) |
 | `statistics.variance()` | [`test_human_test_statistics_variance.py`](./human_PBT/statistics/test_human_test_statistics_variance.py) | [`test_codex_statistics_variance.py`](./Codex/statistics/test_codex_statistics_variance.py) | [Python `statistics.variance`](https://docs.python.org/3.12/library/statistics.html#statistics.variance) |
+| `html.escape()` | [`test_human_html_escape.py`](./human_PBT/html/test_human_html_escape.py) | [`test_codex_html_escape.py`](./Codex/html/test_codex_html_escape.py) | [Python `html.escape`](https://docs.python.org/3.12/library/html.html#html.escape) |
+| `html.unescape()` | [`test_human_html_unescape.py`](./human_PBT/html/test_human_html_unescape.py) | [`test_codex_html_unescape.py`](./Codex/html/test_codex_html_unescape.py) | [Python `html.unescape`](https://docs.python.org/3.12/library/html.html#html.unescape) |
 | `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
 | `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
 
@@ -77,6 +80,8 @@ from every function in each vendored library.
 | `statistics.median()` | 66.7% | 100.0% | 100.0% | 100.0% |
 | `statistics.variance()` | 100.0% | 66.7% | 100.0% | 100.0% |
 | **statistics average** | **77.8%** | **68.2%** | **100.0%** | **100.0%** |
+| `html.escape()` | 75.0% | 100.0% | 100.0% | 100.0% |
+| `html.unescape()` | 66.7% | 66.7% | 100.0% | 100.0% |
 | `dateutil.parser.isoparse()` | 100.0% | 100.0% | 100.0% | 100.0% |
 | `dateutil.parser.parse()` | 66.7% | 100.0% | 100.0% | 100.0% |
 | **dateutil average** | **83.3%** | **100.0%** | **100.0%** | **100.0%** |
@@ -91,6 +96,8 @@ from every function in each vendored library.
 | `dateutil` | Codex-generated | 1,178 | 777 | 0 | 66.0% | 66.0% |
 | `statistics` | Human-written | 270 | 204 | 13 | 75.6% | 79.4% |
 | `statistics` | Codex-generated | 290 | 226 | 13 | 77.9% | 81.6% |
+| `html` | Human-written | 92 | 73 | 0 | 79.3% | 79.3% |
+| `html` | Codex-generated | 85 | 73 | 0 | 85.9% | 85.9% |
 
 
 ## Figures
@@ -132,6 +139,13 @@ this repository.
   <img src="./graphs/avg_stats_api_data.png" width="480" alt="Average property-based test evaluation for statistics APIs">
 </p>
 
+### HTML APIs
+
+<p align="center">
+  <img src="./graphs/html_escape_data.png" width="360" alt="Property-based test evaluation for html.escape">
+  <img src="./graphs/html_unescape_data.png" width="360" alt="Property-based test evaluation for html.unescape">
+</p>
+
 ### Dateutil Parser APIs
 
 <p align="center">
@@ -157,6 +171,8 @@ python Codex/statistics/test_codex_statistics_correlation.py
 python Codex/statistics/test_codex_statistics_linear_regression.py
 python Codex/statistics/test_codex_statistics_median.py
 python Codex/statistics/test_codex_statistics_variance.py
+python Codex/html/test_codex_html_escape.py
+python Codex/html/test_codex_html_unescape.py
 python Codex/dateutil_testing/test_codex_isoparse.py
 python Codex/dateutil_testing/test_codex_parse.py
 python mutation_testing_results.py

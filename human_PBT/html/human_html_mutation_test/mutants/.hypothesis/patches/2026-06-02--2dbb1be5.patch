@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Tue, 02 Jun 2026 16:07:13
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_html_escape_wrapper.py
++++ ./test_human_html_escape_wrapper.py
+@@ -54,6 +54,7 @@
+ 
+ # Invariant: html.unescape should bring it back to original form
+ @given(generate_html_chars())
++@example(html_text="0&").via("discovered failure")
+ def test_ideom(html_text):
+     parsed = html.escape(html_text)
+     assert html_text == html.unescape(parsed)

@@ -1,0 +1,16 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Tue, 02 Jun 2026 16:07:14
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_html_escape_wrapper.py
++++ ./test_human_html_escape_wrapper.py
+@@ -60,6 +60,7 @@
+ 
+ # Invariant: if quote = True, then "", ' are also convereted 
+ @given(generate_html_chars())
++@example(html_text="0'").via("discovered failure")
+ def test_quote(html_text):
+     parsed = html.escape(html_text, quote=True)
+ 

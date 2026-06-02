@@ -1,0 +1,18 @@
+From HEAD Mon Sep 17 00:00:00 2001
+From: Hypothesis 6.151.9 <no-reply@hypothesis.works>
+Date: Tue, 02 Jun 2026 16:07:14
+Subject: [PATCH] Hypothesis: add explicit examples
+
+---
+--- ./test_human_html_escape_wrapper.py
++++ ./test_human_html_escape_wrapper.py
+@@ -35,6 +35,9 @@
+ 
+ # Invariant: Once processed and we split by ;,within each ; there should be a keyword
+ @given(generate_html_chars())
++@example(html_text="W§\x11|\U0001f8f1><&sÅÍ<\U000ceb60\U000a5e84\U0003dddc[\x91C").via(
++    "discovered failure"
++)
+ def test_keyword(html_text):
+     # Assuming parsed parameter = False
+ 
