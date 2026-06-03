@@ -144,6 +144,29 @@ mutation_codex_zlib = {
     "equivalent_mutants": 0,
 }
 
+# Decimal
+mutation_human_decimal = {
+    "total_mutants": 900,
+    "killed_mutants": 522,
+    "survived_mutants": 371,
+    "timed_out_mutants": 2,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 5,
+}
+
+mutation_codex_decimal = {
+    "total_mutants": 1128,
+    "killed_mutants": 641,
+    "survived_mutants": 481,
+    "timed_out_mutants": 2,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 4,
+}
+
 
 
 calculate_mutation_scores(mutation_human_dateutil)
@@ -156,6 +179,8 @@ calculate_mutation_scores(mutation_human_html)
 calculate_mutation_scores(mutation_codex_html)
 calculate_mutation_scores(mutation_human_zlib)
 calculate_mutation_scores(mutation_codex_zlib)
+calculate_mutation_scores(mutation_human_decimal)
+calculate_mutation_scores(mutation_codex_decimal)
 
 
 print("dateutil")
@@ -182,3 +207,8 @@ print("zlib")
 print(mutation_human_zlib)
 print()
 print(mutation_codex_zlib)
+print()
+print("decimal")
+print(mutation_human_decimal)
+print()
+print(mutation_codex_decimal)

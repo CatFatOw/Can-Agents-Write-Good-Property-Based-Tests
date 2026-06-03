@@ -21,6 +21,7 @@ The central comparison is between:
 | python-statistics | `3.12.7` | `statistics.mean()`, `statistics.geometric_mean()`, `statistics.correlation()`, `statistics.linear_regression()`, `statistics.median()`, `statistics.variance()` |
 | python-html | `3.12.7` | `html.escape()`, `html.unescape()` |
 | zlib | `1.2.13` | `zlib.compress()`, `zlib.decompress()`, `zlib.adler32()` |
+| python-decimal | `3.12.7` | `Decimal.as_integer_ratio()`, `Decimal.compare()`, `Decimal.fma()`, `Decimal.from_float()`, `Decimal.quantize()` |
 | python-dateutil | `2.9.0.post0` | `dateutil.parser.isoparse()`, `dateutil.parser.parse()` |
 
 ## Methodology
@@ -44,7 +45,7 @@ the asserted property is false for at least some generated inputs.
 
 The additional **mutation score** metric is the fraction of generated mutants
 killed by a test suite. Mutation testing is currently recorded for the
-dateutil parser APIs, the Python statistics and html libraries, zlib, and `np.linspace()` in
+dateutil parser APIs, the Python statistics, html, and decimal libraries, zlib, and `np.linspace()` in
 [`mutation_testing_results.py`](./mutation_testing_results.py). The covered
 mutation score reports the fraction of tested mutants killed after excluding
 untested mutants. The mutation runs use covered-line filtering so mutants are
@@ -54,6 +55,10 @@ from every function in each vendored library.
 Python's `zlib` module is a compiled C extension, so its `mutmut` results apply
 to the selected Python adapter functions rather than direct mutations of the
 underlying zlib C implementation.
+
+For Decimal mutation testing, the mutation directories use Python's pure-Python
+`_pydecimal.py` implementation copied as `decimal.py`, because the installed
+top-level `decimal.py` primarily delegates to the compiled `_decimal` extension.
 
 ## Test Artifacts
 
@@ -72,6 +77,11 @@ underlying zlib C implementation.
 | `zlib.compress()` | [`test_human_zlib_compress.py`](./human_PBT/zlib/test_human_zlib_compress.py) | [`test_codex_zlib_compress.py`](./Codex/zlib/test_codex_zlib_compress.py) | [Python `zlib.compress`](https://docs.python.org/3.12/library/zlib.html#zlib.compress) |
 | `zlib.decompress()` | [`test_human_zlib_decompress.py`](./human_PBT/zlib/test_human_zlib_decompress.py) | [`test_codex_zlib_decompress.py`](./Codex/zlib/test_codex_zlib_decompress.py) | [Python `zlib.decompress`](https://docs.python.org/3.12/library/zlib.html#zlib.decompress) |
 | `zlib.adler32()` | [`test_human_zlib_adler32.py`](./human_PBT/zlib/test_human_zlib_adler32.py) | [`test_codex_zlib_adler32.py`](./Codex/zlib/test_codex_zlib_adler32.py) | [Python `zlib.adler32`](https://docs.python.org/3.12/library/zlib.html#zlib.adler32) |
+| `Decimal.as_integer_ratio()` | [`test_human_decimal_as_integer_ratio.py`](./human_PBT/decimal/test_human_decimal_as_integer_ratio.py) | [`test_codex_decimal_as_integer_ratio.py`](./Codex/decimal/test_codex_decimal_as_integer_ratio.py) | [Python `Decimal.as_integer_ratio`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.as_integer_ratio) |
+| `Decimal.compare()` | [`test_human_decimal_compare.py`](./human_PBT/decimal/test_human_decimal_compare.py) | [`test_codex_decimal_compare.py`](./Codex/decimal/test_codex_decimal_compare.py) | [Python `Decimal.compare`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.compare) |
+| `Decimal.fma()` | [`test_human_decimal_fma.py`](./human_PBT/decimal/test_human_decimal_fma.py) | [`test_codex_decimal_fma.py`](./Codex/decimal/test_codex_decimal_fma.py) | [Python `Decimal.fma`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.fma) |
+| `Decimal.from_float()` | [`test_human_decimal_from_float.py`](./human_PBT/decimal/test_human_decimal_from_float.py) | [`test_codex_decimal_from_float.py`](./Codex/decimal/test_codex_decimal_from_float.py) | [Python `Decimal.from_float`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.from_float) |
+| `Decimal.quantize()` | [`test_human_decimal_quantized.py`](./human_PBT/decimal/test_human_decimal_quantized.py) | [`test_codex_decimal_quantize.py`](./Codex/decimal/test_codex_decimal_quantize.py) | [Python `Decimal.quantize`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.quantize) |
 | `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
 | `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
 
@@ -95,6 +105,12 @@ underlying zlib C implementation.
 | `zlib.decompress()` | 100.0% | 100.0% | 100.0% | 100.0% |
 | `zlib.adler32()` | 100.0% | 100.0% | 100.0% | 100.0% |
 | **zlib average** | **88.9%** | **100.0%** | **100.0%** | **100.0%** |
+| `Decimal.as_integer_ratio()` | 100.0% | 100.0% | 100.0% | 100.0% |
+| `Decimal.compare()` | 100.0% | 100.0% | 100.0% | 100.0% |
+| `Decimal.fma()` | 100.0% | 100.0% | 100.0% | 100.0% |
+| `Decimal.from_float()` | 100.0% | 100.0% | 100.0% | 100.0% |
+| `Decimal.quantize()` | 100.0% | 100.0% | 100.0% | 100.0% |
+| **decimal average** | **100.0%** | **100.0%** | **100.0%** | **100.0%** |
 | `dateutil.parser.isoparse()` | 100.0% | 100.0% | 100.0% | 100.0% |
 | `dateutil.parser.parse()` | 66.7% | 100.0% | 100.0% | 100.0% |
 | **dateutil average** | **83.3%** | **100.0%** | **100.0%** | **100.0%** |
@@ -113,6 +129,8 @@ underlying zlib C implementation.
 | `html` | Codex-generated | 85 | 73 | 0 | 85.9% | 85.9% |
 | `zlib` adapter | Human-written | 17 | 12 | 0 | 70.6% | 70.6% |
 | `zlib` adapter | Codex-generated | 17 | 14 | 0 | 82.4% | 82.4% |
+| `decimal` | Human-written | 900 | 522 | 0 | 58.0% | 58.0% |
+| `decimal` | Codex-generated | 1,128 | 641 | 0 | 56.8% | 56.8% |
 
 
 ## Figures
@@ -180,6 +198,22 @@ this repository.
   <img src="./graphs/avg_zlib_data.png" width="480" alt="Average property-based test evaluation for zlib APIs">
 </p>
 
+### Decimal APIs
+
+<p align="center">
+  <img src="./graphs/decimal_integer_ratio_data.png" width="360" alt="Property-based test evaluation for Decimal.as_integer_ratio">
+  <img src="./graphs/decimal_compare_data.png" width="360" alt="Property-based test evaluation for Decimal.compare">
+</p>
+
+<p align="center">
+  <img src="./graphs/decimal_fma_data.png" width="360" alt="Property-based test evaluation for Decimal.fma">
+  <img src="./graphs/decimal_from_float_data.png" width="360" alt="Property-based test evaluation for Decimal.from_float">
+</p>
+
+<p align="center">
+  <img src="./graphs/decimal_quantize_data.png" width="360" alt="Property-based test evaluation for Decimal.quantize">
+</p>
+
 ### Dateutil Parser APIs
 
 <p align="center">
@@ -210,6 +244,11 @@ python Codex/html/test_codex_html_unescape.py
 python Codex/zlib/test_codex_zlib_compress.py
 python Codex/zlib/test_codex_zlib_decompress.py
 python Codex/zlib/test_codex_zlib_adler32.py
+python Codex/decimal/test_codex_decimal_as_integer_ratio.py
+python Codex/decimal/test_codex_decimal_compare.py
+python Codex/decimal/test_codex_decimal_fma.py
+python Codex/decimal/test_codex_decimal_from_float.py
+python Codex/decimal/test_codex_decimal_quantize.py
 python Codex/dateutil_testing/test_codex_isoparse.py
 python Codex/dateutil_testing/test_codex_parse.py
 python mutation_testing_results.py

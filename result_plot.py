@@ -137,7 +137,28 @@ avg_codex_zlib = {
     "soundness": (codex_compress["soundness"] + codex_decompress["soundness"] + codex_adler32["validity"]) / 3,
 }
 
+# DECIMAL LIBRARY
 
+# decimal as_integer_ratio()
+human_as_integer_ratio = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+codex_as_integer_ratio = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+
+# Decimal compare()
+human_compare = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+codex_compare = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+# Decimal fma 
+human_fma = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+codex_fma = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+# Decimal from_float
+human_from_float = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+codex_from_float = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+# Decimal Quantize 
+human_quantize = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+codex_quantize = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
 def plot_pbt_results(human_results, agent_results, api_name, agent_name="Codex"):
     models = ["Human", agent_name]
@@ -380,6 +401,38 @@ plot_pbt_results(
     avg_codex_zlib,
     "AVG zlib"
 )
+
+plot_pbt_results(
+    human_as_integer_ratio,
+    codex_as_integer_ratio,
+    "Decimal().as_integer_ratio()"
+)
+
+
+plot_pbt_results(
+    human_compare,
+    codex_compare,
+    "Decimal().compare()"
+)
+
+plot_pbt_results(
+    human_fma,
+    codex_fma,
+    "Decimal().fma()"
+)
+
+plot_pbt_results(
+    human_from_float,
+    codex_from_float,
+    "Decimal.from_float()"
+)
+
+plot_pbt_results(
+    human_quantize,
+    codex_quantize,
+    "Decimal.quantize()"
+)
+
 
 
 
