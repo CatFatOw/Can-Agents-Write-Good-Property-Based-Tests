@@ -12,7 +12,8 @@ The central comparison is between:
 
 - human-written Hypothesis tests with hand-designed invariants and strategies
 - Codex-generated Hypothesis tests produced from API documentation and two-staged prompts
-- Gemini 5.5 Thinking-generated Hypothesis tests for the dateutil parser APIs
+- Gemini 5.5 Thinking-generated Hypothesis tests for the dateutil parser and
+  Decimal APIs
 
 ## Mutation Analysis
 
@@ -27,11 +28,11 @@ Detailed survivor reports are separated by model.
 
 | Library | Mutation score | Covered mutation score | Survivor analysis |
 |---|---:|---:|---|
-| `dateutil` | 66.0% | 66.0% | [`survived_mutants_dateutil.md`](./Codex/dateutil_testing/codex_dateutil_mutation_test/survived_mutants_dateutil.md) |
+| `dateutil` | 66.0% | 66.0% | [`survived_mutants_codex_dateutil.md`](./Codex/dateutil_testing/codex_dateutil_mutation_test/survived_mutants_codex_dateutil.md) |
 | `statistics` | 77.9% | 81.6% | [`survived_mutations_statistics.md`](./Codex/statistics/codex_statistics_mutation_testing/survived_mutations_statistics.md) |
 | `html` | 85.9% | 85.9% | [`survived_mutants_html.md`](./Codex/html/codex_html_mutation_testing/survived_mutants_html.md) |
 | `zlib` adapter | 82.4% | 82.4% | [`survived_mutants_zlib.md`](./Codex/zlib/codex_zlib_mutation_testing/survived_mutants_zlib.md) |
-| `decimal` | 56.8% | 56.8% | [`survived_mutants_decimal.md`](./Codex/decimal/codex_decimal_mutation_tests/survived_mutants_decimal.md) |
+| `decimal` | 56.8% | 56.8% | [`survived_mutants_codex_decimal.md`](./Codex/decimal/codex_decimal_mutation_tests/survived_mutants_codex_decimal.md) |
 
 ### Gemini 5.5 Thinking Survivor Reports
 
@@ -40,6 +41,7 @@ Detailed survivor reports are separated by model.
 | Library | Mutation score | Covered mutation score | Survivor analysis |
 |---|---:|---:|---|
 | `dateutil` | 40.8% | 40.8% | [`survived_mutants_gemini_dateutil.md`](./Gemini/dateutil/gemini_dateutil_mutation_test/survived_mutants_gemini_dateutil.md) |
+| `decimal` | 59.0% | 59.2% | [`survived_mutants_gemini_decimal.md`](./Gemini/decimal/gemini_decimal_mutation_tests/survived_mutants_gemini_decimal.md) |
 
 The reports classify survived mutants by confidence and highlight high-signal
 survivors that should guide the next round of targeted property improvements.
@@ -60,8 +62,9 @@ survivors that should guide the next round of targeted property improvements.
 ## Methodology
 
 Each API is evaluated with a small human-written PBT suite and a Codex-generated
-PBT suite. The dateutil parser APIs also include a Gemini 5.5 Thinking-generated
-suite. The Codex tests are produced using the prompt templates in
+PBT suite. The dateutil parser and Decimal APIs also include a Gemini 5.5
+Thinking-generated suite. The Codex tests are produced using the prompt
+templates in
 [`two_staged_prompt.py`](./two_staged_prompt.py), which ask the model to extract
 properties from documentation and then implement Hypothesis tests for those
 properties.
@@ -119,7 +122,32 @@ top-level `decimal.py` primarily delegates to the compiled `_decimal` extension.
 | `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
 | `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
 
-Gemini 5.5 Thinking tests:
+## GPT 5.5 Thinking tests:
+
+| API | GPT-generated test | Mutation wrapper | Additional prompts to fix failed code output |
+|---|---|---|---|
+| `np.linspace()` | [`test_codex_np_linspace.py`](./Codex/np_testing/test_codex_np_linspace.py) | [`test_codex_np_linspace_wrapper.py`](./Codex/np_testing/codex_np_mutation_testing/test_codex_np_linspace_wrapper.py) | **0** |
+| `torch.argmax()` | [`test_codex_torch_argmax.py`](./Codex/torch_testing/test_codex_torch_argmax.py) | N/A | **0** |
+| `statistics.mean()` | [`test_codex_statistics_mean.py`](./Codex/statistics/test_codex_statistics_mean.py) | [`test_codex_statistics_mean.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_mean.py) | **0** |
+| `statistics.geometric_mean()` | [`test_codex_statistics_geometric_mean.py`](./Codex/statistics/test_codex_statistics_geometric_mean.py) | [`test_codex_statistics_geometric_mean.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_geometric_mean.py) | **0** |
+| `statistics.correlation()` | [`test_codex_statistics_correlation.py`](./Codex/statistics/test_codex_statistics_correlation.py) | [`test_codex_statistics_correlation.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_correlation.py) | **0** |
+| `statistics.linear_regression()` | [`test_codex_statistics_linear_regression.py`](./Codex/statistics/test_codex_statistics_linear_regression.py) | [`test_codex_statistics_linear_regression.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_linear_regression.py) | **0** |
+| `statistics.median()` | [`test_codex_statistics_median.py`](./Codex/statistics/test_codex_statistics_median.py) | [`test_codex_statistics_median_wrapper.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_median_wrapper.py) | **0** |
+| `statistics.variance()` | [`test_codex_statistics_variance.py`](./Codex/statistics/test_codex_statistics_variance.py) | [`test_codex_statistics_variance_wrapper.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_variance_wrapper.py) | **0** |
+| `html.escape()` | [`test_codex_html_escape.py`](./Codex/html/test_codex_html_escape.py) | [`test_codex_html_escape_wrapper.py`](./Codex/html/codex_html_mutation_testing/test_codex_html_escape_wrapper.py) | **0** |
+| `html.unescape()` | [`test_codex_html_unescape.py`](./Codex/html/test_codex_html_unescape.py) | [`test_codex_html_unescape_wrapper.py`](./Codex/html/codex_html_mutation_testing/test_codex_html_unescape_wrapper.py) | **0** |
+| `zlib.compress()` | [`test_codex_zlib_compress.py`](./Codex/zlib/test_codex_zlib_compress.py) | [`test_codex_zlib_compress_wrapper.py`](./Codex/zlib/codex_zlib_mutation_testing/test_codex_zlib_compress_wrapper.py) | **0** |
+| `zlib.decompress()` | [`test_codex_zlib_decompress.py`](./Codex/zlib/test_codex_zlib_decompress.py) | [`test_codex_zlib_decompress_wrapper.py`](./Codex/zlib/codex_zlib_mutation_testing/test_codex_zlib_decompress_wrapper.py) | **0** |
+| `zlib.adler32()` | [`test_codex_zlib_adler32.py`](./Codex/zlib/test_codex_zlib_adler32.py) | [`test_codex_zlib_adler32_wrapper.py`](./Codex/zlib/codex_zlib_mutation_testing/test_codex_zlib_adler32_wrapper.py) | **0** |
+| `dateutil.parser.isoparse()` | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`test_codex_isoparse_wrapper.py`](./Codex/dateutil_testing/codex_dateutil_mutation_test/test_codex_isoparse_wrapper.py) | **0** |
+| `dateutil.parser.parse()` | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`test_codex_parse_wrapper.py`](./Codex/dateutil_testing/codex_dateutil_mutation_test/test_codex_parse_wrapper.py) | **0** |
+| `Decimal.as_integer_ratio()` | [`test_codex_decimal_as_integer_ratio.py`](./Codex/decimal/test_codex_decimal_as_integer_ratio.py) | [`test_codex_decimal_as_integer_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_as_integer_wrapper.py) | **0** |
+| `Decimal.compare()` | [`test_codex_decimal_compare.py`](./Codex/decimal/test_codex_decimal_compare.py) | [`test_codex_decimal_compare_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_compare_wrapper.py) | **0** |
+| `Decimal.fma()` | [`test_codex_decimal_fma.py`](./Codex/decimal/test_codex_decimal_fma.py) | [`test_codex_decimal_fma_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_fma_wrapper.py) | **0** |
+| `Decimal.from_float()` | [`test_codex_decimal_from_float.py`](./Codex/decimal/test_codex_decimal_from_float.py) | [`test_codex_decimal_from_float_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_from_float_wrapper.py) | **0** |
+| `Decimal.quantize()` | [`test_codex_decimal_quantize.py`](./Codex/decimal/test_codex_decimal_quantize.py) | [`test_codex_decimal_quantize_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_quantize_wrapper.py) | **0** |
+
+## Gemini 5.5 Thinking tests:
 
 | API | Gemini-generated test | Mutation wrapper | Additional prompts to fix failed code output |
 |---|---|---|---|
@@ -130,6 +158,7 @@ Gemini 5.5 Thinking tests:
 | `Decimal.fma()` | [`test_gemini_decimal_fma.py`](./Gemini/decimal/test_gemini_decimal_fma.py) | [`test_gemini_decimal_fma_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_fma_wrapper.py) | **0** |
 | `Decimal.from_float()` | [`test_gemini_decimal_from_float.py`](./Gemini/decimal/test_gemini_decimal_from_float.py) | [`test_gemini_decimal_from_float_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_from_float_wrapper.py) | **0** |
 | `Decimal.quantize()` | [`test_gemini_decimal_quantize.py`](./Gemini/decimal/test_gemini_decimal_quantize.py) | [`test_gemini_decimal_quantize_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_quantize_wrapper.py) | TBD |
+
 
 ## Quantitative Results
 
@@ -182,6 +211,7 @@ properties would most directly kill them.
 | `zlib` adapter | Codex-generated | 17 | 14 | 0 | 82.4% | 82.4% |
 | `decimal` | Human-written | 900 | 522 | 0 | 58.0% | 58.0% |
 | `decimal` | Codex-generated | 1,128 | 641 | 0 | 56.8% | 56.8% |
+| `decimal` | Gemini 5.5 Thinking-generated | 1,128 | 665 | 4 | 59.0% | 59.2% |
 
 
 ## Figures

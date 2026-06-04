@@ -35,6 +35,8 @@ used by both the target operation and the oracle can therefore survive.
 
 ## Survivor Distribution
 
+* Total of 49 high confidence mutants
+
 | Area | Survived | Confidence | Interpretation |
 |---|---:|---|---|
 | `Decimal._power_exact` | 55 | Low | Power internals are outside the five documented target APIs. |
