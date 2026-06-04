@@ -14,8 +14,6 @@ codex_argmax = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': [], 'sound
 
 human_isoparse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 codex_isoparse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
-# First prompt resulted in 0 soundness
-gemini_isoparse_first_prompt = {'validity': 1.0, 'soundness': 0.0, 'validity_errors': set(), 'soundness_errors': {''}}
 # Second prompt fixed 
 gemini_isoparse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
@@ -146,25 +144,27 @@ avg_codex_zlib = {
 # decimal as_integer_ratio()
 human_as_integer_ratio = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 codex_as_integer_ratio = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
-# Gemini first prompt (unusable)
-gemini_as_integer_ratio_first = {'validity': 1.0, 'soundness': 0.0, 'validity_errors': set(), 'soundness_errors': {''}}
-
+# 2nd Prompt fix
+gemini_as_integer_ratio = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
 # Decimal compare()
 human_compare = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 codex_compare = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+gemini_compare = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
 # Decimal fma 
 human_fma = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 codex_fma = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
-
+gemini_fma = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 # Decimal from_float
 human_from_float = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 codex_from_float = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+gemini_from_float = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
 # Decimal Quantize 
 human_quantize = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 codex_quantize = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+gemini_quantize = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
 def plot_pbt_results(human_results, agent_results, api_name, agent_name="Codex"):
     models = ["Human", agent_name]

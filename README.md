@@ -35,6 +35,8 @@ Detailed survivor reports are separated by model.
 
 ### Gemini 5.5 Thinking Survivor Reports
 
+- Gemini 5.5 Thinking frequently requires additional prompting and incorrectly writes code.
+
 | Library | Mutation score | Covered mutation score | Survivor analysis |
 |---|---:|---:|---|
 | `dateutil` | 40.8% | 40.8% | [`survived_mutants_gemini_dateutil.md`](./Gemini/dateutil/gemini_dateutil_mutation_test/survived_mutants_gemini_dateutil.md) |
@@ -117,12 +119,17 @@ top-level `decimal.py` primarily delegates to the compiled `_decimal` extension.
 | `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
 | `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
 
-Gemini 5.5 Thinking dateutil tests:
+Gemini 5.5 Thinking tests:
 
-| API | Gemini-generated test | Mutation wrapper |
-|---|---|---|
-| `dateutil.parser.isoparse()` | [`test_gemini_isoparse.py`](./Gemini/dateutil/test_gemini_isoparse.py) | [`test_gemini_isoparse_wrapper.py`](./Gemini/dateutil/gemini_dateutil_mutation_test/test_gemini_isoparse_wrapper.py) |
-| `dateutil.parser.parse()` | [`test_gemini_parse.py`](./Gemini/dateutil/test_gemini_parse.py) | [`test_gemini_parse_wrapper.py`](./Gemini/dateutil/gemini_dateutil_mutation_test/test_gemini_parse_wrapper.py) |
+| API | Gemini-generated test | Mutation wrapper | Additional prompts to fix failed code output |
+|---|---|---|---|
+| `dateutil.parser.isoparse()` | [`test_gemini_isoparse.py`](./Gemini/dateutil/test_gemini_isoparse.py) | [`test_gemini_isoparse_wrapper.py`](./Gemini/dateutil/gemini_dateutil_mutation_test/test_gemini_isoparse_wrapper.py) | **1**  |
+| `dateutil.parser.parse()` | [`test_gemini_parse.py`](./Gemini/dateutil/test_gemini_parse.py) | [`test_gemini_parse_wrapper.py`](./Gemini/dateutil/gemini_dateutil_mutation_test/test_gemini_parse_wrapper.py) | **0** |
+| `Decimal.as_integer_ratio()` | [`test_gemini_decimal_as_integer_ratio.py`](./Gemini/decimal/test_gemini_decimal_as_integer_ratio.py) | [`test_gemini_decimal_as_integer_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_as_integer_wrapper.py) | **2** |
+| `Decimal.compare()` | [`test_gemini_decimal_compare.py`](./Gemini/decimal/test_gemini_decimal_compare.py) | [`test_gemini_decimal_compare_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_compare_wrapper.py) | **1** |
+| `Decimal.fma()` | [`test_gemini_decimal_fma.py`](./Gemini/decimal/test_gemini_decimal_fma.py) | [`test_gemini_decimal_fma_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_fma_wrapper.py) | **0** |
+| `Decimal.from_float()` | [`test_gemini_decimal_from_float.py`](./Gemini/decimal/test_gemini_decimal_from_float.py) | [`test_gemini_decimal_from_float_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_from_float_wrapper.py) | **0** |
+| `Decimal.quantize()` | [`test_gemini_decimal_quantize.py`](./Gemini/decimal/test_gemini_decimal_quantize.py) | [`test_gemini_decimal_quantize_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_quantize_wrapper.py) | TBD |
 
 ## Quantitative Results
 

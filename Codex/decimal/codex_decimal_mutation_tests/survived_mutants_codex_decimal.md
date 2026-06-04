@@ -33,6 +33,8 @@ not kill it.
 
 ## Survivor Distribution
 
+* Total of 57 high confidence survived mutants
+
 | Area | Survived | Confidence | Interpretation |
 |---|---:|---|---|
 | `Decimal._power_exact` | 55 | Low | Power internals are mostly outside the five documented target APIs. |

@@ -177,6 +177,16 @@ mutation_codex_decimal = {
     "skipped_mutants": 0,
     "equivalent_mutants": 4,
 }
+mutation_gemini_decimal = {
+    "total_mutants": 1128,
+    "killed_mutants": 665,
+    "survived_mutants": 456,
+    "timed_out_mutants": 3,
+    "suspicious_mutants": 0,
+    "untested_mutants": 4,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 0,
+}
 
 
 
@@ -198,6 +208,7 @@ calculate_mutation_scores(mutation_codex_zlib)
 
 calculate_mutation_scores(mutation_human_decimal)
 calculate_mutation_scores(mutation_codex_decimal)
+calculate_mutation_scores(mutation_gemini_decimal)
 
 
 print("dateutil")
@@ -231,6 +242,10 @@ print()
 print(mutation_codex_zlib)
 print()
 print("decimal")
+print("human: \n")
 print(mutation_human_decimal)
 print()
+print("codex: \n")
 print(mutation_codex_decimal)
+print("gemini: \n")
+print(mutation_gemini_decimal)
