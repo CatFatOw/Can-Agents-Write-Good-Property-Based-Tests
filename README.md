@@ -12,6 +12,26 @@ The central comparison is between:
 - human-written Hypothesis tests with hand-designed invariants and strategies
 - Codex-generated Hypothesis tests produced from API documentation and two-staged prompts
 
+## Mutation Analysis
+
+The main mutation-testing takeaway is that perfect validity and soundness do
+not imply strong fault detection. Mutation testing exposes where the generated
+properties are too broad, where edge cases are missing, and where wrappers pass
+round-trip checks while still ignoring API options.
+
+Detailed Codex survivor reports:
+
+| Library | Codex mutation score | Covered mutation score | Survivor analysis |
+|---|---:|---:|---|
+| `dateutil` | 66.0% | 66.0% | [`survived_mutants_dateutil.md`](./Codex/dateutil_testing/codex_dateutil_mutation_test/survived_mutants_dateutil.md) |
+| `statistics` | 77.9% | 81.6% | [`survived_mutations_statistics.md`](./Codex/statistics/codex_statistics_mutation_testing/survived_mutations_statistics.md) |
+| `html` | 85.9% | 85.9% | [`survived_mutants_html.md`](./Codex/html/codex_html_mutation_testing/survived_mutants_html.md) |
+| `zlib` adapter | 82.4% | 82.4% | [`survived_mutants_zlib.md`](./Codex/zlib/codex_zlib_mutation_testing/survived_mutants_zlib.md) |
+| `decimal` | 56.8% | 56.8% | [`survived_mutants_decimal.md`](./Codex/decimal/codex_decimal_mutation_tests/survived_mutants_decimal.md) |
+
+The reports classify survived mutants by confidence and highlight high-signal
+survivors that should guide the next round of targeted property improvements.
+
 ## Tested Libraries
 
 | Library | Version | APIs evaluated |
@@ -116,6 +136,10 @@ top-level `decimal.py` primarily delegates to the compiled `_decimal` extension.
 | **dateutil average** | **83.3%** | **100.0%** | **100.0%** | **100.0%** |
 
 ## Mutation Testing Results
+
+The table below gives the aggregate mutation metrics. The linked survivor
+reports above explain what the remaining Codex survivors mean and which test
+properties would most directly kill them.
 
 | API | Test suite | Total mutants | Killed mutants | Untested mutants | Mutation score | Covered mutation score |
 |---|---|---:|---:|---:|---:|---:|
