@@ -5,12 +5,42 @@ Research for the Carnegie Mellon University (CMU) REU program by Michael Wu, May
 This repository studies whether a modern coding agent can produce useful
 property-based tests (PBTs) for real Python APIs. The experiment is inspired by
 the paper [Can Large Language Models Write Good Property-Based Tests?](https://doi.org/10.48550/arXiv.2307.04346)
-and adapts its prompt-driven workflow to a Codex-style coding agent.
+and adapts its prompt-driven workflow to a Codex-style coding agent and the
+Gemini 5.5 Thinking model.
 
 The central comparison is between:
 
 - human-written Hypothesis tests with hand-designed invariants and strategies
 - Codex-generated Hypothesis tests produced from API documentation and two-staged prompts
+- Gemini 5.5 Thinking-generated Hypothesis tests for the dateutil parser APIs
+
+## Mutation Analysis
+
+The main mutation-testing takeaway is that perfect validity and soundness do
+not imply strong fault detection. Mutation testing exposes where generated
+properties are too broad, where edge cases are missing, and where wrappers pass
+round-trip checks while still ignoring API options.
+
+Detailed survivor reports are separated by model.
+
+### Codex 5.5 Medium Survivor Reports
+
+| Library | Mutation score | Covered mutation score | Survivor analysis |
+|---|---:|---:|---|
+| `dateutil` | 66.0% | 66.0% | [`survived_mutants_dateutil.md`](./Codex/dateutil_testing/codex_dateutil_mutation_test/survived_mutants_dateutil.md) |
+| `statistics` | 77.9% | 81.6% | [`survived_mutations_statistics.md`](./Codex/statistics/codex_statistics_mutation_testing/survived_mutations_statistics.md) |
+| `html` | 85.9% | 85.9% | [`survived_mutants_html.md`](./Codex/html/codex_html_mutation_testing/survived_mutants_html.md) |
+| `zlib` adapter | 82.4% | 82.4% | [`survived_mutants_zlib.md`](./Codex/zlib/codex_zlib_mutation_testing/survived_mutants_zlib.md) |
+| `decimal` | 56.8% | 56.8% | [`survived_mutants_decimal.md`](./Codex/decimal/codex_decimal_mutation_tests/survived_mutants_decimal.md) |
+
+### Gemini 5.5 Thinking Survivor Reports
+
+| Library | Mutation score | Covered mutation score | Survivor analysis |
+|---|---:|---:|---|
+| `dateutil` | 40.8% | 40.8% | [`survived_mutants_gemini_dateutil.md`](./Gemini/dateutil/gemini_dateutil_mutation_test/survived_mutants_gemini_dateutil.md) |
+
+The reports classify survived mutants by confidence and highlight high-signal
+survivors that should guide the next round of targeted property improvements.
 
 
 ## Tested Libraries
@@ -28,7 +58,8 @@ The central comparison is between:
 ## Methodology
 
 Each API is evaluated with a small human-written PBT suite and a Codex-generated
-PBT suite. The Codex tests are produced using the prompt templates in
+PBT suite. The dateutil parser APIs also include a Gemini 5.5 Thinking-generated
+suite. The Codex tests are produced using the prompt templates in
 [`two_staged_prompt.py`](./two_staged_prompt.py), which ask the model to extract
 properties from documentation and then implement Hypothesis tests for those
 properties.
@@ -86,6 +117,13 @@ top-level `decimal.py` primarily delegates to the compiled `_decimal` extension.
 | `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
 | `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
 
+Gemini 5.5 Thinking dateutil tests:
+
+| API | Gemini-generated test | Mutation wrapper |
+|---|---|---|
+| `dateutil.parser.isoparse()` | [`test_gemini_isoparse.py`](./Gemini/dateutil/test_gemini_isoparse.py) | [`test_gemini_isoparse_wrapper.py`](./Gemini/dateutil/gemini_dateutil_mutation_test/test_gemini_isoparse_wrapper.py) |
+| `dateutil.parser.parse()` | [`test_gemini_parse.py`](./Gemini/dateutil/test_gemini_parse.py) | [`test_gemini_parse_wrapper.py`](./Gemini/dateutil/gemini_dateutil_mutation_test/test_gemini_parse_wrapper.py) |
+
 ## Quantitative Results
 
 | API | Human validity | Human soundness | Codex validity | Codex soundness |
@@ -119,30 +157,8 @@ top-level `decimal.py` primarily delegates to the compiled `_decimal` extension.
 ## Mutation Testing Results
 
 The table below gives the aggregate mutation metrics. The linked survivor
-reports above explain what the remaining Codex survivors mean and which test
+reports above explain what the remaining model-generated survivors mean and which test
 properties would most directly kill them.
-
-## Mutation Analysis
-
-The main mutation-testing takeaway is that perfect validity and soundness do
-not imply strong fault detection. Mutation testing exposes where the generated
-properties are too broad, where edge cases are missing, and where wrappers pass
-round-trip checks while still ignoring API options.
-
-Detailed Codex survivor reports:
-
-| Library | Codex mutation score | Covered mutation score | Survivor analysis |
-|---|---:|---:|---|
-| `dateutil` | 66.0% | 66.0% | [`survived_mutants_dateutil.md`](./Codex/dateutil_testing/codex_dateutil_mutation_test/survived_mutants_dateutil.md) |
-| `statistics` | 77.9% | 81.6% | [`survived_mutations_statistics.md`](./Codex/statistics/codex_statistics_mutation_testing/survived_mutations_statistics.md) |
-| `html` | 85.9% | 85.9% | [`survived_mutants_html.md`](./Codex/html/codex_html_mutation_testing/survived_mutants_html.md) |
-| `zlib` adapter | 82.4% | 82.4% | [`survived_mutants_zlib.md`](./Codex/zlib/codex_zlib_mutation_testing/survived_mutants_zlib.md) |
-| `decimal` | 56.8% | 56.8% | [`survived_mutants_decimal.md`](./Codex/decimal/codex_decimal_mutation_tests/survived_mutants_decimal.md) |
-
-The reports classify survived mutants by confidence and highlight high-signal
-survivors that should guide the next round of targeted property improvements.
-
-
 
 | API | Test suite | Total mutants | Killed mutants | Untested mutants | Mutation score | Covered mutation score |
 |---|---|---:|---:|---:|---:|---:|
@@ -150,6 +166,7 @@ survivors that should guide the next round of targeted property improvements.
 | `np` | Codex-generated | 141 | 50 | 0 | 35.5% | 35.5% |
 | `dateutil` | Human-written | 973 | 366 | 6 | 37.6% | 37.8% |
 | `dateutil` | Codex-generated | 1,178 | 777 | 0 | 66.0% | 66.0% |
+| `dateutil` | Gemini 5.5 Thinking-generated | 816 | 333 | 0 | 40.8% | 40.8% |
 | `statistics` | Human-written | 270 | 204 | 13 | 75.6% | 79.4% |
 | `statistics` | Codex-generated | 290 | 226 | 13 | 77.9% | 81.6% |
 | `html` | Human-written | 92 | 73 | 0 | 79.3% | 79.3% |

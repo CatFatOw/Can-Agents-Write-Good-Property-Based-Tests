@@ -42,6 +42,17 @@ mutation_codex_dateutil = {
     "equivalent_mutants": 0,
 }
 
+mutation_gemini_dateutil = {
+    "total_mutants": 816,
+    "killed_mutants": 333,
+    "survived_mutants": 481,
+    "timed_out_mutants": 2,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 0,
+}
+
 
 # Statistics Library
 
@@ -171,22 +182,33 @@ mutation_codex_decimal = {
 
 calculate_mutation_scores(mutation_human_dateutil)
 calculate_mutation_scores(mutation_codex_dateutil)
+calculate_mutation_scores(mutation_gemini_dateutil)
+
 calculate_mutation_scores(mutation_human_statistics)
 calculate_mutation_scores(mutation_codex_statistics)
+
 calculate_mutation_scores(mutation_human_np)
 calculate_mutation_scores(mutation_codex_np)
+
 calculate_mutation_scores(mutation_human_html)
 calculate_mutation_scores(mutation_codex_html)
+
 calculate_mutation_scores(mutation_human_zlib)
 calculate_mutation_scores(mutation_codex_zlib)
+
 calculate_mutation_scores(mutation_human_decimal)
 calculate_mutation_scores(mutation_codex_decimal)
 
 
 print("dateutil")
+print("Human: \n")
 print(mutation_human_dateutil)
 print()
+print("CODEX: \n")
 print(mutation_codex_dateutil)
+print()
+print("GEMINI: \n")
+print(mutation_gemini_dateutil)
 print()
 print()
 print("stats")

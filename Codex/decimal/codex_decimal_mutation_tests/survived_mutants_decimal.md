@@ -1,4 +1,4 @@
-# Surived Mutants: Codex decimal PBT Suite
+# Survived Mutants: Codex decimal PBT Suite
 
 `mutmut browse`
 
@@ -176,4 +176,3 @@ failed invariants include:
    passing explicit rounding modes.
 5. Independent expected-value checks that avoid using the same mutated Decimal
    arithmetic as the implementation under test.
-

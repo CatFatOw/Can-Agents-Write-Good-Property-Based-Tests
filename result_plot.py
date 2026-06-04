@@ -14,11 +14,15 @@ codex_argmax = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': [], 'sound
 
 human_isoparse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 codex_isoparse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+# First prompt resulted in 0 soundness
+gemini_isoparse_first_prompt = {'validity': 1.0, 'soundness': 0.0, 'validity_errors': set(), 'soundness_errors': {''}}
+# Second prompt fixed 
+gemini_isoparse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
 # dateutil.parser.parse
 human_parse = {'validity': 0.6666666666666666, 'soundness': 1.0, 'validity_errors': {'ParserError'}, 'soundness_errors': set()}
 codex_parse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
-
+gemini_parse = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 # Compute the dateutil avg metrics
 avg_human_dateutil = {"validity": (human_parse["validity"] + human_isoparse["validity"])/2, "soundness": (human_parse["soundness"] + human_isoparse["soundness"])/2}
 avg_codex_dateutil = {"validity": (codex_parse["validity"] + codex_isoparse["validity"])/2, "soundness": (codex_parse["soundness"] + codex_isoparse["soundness"])/2}
@@ -142,6 +146,8 @@ avg_codex_zlib = {
 # decimal as_integer_ratio()
 human_as_integer_ratio = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 codex_as_integer_ratio = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+# Gemini first prompt (unusable)
+gemini_as_integer_ratio_first = {'validity': 1.0, 'soundness': 0.0, 'validity_errors': set(), 'soundness_errors': {''}}
 
 
 # Decimal compare()

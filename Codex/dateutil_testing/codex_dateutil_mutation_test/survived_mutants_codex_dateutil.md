@@ -1,4 +1,4 @@
-# Surived Mutants: Codex dateutil PBT Suite
+# Survived Mutants: Codex dateutil PBT Suite
 
  `mutmut browse` 
 
@@ -125,4 +125,3 @@ documented edge behavior. Example failed invariants include:
 1. Default ambiguous date behavior without explicit `dayfirst` or `yearfirst`.
 2. HMS suffix formats (`12h`, `12h30m`, `30m`, `45s`).
 3. More numeric date/time ambiguity cases in `parse()`.
-
