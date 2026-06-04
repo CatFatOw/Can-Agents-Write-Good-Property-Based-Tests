@@ -1,9 +1,9 @@
-
-import re
-from datetime import datetime, timedelta, timezone
-
-import pytest
-from dateutil.parser import parse
+Traceback (most recent call last):
+  File "/Users/michaelwu/Documents/cmu_codebase/learning_projects/Automated_Invariant_Generator/invariant_suggestor_gpt.py", line 8, in <module>
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+                            ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 714, in __getitem__
+KeyError: 'OPENAI_API_KEY'
 from dateutil.tz import gettz
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
