@@ -1,4 +1,4 @@
-# Backward PBT-Based Documentation Workflow
+# Invariant-Based Documentation Generator Workflow
 
 This workflow reconstructs stronger API documentation from source-code behavior.
 It runs in the reverse direction of ordinary documentation-based test

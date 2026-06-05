@@ -1,4 +1,4 @@
-# Invariant-Based API Documentation
+# Invariant-Based Documentation Generator
 
 This directory contains a prototype workflow for reconstructing API
 documentation from implementation-backed behavioral claims. The system extracts
@@ -162,20 +162,26 @@ reference material.
 | Examples | Minimal and targeted toward semantic distinctions. | Broad and literal, often matching interactive numerical exploration. |
 | Research utility | Useful for deriving tests, wrappers, static checks, and documentation claims. | Useful as the canonical public reference and mathematical baseline. |
 
-### Invariant-Based Documentation
+### Invariant-Based Documentation Generator
 
-`Sentiment from comparing both style of documentation with Gemini 3.5 thinking and GPT 5.5 medium`
+The official documentation is the better complete reference for quick syntax
+lookups, mathematical context, and raw API signatures. The invariant-based
+documentation is more useful as a behavioral contract: it foregrounds
+preconditions, semantic guarantees, boundary cases, and predictable failure
+modes.
 
-The official documentation is the better complete reference for quick syntax lookups, historical implementation details, and raw API signatures. The invariant-based documentation is more useful as a behavioral contract: it foregrounds state transitions, explicit boundary limits, and predictable failure modes, making it an indispensable asset for defensive engineering.
-
-For a developer concerned with security, readability, and eliminating runtime edge cases, the invariant-based version is the superior foundation. For raw API completeness and basic interactive verification, the official reference suffices.
+For a developer concerned with robustness, readability, and reducing runtime
+edge-case failures, the invariant-based version is the better starting point.
+For raw API completeness and interactive verification, the official reference
+remains necessary.
 
 In particular, the invariant-based documentation style is stronger for:
 
 - codifying strict semantic guarantees over loose textual descriptions,
-- making explicit what inputs will intentionally trigger internal exceptions,
-- isolating high-risk edge cases into scannable, dedicated architectural guardrails,
-- shifting documentation from a passive log of behavior to an active, testable software contract.
+- making explicit which inputs should trigger documented exceptions,
+- isolating high-risk edge cases into dedicated, scannable sections,
+- shifting documentation from passive description toward an active, testable
+  software contract.
 
 The official documentation style is stronger for:
 
@@ -187,6 +193,9 @@ Overall, the invariant-based style is better when the goal is to write robust pr
 
 ## Notes
 
-- Traditional documentation is written for human eyes to parse lazily, while invariant-based text can be directly mapped to property-based testing strategies.
-- Security vulnerabilities often thrive in the ambiguous gaps left by official docs where undefined behavior is treated as an exercise for the reader.
-- An invariant-first mindset forces documentation to be treated with the same rigorous linting and logic standards as production source code.
+- Traditional documentation is optimized for reference and examples;
+  invariant-based documentation is optimized for explicit behavioral claims.
+- Ambiguous edge cases are a source of implementation and integration risk.
+  Making them explicit improves testability and defensive use.
+- An invariant-first workflow treats documentation claims as artifacts that can
+  be reviewed, tested, and revised.
