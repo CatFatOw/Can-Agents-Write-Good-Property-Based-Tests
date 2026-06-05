@@ -1,0 +1,17 @@
+{
+  "model": "gpt-5.4",
+  "artifact_root": "artifacts/numpy",
+  "run_mutation": false,
+  "auto_continue": true,
+  "min_validity": 0.4,
+  "min_soundness": 0.4,
+  "min_confidence": 0.4,
+  "min_mutation": 0.2,
+  "apis": [
+    {
+      "source": "source_code/numpy/_core/multiarray.py",
+      "function": "dot",
+      "reviewer_notes": "Document this as numpy.dot. For generated tests, use small finite bounded numeric arrays and avoid NaN, infinities, and huge complex values unless explicitly testing them. Use allclose for floating/complex results. Do not assert that out is returned for scalar dot results."
+    }
+  ]
+}

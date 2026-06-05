@@ -82,33 +82,6 @@ mutation_codex_statistics = {
 }
 
 
-
-# NP
-
-# Human 
-mutation_human_np = {
-    "total_mutants": 141,
-    "killed_mutants": 50,
-    "survived_mutants": 91,
-    "timed_out_mutants": 0,
-    "suspicious_mutants": 0,
-    "untested_mutants": 0,
-    "skipped_mutants": 0,
-    "equivalent_mutants": 0,
-}
-
-
-mutation_codex_np = {
-    "total_mutants": 141,
-    "killed_mutants": 50,
-    "survived_mutants": 91,
-    "timed_out_mutants": 0,
-    "suspicious_mutants": 0,
-    "untested_mutants": 0,
-    "skipped_mutants": 0,
-    "equivalent_mutants": 0,
-}
-
 # HTML
 mutation_human_html = {
     "total_mutants": 92,
@@ -188,6 +161,42 @@ mutation_gemini_decimal = {
     "equivalent_mutants": 0,
 }
 
+# NP
+# NumPy
+mutation_human_numpy = {
+    "total_mutants": 99,
+    "killed_mutants": 26,
+    "survived_mutants": 28,
+    "timed_out_mutants": 0,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 45,
+}
+
+# NumPy (Codex)
+mutation_codex_numpy = {
+    "total_mutants": 122,
+    "killed_mutants": 72,
+    "survived_mutants": 49,
+    "timed_out_mutants": 0,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 1,
+}
+# NumPy (Gemini)
+mutation_gemini_numpy = {
+    "total_mutants": 122,
+    "killed_mutants": 65,
+    "survived_mutants": 56,
+    "timed_out_mutants": 0,
+    "suspicious_mutants": 0,
+    "untested_mutants": 0,
+    "skipped_mutants": 0,
+    "equivalent_mutants": 1,
+}
+
 
 
 calculate_mutation_scores(mutation_human_dateutil)
@@ -197,8 +206,6 @@ calculate_mutation_scores(mutation_gemini_dateutil)
 calculate_mutation_scores(mutation_human_statistics)
 calculate_mutation_scores(mutation_codex_statistics)
 
-calculate_mutation_scores(mutation_human_np)
-calculate_mutation_scores(mutation_codex_np)
 
 calculate_mutation_scores(mutation_human_html)
 calculate_mutation_scores(mutation_codex_html)
@@ -210,6 +217,9 @@ calculate_mutation_scores(mutation_human_decimal)
 calculate_mutation_scores(mutation_codex_decimal)
 calculate_mutation_scores(mutation_gemini_decimal)
 
+calculate_mutation_scores(mutation_human_numpy)
+calculate_mutation_scores(mutation_codex_numpy)
+calculate_mutation_scores(mutation_gemini_numpy)
 
 print("dateutil")
 print("Human: \n")
@@ -227,10 +237,6 @@ print(mutation_human_statistics)
 print()
 print(mutation_codex_statistics)
 print()
-print("np")
-print(mutation_human_np)
-print()
-print(mutation_codex_np)
 print("html")
 print(mutation_human_html)
 print()
@@ -249,3 +255,10 @@ print("codex: \n")
 print(mutation_codex_decimal)
 print("gemini: \n")
 print(mutation_gemini_decimal)
+print()
+print("human: \n")
+print(mutation_human_numpy)
+print("codex: \n")
+print(mutation_codex_numpy)
+print("gemini: \n")
+print(mutation_gemini_numpy)

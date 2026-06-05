@@ -1,340 +1,153 @@
-# Can Agents Write Good Property-Based Tests Via Documentation?
+# Can Agents Write Good Property-Based Tests from Documentation?
 
-Research for the Carnegie Mellon University (CMU) REU program by Michael Wu, May 2026.
+Research project for the Carnegie Mellon University REU program by Michael Wu,
+May 2026.
 
-This repository studies whether a modern coding agent can produce useful
-property-based tests (PBTs) for real Python APIs. The experiment is inspired by
-the paper [Can Large Language Models Write Good Property-Based Tests?](https://doi.org/10.48550/arXiv.2307.04346)
-and adapts its prompt-driven workflow to a Codex-style coding agent and the
-Gemini 5.5 Thinking model.
+This repository studies whether modern coding agents can generate useful
+property-based tests (PBTs) for real Python APIs using only API documentation and
+prompted reasoning. The work is inspired by
+[Can Large Language Models Write Good Property-Based Tests?](https://doi.org/10.48550/arXiv.2307.04346)
+and adapts its documentation-driven workflow to Codex-style and Gemini-generated
+Hypothesis tests.
 
-The central comparison is between:
+## Research Question
 
-- human-written Hypothesis tests with hand-designed invariants and strategies
-- Codex-generated Hypothesis tests produced from API documentation and two-staged prompts
-- Gemini 5.5 Thinking-generated Hypothesis tests for the dateutil parser and
-  Decimal APIs
+Can agent-generated property-based tests match or exceed human-written PBTs on:
 
-## Mutation Analysis
+1. **Validity**: the test executes without unexpected runtime errors.
+2. **Soundness**: the asserted property is true for generated inputs.
+3. **Fault detection**: the test kills realistic source-code mutants.
 
-The main mutation-testing takeaway is that perfect validity and soundness do
-not imply strong fault detection. Mutation testing exposes where generated
-properties are too broad, where edge cases are missing, and where wrappers pass
-round-trip checks while still ignoring API options.
+The central finding so far is that high validity and soundness do not guarantee
+strong fault detection. Mutation testing exposes missing edge cases, overly broad
+properties, oracle coupling, and adapter tests that preserve round trips while
+ignoring API options.
 
-Detailed survivor reports are separated by model.
+## Experimental Design
 
-### Codex 5.5 Medium Survivor Reports
+Each target API is evaluated with one or more Hypothesis test suites:
 
-| Library | Mutation score | Covered mutation score | Survivor analysis |
-|---|---:|---:|---|
-| `dateutil` | 66.0% | 66.0% | [`survived_mutants_codex_dateutil.md`](./Codex/dateutil_testing/codex_dateutil_mutation_test/survived_mutants_codex_dateutil.md) |
-| `statistics` | 77.9% | 81.6% | [`survived_mutations_statistics.md`](./Codex/statistics/codex_statistics_mutation_testing/survived_mutations_statistics.md) |
-| `html` | 85.9% | 85.9% | [`survived_mutants_html.md`](./Codex/html/codex_html_mutation_testing/survived_mutants_html.md) |
-| `zlib` adapter | 82.4% | 82.4% | [`survived_mutants_zlib.md`](./Codex/zlib/codex_zlib_mutation_testing/survived_mutants_zlib.md) |
-| `decimal` | 56.8% | 56.8% | [`survived_mutants_codex_decimal.md`](./Codex/decimal/codex_decimal_mutation_tests/survived_mutants_codex_decimal.md) |
+| Suite | Description |
+|---|---|
+| Human-written | Hand-designed strategies and invariants. |
+| Codex-generated | Codex 5.5 Medium tests for selected APIs|
+| Gemini-generated | Gemini 5.5 Thinking tests for selected APIs |
 
-### Gemini 5.5 Thinking Survivor Reports
+The execution harness in [`metrics.py`](./metrics.py) repeatedly runs each test
+function and records validity and soundness. Mutation testing uses `mutmut` with
+covered-line filtering so that mutants are generated from source lines reached
+by the selected wrapper tests.
 
-- Gemini 5.5 Thinking frequently requires additional prompting and incorrectly writes code.
+## Evaluated APIs
 
-| Library | Mutation score | Covered mutation score | Survivor analysis |
-|---|---:|---:|---|
-| `dateutil` | 40.8% | 40.8% | [`survived_mutants_gemini_dateutil.md`](./Gemini/dateutil/gemini_dateutil_mutation_test/survived_mutants_gemini_dateutil.md) |
-| `decimal` | 59.0% | 59.2% | [`survived_mutants_gemini_decimal.md`](./Gemini/decimal/gemini_decimal_mutation_tests/survived_mutants_gemini_decimal.md) |
+| Library | Version / source | APIs evaluated |
+|---|---|---|
+| NumPy | `2.2.6` | `np.add`, `np.sum`, `np.cumsum`, `np.dot`, `np.linalg.norm` |
+| PyTorch | `2.7.0` | `torch.argmax` |
+| Python `statistics` | Python `3.12.7` | `mean`, `geometric_mean`, `correlation`, `linear_regression`, `median`, `variance` |
+| Python `html` | Python `3.12.7` | `escape`, `unescape` |
+| Python `zlib` | zlib `1.2.13` | `compress`, `decompress`, `adler32` |
+| Python `decimal` | Python `3.12.7` | `Decimal.as_integer_ratio`, `compare`, `fma`, `from_float`, `quantize` |
+| python-dateutil | `2.9.0.post0` | `dateutil.parser.isoparse`, `dateutil.parser.parse` |
 
-The reports classify survived mutants by confidence and highlight high-signal
-survivors that should guide the next round of targeted property improvements.
-
-
-## Tested Libraries
-
-| Library | Version | APIs evaluated |
-|---|---:|---|
-| NumPy | `2.2.6` | `np.linspace()` |
-| PyTorch | `2.7.0` | `torch.argmax()` |
-| python-statistics | `3.12.7` | `statistics.mean()`, `statistics.geometric_mean()`, `statistics.correlation()`, `statistics.linear_regression()`, `statistics.median()`, `statistics.variance()` |
-| python-html | `3.12.7` | `html.escape()`, `html.unescape()` |
-| zlib | `1.2.13` | `zlib.compress()`, `zlib.decompress()`, `zlib.adler32()` |
-| python-decimal | `3.12.7` | `Decimal.as_integer_ratio()`, `Decimal.compare()`, `Decimal.fma()`, `Decimal.from_float()`, `Decimal.quantize()` |
-| python-dateutil | `2.9.0.post0` | `dateutil.parser.isoparse()`, `dateutil.parser.parse()` |
-
-## Methodology
-
-Each API is evaluated with a small human-written PBT suite and a Codex-generated
-PBT suite. The dateutil parser and Decimal APIs also include a Gemini 5.5
-Thinking-generated suite. The Codex tests are produced using the prompt
-templates in
-[`two_staged_prompt.py`](./two_staged_prompt.py), which ask the model to extract
-properties from documentation and then implement Hypothesis tests for those
-properties.
-
-The evaluation harness in [`metrics.py`](./metrics.py) runs each test function
-1,000 times and reports two execution metrics:
-
-- **Validity**: fraction of executions that do not raise unexpected exceptions.
-- **Soundness**: fraction of executions that do not fail an assertion.
-- **Mutation Score/Coverage**: killed/total mutations or kill / (total-untested)
-
-In this setup, validity failures usually indicate malformed strategies,
-unhandled parser errors, or runtime exceptions. Soundness failures indicate that
-the asserted property is false for at least some generated inputs.
-
-The additional **mutation score** metric is the fraction of generated mutants
-killed by a test suite. Mutation testing is currently recorded for the
-dateutil parser APIs, the Python statistics, html, and decimal libraries, zlib, and `np.linspace()` in
-[`mutation_testing_results.py`](./mutation_testing_results.py). The covered
-mutation score reports the fraction of tested mutants killed after excluding
-untested mutants. The mutation runs use covered-line filtering so mutants are
-generated from source lines reached by the selected API wrappers rather than
-from every function in each vendored library.
-
-Python's `zlib` module is a compiled C extension, so its `mutmut` results apply
-to the selected Python adapter functions rather than direct mutations of the
-underlying zlib C implementation.
-
-For Decimal mutation testing, the mutation directories use Python's pure-Python
-`_pydecimal.py` implementation copied as `decimal.py`, because the installed
-top-level `decimal.py` primarily delegates to the compiled `_decimal` extension.
-
-## Test Artifacts
-
-| API | Human-written test | Codex-generated test | Documentation |
-|---|---|---|---|
-| `np.linspace()` | [`human_test_np_linspace.py`](./human_PBT/np_testing/human_test_np_linspace.py) | [`test_codex_np_linspace.py`](./Codex/np_testing/test_codex_np_linspace.py) | [NumPy `linspace`](https://numpy.org/doc/2.3/reference/generated/numpy.linspace.html) |
-| `torch.argmax()` | [`human_test_torch_argmax.py`](./human_PBT/torch_testing/human_test_torch_argmax.py) | [`test_codex_torch_argmax.py`](./Codex/torch_testing/test_codex_torch_argmax.py) | [PyTorch `argmax`](https://docs.pytorch.org/docs/2.12/generated/torch.argmax.html) |
-| `statistics.mean()` | [`human_test_statistics_mean.py`](./human_PBT/statistics/human_test_statistics_mean.py) | [`test_codex_statistics_mean.py`](./Codex/statistics/test_codex_statistics_mean.py) | [Python `statistics.mean`](https://docs.python.org/3.12/library/statistics.html#statistics.mean) |
-| `statistics.geometric_mean()` | [`human_test_statistics_geometric_mean.py`](./human_PBT/statistics/human_test_statistics_geometric_mean.py) | [`test_codex_statistics_geometric_mean.py`](./Codex/statistics/test_codex_statistics_geometric_mean.py) | [Python `statistics.geometric_mean`](https://docs.python.org/3.12/library/statistics.html#statistics.geometric_mean) |
-| `statistics.correlation()` | [`test_human_test_statistics_correlation.py`](./human_PBT/statistics/test_human_test_statistics_correlation.py) | [`test_codex_statistics_correlation.py`](./Codex/statistics/test_codex_statistics_correlation.py) | [Python `statistics.correlation`](https://docs.python.org/3.12/library/statistics.html#statistics.correlation) |
-| `statistics.linear_regression()` | [`test_human_test_statistics_linear_regression.py`](./human_PBT/statistics/test_human_test_statistics_linear_regression.py) | [`test_codex_statistics_linear_regression.py`](./Codex/statistics/test_codex_statistics_linear_regression.py) | [Python `statistics.linear_regression`](https://docs.python.org/3.12/library/statistics.html#statistics.linear_regression) |
-| `statistics.median()` | [`test_human_test_statistics_median.py`](./human_PBT/statistics/test_human_test_statistics_median.py) | [`test_codex_statistics_median.py`](./Codex/statistics/test_codex_statistics_median.py) | [Python `statistics.median`](https://docs.python.org/3.12/library/statistics.html#statistics.median) |
-| `statistics.variance()` | [`test_human_test_statistics_variance.py`](./human_PBT/statistics/test_human_test_statistics_variance.py) | [`test_codex_statistics_variance.py`](./Codex/statistics/test_codex_statistics_variance.py) | [Python `statistics.variance`](https://docs.python.org/3.12/library/statistics.html#statistics.variance) |
-| `html.escape()` | [`test_human_html_escape.py`](./human_PBT/html/test_human_html_escape.py) | [`test_codex_html_escape.py`](./Codex/html/test_codex_html_escape.py) | [Python `html.escape`](https://docs.python.org/3.12/library/html.html#html.escape) |
-| `html.unescape()` | [`test_human_html_unescape.py`](./human_PBT/html/test_human_html_unescape.py) | [`test_codex_html_unescape.py`](./Codex/html/test_codex_html_unescape.py) | [Python `html.unescape`](https://docs.python.org/3.12/library/html.html#html.unescape) |
-| `zlib.compress()` | [`test_human_zlib_compress.py`](./human_PBT/zlib/test_human_zlib_compress.py) | [`test_codex_zlib_compress.py`](./Codex/zlib/test_codex_zlib_compress.py) | [Python `zlib.compress`](https://docs.python.org/3.12/library/zlib.html#zlib.compress) |
-| `zlib.decompress()` | [`test_human_zlib_decompress.py`](./human_PBT/zlib/test_human_zlib_decompress.py) | [`test_codex_zlib_decompress.py`](./Codex/zlib/test_codex_zlib_decompress.py) | [Python `zlib.decompress`](https://docs.python.org/3.12/library/zlib.html#zlib.decompress) |
-| `zlib.adler32()` | [`test_human_zlib_adler32.py`](./human_PBT/zlib/test_human_zlib_adler32.py) | [`test_codex_zlib_adler32.py`](./Codex/zlib/test_codex_zlib_adler32.py) | [Python `zlib.adler32`](https://docs.python.org/3.12/library/zlib.html#zlib.adler32) |
-| `Decimal.as_integer_ratio()` | [`test_human_decimal_as_integer_ratio.py`](./human_PBT/decimal/test_human_decimal_as_integer_ratio.py) | [`test_codex_decimal_as_integer_ratio.py`](./Codex/decimal/test_codex_decimal_as_integer_ratio.py) | [Python `Decimal.as_integer_ratio`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.as_integer_ratio) |
-| `Decimal.compare()` | [`test_human_decimal_compare.py`](./human_PBT/decimal/test_human_decimal_compare.py) | [`test_codex_decimal_compare.py`](./Codex/decimal/test_codex_decimal_compare.py) | [Python `Decimal.compare`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.compare) |
-| `Decimal.fma()` | [`test_human_decimal_fma.py`](./human_PBT/decimal/test_human_decimal_fma.py) | [`test_codex_decimal_fma.py`](./Codex/decimal/test_codex_decimal_fma.py) | [Python `Decimal.fma`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.fma) |
-| `Decimal.from_float()` | [`test_human_decimal_from_float.py`](./human_PBT/decimal/test_human_decimal_from_float.py) | [`test_codex_decimal_from_float.py`](./Codex/decimal/test_codex_decimal_from_float.py) | [Python `Decimal.from_float`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.from_float) |
-| `Decimal.quantize()` | [`test_human_decimal_quantized.py`](./human_PBT/decimal/test_human_decimal_quantized.py) | [`test_codex_decimal_quantize.py`](./Codex/decimal/test_codex_decimal_quantize.py) | [Python `Decimal.quantize`](https://docs.python.org/3.12/library/decimal.html#decimal.Decimal.quantize) |
-| `dateutil.parser.isoparse()` | [`human_testing_isoparse.py`](./human_PBT/dateutil_testing/human_testing_isoparse.py) | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`dateutil.parser.isoparse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.isoparse) |
-| `dateutil.parser.parse()` | [`human_testing_parser.py`](./human_PBT/dateutil_testing/human_testing_parser.py) | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`dateutil.parser.parse`](https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse) |
-
-## GPT 5.5 Thinking tests:
-
-| API | GPT-generated test | Mutation wrapper | Additional prompts to fix failed code output |
-|---|---|---|---|
-| `np.linspace()` | [`test_codex_np_linspace.py`](./Codex/np_testing/test_codex_np_linspace.py) | [`test_codex_np_linspace_wrapper.py`](./Codex/np_testing/codex_np_mutation_testing/test_codex_np_linspace_wrapper.py) | **0** |
-| `torch.argmax()` | [`test_codex_torch_argmax.py`](./Codex/torch_testing/test_codex_torch_argmax.py) | N/A | **0** |
-| `statistics.mean()` | [`test_codex_statistics_mean.py`](./Codex/statistics/test_codex_statistics_mean.py) | [`test_codex_statistics_mean.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_mean.py) | **0** |
-| `statistics.geometric_mean()` | [`test_codex_statistics_geometric_mean.py`](./Codex/statistics/test_codex_statistics_geometric_mean.py) | [`test_codex_statistics_geometric_mean.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_geometric_mean.py) | **0** |
-| `statistics.correlation()` | [`test_codex_statistics_correlation.py`](./Codex/statistics/test_codex_statistics_correlation.py) | [`test_codex_statistics_correlation.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_correlation.py) | **0** |
-| `statistics.linear_regression()` | [`test_codex_statistics_linear_regression.py`](./Codex/statistics/test_codex_statistics_linear_regression.py) | [`test_codex_statistics_linear_regression.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_linear_regression.py) | **0** |
-| `statistics.median()` | [`test_codex_statistics_median.py`](./Codex/statistics/test_codex_statistics_median.py) | [`test_codex_statistics_median_wrapper.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_median_wrapper.py) | **0** |
-| `statistics.variance()` | [`test_codex_statistics_variance.py`](./Codex/statistics/test_codex_statistics_variance.py) | [`test_codex_statistics_variance_wrapper.py`](./Codex/statistics/codex_statistics_mutation_testing/test_codex_statistics_variance_wrapper.py) | **0** |
-| `html.escape()` | [`test_codex_html_escape.py`](./Codex/html/test_codex_html_escape.py) | [`test_codex_html_escape_wrapper.py`](./Codex/html/codex_html_mutation_testing/test_codex_html_escape_wrapper.py) | **0** |
-| `html.unescape()` | [`test_codex_html_unescape.py`](./Codex/html/test_codex_html_unescape.py) | [`test_codex_html_unescape_wrapper.py`](./Codex/html/codex_html_mutation_testing/test_codex_html_unescape_wrapper.py) | **0** |
-| `zlib.compress()` | [`test_codex_zlib_compress.py`](./Codex/zlib/test_codex_zlib_compress.py) | [`test_codex_zlib_compress_wrapper.py`](./Codex/zlib/codex_zlib_mutation_testing/test_codex_zlib_compress_wrapper.py) | **0** |
-| `zlib.decompress()` | [`test_codex_zlib_decompress.py`](./Codex/zlib/test_codex_zlib_decompress.py) | [`test_codex_zlib_decompress_wrapper.py`](./Codex/zlib/codex_zlib_mutation_testing/test_codex_zlib_decompress_wrapper.py) | **0** |
-| `zlib.adler32()` | [`test_codex_zlib_adler32.py`](./Codex/zlib/test_codex_zlib_adler32.py) | [`test_codex_zlib_adler32_wrapper.py`](./Codex/zlib/codex_zlib_mutation_testing/test_codex_zlib_adler32_wrapper.py) | **0** |
-| `dateutil.parser.isoparse()` | [`test_codex_isoparse.py`](./Codex/dateutil_testing/test_codex_isoparse.py) | [`test_codex_isoparse_wrapper.py`](./Codex/dateutil_testing/codex_dateutil_mutation_test/test_codex_isoparse_wrapper.py) | **0** |
-| `dateutil.parser.parse()` | [`test_codex_parse.py`](./Codex/dateutil_testing/test_codex_parse.py) | [`test_codex_parse_wrapper.py`](./Codex/dateutil_testing/codex_dateutil_mutation_test/test_codex_parse_wrapper.py) | **0** |
-| `Decimal.as_integer_ratio()` | [`test_codex_decimal_as_integer_ratio.py`](./Codex/decimal/test_codex_decimal_as_integer_ratio.py) | [`test_codex_decimal_as_integer_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_as_integer_wrapper.py) | **0** |
-| `Decimal.compare()` | [`test_codex_decimal_compare.py`](./Codex/decimal/test_codex_decimal_compare.py) | [`test_codex_decimal_compare_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_compare_wrapper.py) | **0** |
-| `Decimal.fma()` | [`test_codex_decimal_fma.py`](./Codex/decimal/test_codex_decimal_fma.py) | [`test_codex_decimal_fma_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_fma_wrapper.py) | **0** |
-| `Decimal.from_float()` | [`test_codex_decimal_from_float.py`](./Codex/decimal/test_codex_decimal_from_float.py) | [`test_codex_decimal_from_float_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_from_float_wrapper.py) | **0** |
-| `Decimal.quantize()` | [`test_codex_decimal_quantize.py`](./Codex/decimal/test_codex_decimal_quantize.py) | [`test_codex_decimal_quantize_wrapper.py`](./Codex/decimal/codex_decimal_mutation_tests/test_codex_decimal_quantize_wrapper.py) | **0** |
-
-## Gemini 5.5 Thinking tests:
-
-| API | Gemini-generated test | Mutation wrapper | Additional prompts to fix failed code output |
-|---|---|---|---|
-| `dateutil.parser.isoparse()` | [`test_gemini_isoparse.py`](./Gemini/dateutil/test_gemini_isoparse.py) | [`test_gemini_isoparse_wrapper.py`](./Gemini/dateutil/gemini_dateutil_mutation_test/test_gemini_isoparse_wrapper.py) | **1**  |
-| `dateutil.parser.parse()` | [`test_gemini_parse.py`](./Gemini/dateutil/test_gemini_parse.py) | [`test_gemini_parse_wrapper.py`](./Gemini/dateutil/gemini_dateutil_mutation_test/test_gemini_parse_wrapper.py) | **0** |
-| `Decimal.as_integer_ratio()` | [`test_gemini_decimal_as_integer_ratio.py`](./Gemini/decimal/test_gemini_decimal_as_integer_ratio.py) | [`test_gemini_decimal_as_integer_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_as_integer_wrapper.py) | **2** |
-| `Decimal.compare()` | [`test_gemini_decimal_compare.py`](./Gemini/decimal/test_gemini_decimal_compare.py) | [`test_gemini_decimal_compare_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_compare_wrapper.py) | **1** |
-| `Decimal.fma()` | [`test_gemini_decimal_fma.py`](./Gemini/decimal/test_gemini_decimal_fma.py) | [`test_gemini_decimal_fma_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_fma_wrapper.py) | **0** |
-| `Decimal.from_float()` | [`test_gemini_decimal_from_float.py`](./Gemini/decimal/test_gemini_decimal_from_float.py) | [`test_gemini_decimal_from_float_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_from_float_wrapper.py) | **0** |
-| `Decimal.quantize()` | [`test_gemini_decimal_quantize.py`](./Gemini/decimal/test_gemini_decimal_quantize.py) | [`test_gemini_decimal_quantize_wrapper.py`](./Gemini/decimal/gemini_decimal_mutation_tests/test_gemini_decimal_quantize_wrapper.py) | TBD |
-
+For `zlib`, mutation testing targets a Python adapter around the compiled C
+extension. For `decimal`, mutation testing uses the pure-Python `_pydecimal.py`
+implementation copied as `decimal.py`, because the installed top-level module
+delegates primarily to the compiled `_decimal` extension.
 
 ## Quantitative Results
 
-| API | Human validity | Human soundness | Codex validity | Codex soundness |
+Validity and soundness measure whether tests run and assert true properties.
+They do not measure how many implementation faults the tests detect.
+
+| API group | Human validity | Human soundness | Codex validity | Codex soundness |
 |---|---:|---:|---:|---:|
-| `np.linspace()` | 100.0% | 66.7% | 100.0% | 100.0% |
-| `torch.argmax()` | 99.0% | 100.0% | 100.0% | 100.0% |
-| `statistics.mean()` | 75.0% | 50.0% | 100.0% | 100.0% |
-| `statistics.geometric_mean()` | 50.0% | 75.0% | 100.0% | 100.0% |
-| `statistics.correlation()` | 75.0% | 50.0% | 100.0% | 100.0% |
-| `statistics.linear_regression()` | 100.0% | 67.4% | 100.0% | 100.0% |
-| `statistics.median()` | 66.7% | 100.0% | 100.0% | 100.0% |
-| `statistics.variance()` | 100.0% | 66.7% | 100.0% | 100.0% |
-| **statistics average** | **77.8%** | **68.2%** | **100.0%** | **100.0%** |
-| `html.escape()` | 75.0% | 100.0% | 100.0% | 100.0% |
-| `html.unescape()` | 66.7% | 66.7% | 100.0% | 100.0% |
-| **html average** | **70.8%** | **83.3%** | **100.0%** | **100.0%** |
-| `zlib.compress()` | 66.7% | 100.0% | 100.0% | 100.0% |
-| `zlib.decompress()` | 100.0% | 100.0% | 100.0% | 100.0% |
-| `zlib.adler32()` | 100.0% | 100.0% | 100.0% | 100.0% |
-| **zlib average** | **88.9%** | **100.0%** | **100.0%** | **100.0%** |
-| `Decimal.as_integer_ratio()` | 100.0% | 100.0% | 100.0% | 100.0% |
-| `Decimal.compare()` | 100.0% | 100.0% | 100.0% | 100.0% |
-| `Decimal.fma()` | 100.0% | 100.0% | 100.0% | 100.0% |
-| `Decimal.from_float()` | 100.0% | 100.0% | 100.0% | 100.0% |
-| `Decimal.quantize()` | 100.0% | 100.0% | 100.0% | 100.0% |
-| **decimal average** | **100.0%** | **100.0%** | **100.0%** | **100.0%** |
-| `dateutil.parser.isoparse()` | 100.0% | 100.0% | 100.0% | 100.0% |
-| `dateutil.parser.parse()` | 66.7% | 100.0% | 100.0% | 100.0% |
-| **dateutil average** | **83.3%** | **100.0%** | **100.0%** | **100.0%** |
+| NumPy `linspace` baseline | 100.0% | 66.7% | 100.0% | 100.0% |
+| PyTorch `argmax` baseline | 99.0% | 100.0% | 100.0% | 100.0% |
+| `statistics` average | 77.8% | 68.2% | 100.0% | 100.0% |
+| `html` average | 70.8% | 83.3% | 100.0% | 100.0% |
+| `zlib` average | 88.9% | 100.0% | 100.0% | 100.0% |
+| `decimal` average | 100.0% | 100.0% | 100.0% | 100.0% |
+| `dateutil` average | 83.3% | 100.0% | 100.0% | 100.0% |
+
+Detailed per-function validity and soundness values are encoded in
+[`result_plot.py`](./result_plot.py).
 
 ## Mutation Testing Results
 
-The table below gives the aggregate mutation metrics. The linked survivor
-reports above explain what the remaining model-generated survivors mean and which test
-properties would most directly kill them.
+Mutation score is `killed_mutants / total_mutants`. Covered mutation score is
+`killed_mutants / (total_mutants - untested_mutants)`.
 
-| API | Test suite | Total mutants | Killed mutants | Untested mutants | Mutation score | Covered mutation score |
-|---|---|---:|---:|---:|---:|---:|
-| `np` | Human-written | 141 | 50 | 0 | 35.5% | 35.5% |
-| `np` | Codex-generated | 141 | 50 | 0 | 35.5% | 35.5% |
-| `dateutil` | Human-written | 973 | 366 | 6 | 37.6% | 37.8% |
-| `dateutil` | Codex-generated | 1,178 | 777 | 0 | 66.0% | 66.0% |
-| `dateutil` | Gemini 5.5 Thinking-generated | 816 | 333 | 0 | 40.8% | 40.8% |
-| `statistics` | Human-written | 270 | 204 | 13 | 75.6% | 79.4% |
-| `statistics` | Codex-generated | 290 | 226 | 13 | 77.9% | 81.6% |
-| `html` | Human-written | 92 | 73 | 0 | 79.3% | 79.3% |
-| `html` | Codex-generated | 85 | 73 | 0 | 85.9% | 85.9% |
-| `zlib` adapter | Human-written | 17 | 12 | 0 | 70.6% | 70.6% |
-| `zlib` adapter | Codex-generated | 17 | 14 | 0 | 82.4% | 82.4% |
-| `decimal` | Human-written | 900 | 522 | 0 | 58.0% | 58.0% |
-| `decimal` | Codex-generated | 1,128 | 641 | 0 | 56.8% | 56.8% |
-| `decimal` | Gemini 5.5 Thinking-generated | 1,128 | 665 | 4 | 59.0% | 59.2% |
-
-
-## Figures
-
-### Baseline From Prior Work
-
-<p align="center">
-  <img src="./graphs/previous_paper_results.png" width="650" alt="Results from the prior LLM property-based testing paper">
-</p>
-
-The figure above reproduces the earlier paper's reported results for historical
-comparison. The remaining figures show the local agent-vs-human evaluations in
-this repository.
-
-### NumPy and PyTorch
-
-<p align="center">
-  <img src="./graphs/np_linspace_data.png" width="360" alt="Property-based test evaluation for np.linspace">
-  <img src="./graphs/torch_argmax_data.png" width="360" alt="Property-based test evaluation for torch.argmax">
-</p>
-
-### Statistics APIs
-
-<p align="center">
-  <img src="./graphs/statistic_mean_data.png" width="360" alt="Property-based test evaluation for statistics.mean">
-  <img src="./graphs/statistic_geometric_mean_data.png" width="360" alt="Property-based test evaluation for statistics.geometric_mean">
-</p>
-<p align="center">
-  <img src="./graphs/statistics_correlation_data.png" width="360" alt="Property-based test evaluation for statistics.correlation">
-  <img src="./graphs/statistics_linearregression_data.png" width="360" alt="Property-based test evaluation for statistics.linear_regression">
-</p>
-
-<p align="center">
-  <img src="./graphs/statistics_median_data.png" width="360" alt="Property-based test evaluation for statistics.median">
-  <img src="./graphs/statistics_data_variance.png" width="360" alt="Property-based test evaluation for statistics.variance">
-</p>
-
-<p align="center">
-  <img src="./graphs/avg_stats_api_data.png" width="480" alt="Average property-based test evaluation for statistics APIs">
-</p>
-
-### HTML APIs
-
-<p align="center">
-  <img src="./graphs/html_escape_data.png" width="360" alt="Property-based test evaluation for html.escape">
-  <img src="./graphs/html_unescape_data.png" width="360" alt="Property-based test evaluation for html.unescape">
-</p>
-
-<p align="center">
-  <img src="./graphs/avg_html_metrics_data.png" width="480" alt="Average property-based test evaluation for html APIs">
-</p>
-
-### Zlib APIs
-
-<p align="center">
-  <img src="./graphs/zlib_compress_data.png" width="360" alt="Property-based test evaluation for zlib.compress">
-  <img src="./graphs/zlib_decompress_data.png" width="360" alt="Property-based test evaluation for zlib.decompress">
-</p>
-
-<p align="center">
-  <img src="./graphs/zlib_adler32_data.png" width="360" alt="Property-based test evaluation for zlib.adler32">
-</p>
-
-<p align="center">
-  <img src="./graphs/avg_zlib_data.png" width="480" alt="Average property-based test evaluation for zlib APIs">
-</p>
-
-### Decimal APIs
-
-<p align="center">
-  <img src="./graphs/decimal_integer_ratio_data.png" width="360" alt="Property-based test evaluation for Decimal.as_integer_ratio">
-  <img src="./graphs/decimal_compare_data.png" width="360" alt="Property-based test evaluation for Decimal.compare">
-</p>
-
-<p align="center">
-  <img src="./graphs/decimal_fma_data.png" width="360" alt="Property-based test evaluation for Decimal.fma">
-  <img src="./graphs/decimal_from_float_data.png" width="360" alt="Property-based test evaluation for Decimal.from_float">
-</p>
-
-<p align="center">
-  <img src="./graphs/decimal_quantize_data.png" width="360" alt="Property-based test evaluation for Decimal.quantize">
-</p>
-
-### Dateutil Parser APIs
-
-<p align="center">
-  <img src="./graphs/parser_isoparse_data_dateutil.png" width="330" alt="Property-based test evaluation for dateutil.parser.isoparse">
-  <img src="./graphs/parse_dateutil_data.png" width="330" alt="Property-based test evaluation for dateutil.parser.parse">
-</p>
-
-<p align="center">
-  <img src="./graphs/avg_PBT_dateutil_data.png" width="480" alt="Average property-based test evaluation for dateutil parser APIs">
-</p>
+| Library / target | Test suite | Total mutants | Killed | Survived | Untested | Mutation score | Covered score |
+|---|---|---:|---:|---:|---:|---:|---:|
+| NumPy | Human-written | 99 | 26 | 28 | 0 | 26.3% | 26.3% |
+| NumPy | Codex-generated | 122 | 72 | 49 | 0 | 59.0% | 59.0% |
+| NumPy | Gemini-generated | 122 | 65 | 56 | 0 | 53.3% | 53.3% |
+| dateutil | Human-written | 973 | 366 | 591 | 6 | 37.6% | 37.8% |
+| dateutil | Codex-generated | 1,178 | 777 | 388 | 0 | 66.0% | 66.0% |
+| dateutil | Gemini-generated | 816 | 333 | 481 | 0 | 40.8% | 40.8% |
+| statistics | Human-written | 270 | 204 | 53 | 13 | 75.6% | 79.4% |
+| statistics | Codex-generated | 290 | 226 | 51 | 13 | 77.9% | 81.6% |
+| html | Human-written | 92 | 73 | 19 | 0 | 79.3% | 79.3% |
+| html | Codex-generated | 85 | 73 | 12 | 0 | 85.9% | 85.9% |
+| zlib adapter | Human-written | 17 | 12 | 5 | 0 | 70.6% | 70.6% |
+| zlib adapter | Codex-generated | 17 | 14 | 3 | 0 | 82.4% | 82.4% |
+| decimal | Human-written | 900 | 522 | 371 | 0 | 58.0% | 58.0% |
+| decimal | Codex-generated | 1,128 | 641 | 481 | 0 | 56.8% | 56.8% |
+| decimal | Gemini-generated | 1,128 | 665 | 456 | 4 | 59.0% | 59.2% |
 
 
-## Reproducing Results
 
-From this directory:
+## Survivor Analyses
+
+Survivor reports classify remaining mutants by confidence and identify targeted
+properties that would most directly kill high-signal survivors.
+
+| Suite | Library | Survivor report |
+|---|---|---|
+| Codex | NumPy | [`survived_mutants_codex_numpy.md`](./Codex/np_testing/codex_np_mutation_testing/survived_mutants_codex_numpy.md) |
+| Gemini | NumPy | [`survived_mutants_gemini_np.md`](./Gemini/np/gemini_np_mutation_testing/survived_mutants_gemini_np.md) |
+| Codex | dateutil | [`survived_mutants_codex_dateutil.md`](./Codex/dateutil_testing/codex_dateutil_mutation_test/survived_mutants_codex_dateutil.md) |
+| Gemini | dateutil | [`survived_mutants_gemini_dateutil.md`](./Gemini/dateutil/gemini_dateutil_mutation_test/survived_mutants_gemini_dateutil.md) |
+| Codex | statistics | [`survived_mutations_statistics.md`](./Codex/statistics/codex_statistics_mutation_testing/survived_mutations_statistics.md) |
+| Codex | html | [`survived_mutants_html.md`](./Codex/html/codex_html_mutation_testing/survived_mutants_html.md) |
+| Codex | zlib adapter | [`survived_mutants_zlib.md`](./Codex/zlib/codex_zlib_mutation_testing/survived_mutants_zlib.md) |
+| Codex | decimal | [`survived_mutants_codex_decimal.md`](./Codex/decimal/codex_decimal_mutation_tests/survived_mutants_codex_decimal.md) |
+| Gemini | decimal | [`survived_mutants_gemini_decimal.md`](./Gemini/decimal/gemini_decimal_mutation_tests/survived_mutants_gemini_decimal.md) |
+
+## Repository Map
+
+| Path | Contents |
+|---|---|
+| [`human_PBT/`](./human_PBT) | Human-written PBT suites and mutation wrappers. |
+| [`Codex/`](./Codex) | Codex-generated tests, mutation wrappers, and survivor reports. |
+| [`Gemini/`](./Gemini) | Gemini-generated tests, mutation wrappers, and survivor reports. |
+| [`metrics.py`](./metrics.py) | Validity and soundness evaluation harness. |
+| [`mutation_testing_results.py`](./mutation_testing_results.py) | Mutation-testing result dictionaries and score calculation. |
+| [`result_plot.py`](./result_plot.py) | Result aggregation and plotting data. |
+| [`two_staged_prompt.py`](./two_staged_prompt.py) | Prompt templates used for Codex property extraction and test generation. |
+
+Mutation-testing directories contain copied source trees and `mutants/`
+directories produced by `mutmut`. Generated cache directories such as
+`__pycache__`, `.pytest_cache`, and `.hypothesis` are not part of the research
+artifacts and can be removed safely.
+
+## Reproducing Mutation Runs
+
+Run mutation tests from the relevant mutation-testing directory. For example:
 
 ```bash
-python Codex/np_testing/test_codex_np_linspace.py
-python Codex/torch_testing/test_codex_torch_argmax.py
-python Codex/statistics/test_codex_statistics_mean.py
-python Codex/statistics/test_codex_statistics_geometric_mean.py
-python Codex/statistics/test_codex_statistics_correlation.py
-python Codex/statistics/test_codex_statistics_linear_regression.py
-python Codex/statistics/test_codex_statistics_median.py
-python Codex/statistics/test_codex_statistics_variance.py
-python Codex/html/test_codex_html_escape.py
-python Codex/html/test_codex_html_unescape.py
-python Codex/zlib/test_codex_zlib_compress.py
-python Codex/zlib/test_codex_zlib_decompress.py
-python Codex/zlib/test_codex_zlib_adler32.py
-python Codex/decimal/test_codex_decimal_as_integer_ratio.py
-python Codex/decimal/test_codex_decimal_compare.py
-python Codex/decimal/test_codex_decimal_fma.py
-python Codex/decimal/test_codex_decimal_from_float.py
-python Codex/decimal/test_codex_decimal_quantize.py
-python Codex/dateutil_testing/test_codex_isoparse.py
-python Codex/dateutil_testing/test_codex_parse.py
-python mutation_testing_results.py
-python result_plot.py
+cd Codex/np_testing/codex_np_mutation_testing
+mutmut run
+mutmut results
+mutmut browse
 ```
 
-The graph images are stored in [`graphs/`](./graphs/). The plotting script
-contains the recorded metric dictionaries used to generate the figures.
+The `setup.cfg` in each mutation directory defines:
+
+- `paths_to_mutate`: source files that mutmut mutates.
+- `also_copy`: source packages copied into the isolated mutants workspace.
+- `pytest_add_cli_args_test_selection`: wrapper tests selected for that run.
+
+For NumPy, test selection is explicit rather than `.` so pytest does not collect
+NumPy's internal copied test suite under the mutation workspace.
