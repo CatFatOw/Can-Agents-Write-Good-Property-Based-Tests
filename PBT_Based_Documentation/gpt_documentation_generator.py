@@ -1,0 +1,701 @@
+#!/usr/bin/env python3
+"""Generate invariant-backed documentation from source code.
+
+Pipeline:
+source code + prompts/config -> candidate invariants -> Hypothesis tests ->
+test/mutation metrics -> high-confidence Markdown documentation.
+"""
+
+from __future__ import annotations
+
+import argparse
+import ast
+import json
+import os
+import re
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parent
+DEFAULT_PROMPT_DIR = ROOT / "invariant_extraction_prompts"
+DEFAULT_MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.4-mini")
+COLOR_ENABLED = os.environ.get("NO_COLOR") is None
+COLORS = {
+    "green": "\033[92m",
+    "red": "\033[91m",
+    "yellow": "\033[93m",
+    "blue": "\033[94m",
+    "bold": "\033[1m",
+    "reset": "\033[0m",
+}
+
+
+@dataclass(frozen=True)
+class ApiContext:
+    source_path: Path
+    source_code: str
+    function_name: str
+    function_signature: str
+    existing_documentation: str
+
+
+def read_text(path: str | Path | None, default: str = "") -> str:
+    if not path:
+        return default
+    return Path(path).expanduser().resolve().read_text(encoding="utf-8")
+
+
+def color(text: str, name: str) -> str:
+    if not COLOR_ENABLED:
+        return text
+    return f"{COLORS.get(name, '')}{text}{COLORS['reset']}"
+
+
+def log_step(message: str) -> None:
+    print(color(f"[RUN] {message}", "blue"))
+
+
+def log_success(message: str) -> None:
+    print(color(f"[OK] {message}", "green"))
+
+
+def log_stop(message: str) -> None:
+    print(color(f"[STOP] {message}", "yellow"))
+
+
+def log_error(message: str) -> None:
+    print(color(f"[BLOCKED] {message}", "red"))
+
+
+def load_config(path: str | None) -> dict[str, Any]:
+    if not path:
+        return {}
+    config_path = Path(path).expanduser().resolve()
+    if config_path.suffix.lower() != ".json":
+        raise SystemExit("Only JSON config files are supported.")
+    return json.loads(config_path.read_text(encoding="utf-8"))
+
+
+def strip_markdown_fences(text: str) -> str:
+    text = text.strip()
+    match = re.fullmatch(r"```(?:python|py|markdown|md)?\s*(.*?)\s*```", text, re.S)
+    return match.group(1).strip() if match else text
+
+
+def render_prompt(prompt_path: Path, values: dict[str, str]) -> str:
+    template = prompt_path.read_text(encoding="utf-8")
+    return template.format(**values)
+
+
+def extract_signature(source_code: str, node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
+    lines = source_code.splitlines()
+    signature_lines: list[str] = []
+    depth = 0
+    started = False
+    for line in lines[node.lineno - 1 :]:
+        stripped = line.strip()
+        if not started and not stripped.startswith(("def ", "async def ")):
+            continue
+        started = True
+        signature_lines.append(stripped)
+        depth += stripped.count("(") + stripped.count("[") + stripped.count("{")
+        depth -= stripped.count(")") + stripped.count("]") + stripped.count("}")
+        if depth == 0 and (stripped.endswith(":") or stripped.endswith("...")):
+            break
+    return " ".join(part.rstrip(":") for part in signature_lines).strip()
+
+
+def response_text(model: str, prompt: str, stream: bool = True) -> str:
+    if not os.environ.get("OPENAI_API_KEY"):
+        raise SystemExit("Set OPENAI_API_KEY before running GPT stages.")
+
+    try:
+        from openai import OpenAI
+    except ImportError:
+        return response_text_with_legacy_openai(model, prompt, stream=stream)
+
+    client = OpenAI()
+    if hasattr(client, "responses"):
+        try:
+            return response_text_with_responses(client, model, prompt, stream=stream)
+        except AttributeError:
+            pass
+    if hasattr(client, "chat") and hasattr(client.chat, "completions"):
+        return response_text_with_chat_completions(client, model, prompt, stream=stream)
+    raise SystemExit(
+        "This openai package exposes neither client.responses nor client.chat.completions. "
+        "Upgrade it with: python3 -m pip install --upgrade openai"
+    )
+
+
+def response_text_with_responses(client: Any, model: str, prompt: str, stream: bool = True) -> str:
+    if not stream:
+        response = client.responses.create(model=model, input=prompt)
+        return getattr(response, "output_text", "") or extract_response_output_text(response)
+
+    chunks: list[str] = []
+    events = client.responses.create(model=model, input=prompt, stream=True)
+    for event in events:
+        if event.type == "response.output_text.delta":
+            print(event.delta, end="", flush=True)
+            chunks.append(event.delta)
+    print()
+    return "".join(chunks)
+
+
+def response_text_with_legacy_openai(model: str, prompt: str, stream: bool = True) -> str:
+    try:
+        import openai
+    except ImportError as exc:
+        raise SystemExit("Install the openai package before running GPT stages.") from exc
+
+    if not hasattr(openai, "ChatCompletion"):
+        raise SystemExit(
+            "Your openai package is too old for this script. Upgrade it with: "
+            "python3 -m pip install --upgrade openai"
+        )
+
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a careful Python property-based testing and API documentation assistant.",
+        },
+        {"role": "user", "content": prompt},
+    ]
+    if not stream:
+        response = openai.ChatCompletion.create(model=model, messages=messages)
+        return response["choices"][0]["message"]["content"] or ""
+
+    chunks: list[str] = []
+    events = openai.ChatCompletion.create(model=model, messages=messages, stream=True)
+    for event in events:
+        delta = event["choices"][0].get("delta", {}).get("content", "")
+        if delta:
+            print(delta, end="", flush=True)
+            chunks.append(delta)
+    print()
+    return "".join(chunks)
+
+
+def response_text_with_chat_completions(client: Any, model: str, prompt: str, stream: bool = True) -> str:
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a careful Python property-based testing and API documentation assistant.",
+        },
+        {"role": "user", "content": prompt},
+    ]
+    if not stream:
+        response = client.chat.completions.create(model=model, messages=messages)
+        return response.choices[0].message.content or ""
+
+    chunks: list[str] = []
+    events = client.chat.completions.create(model=model, messages=messages, stream=True)
+    for event in events:
+        delta = event.choices[0].delta.content or ""
+        if delta:
+            print(delta, end="", flush=True)
+            chunks.append(delta)
+    print()
+    return "".join(chunks)
+
+
+def extract_response_output_text(response: Any) -> str:
+    chunks: list[str] = []
+    for item in getattr(response, "output", []) or []:
+        for content in getattr(item, "content", []) or []:
+            text = getattr(content, "text", None)
+            if text:
+                chunks.append(text)
+    return "".join(chunks)
+
+
+def find_api_context(
+    source_path: Path,
+    function_name: str | None,
+    existing_documentation: str,
+) -> ApiContext:
+    source_code = source_path.read_text(encoding="utf-8")
+    tree = ast.parse(source_code)
+    candidates: list[ast.FunctionDef | ast.AsyncFunctionDef] = [
+        node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    ]
+    selected = None
+    if function_name:
+        selected = next((node for node in candidates if node.name == function_name), None)
+    elif len(candidates) == 1:
+        selected = candidates[0]
+
+    if selected is None:
+        api_name = function_name or source_path.stem
+        signature = f"{api_name}(...)"
+    else:
+        api_name = selected.name
+        signature = extract_signature(source_code, selected) or f"{api_name}(...)"
+
+    return ApiContext(
+        source_path=source_path,
+        source_code=source_code,
+        function_name=api_name,
+        function_signature=signature,
+        existing_documentation=existing_documentation,
+    )
+
+
+def artifact_dir(base_dir: Path, api_name: str) -> Path:
+    safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", api_name).strip("_") or "api"
+    path = base_dir / safe_name
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def write_artifact(path: Path, content: str) -> None:
+    path.write_text(content.rstrip() + "\n", encoding="utf-8")
+    log_success(f"Wrote {path}")
+
+
+def default_review_path(out_dir: Path) -> Path:
+    return out_dir / "human_review.md"
+
+
+def resolve_review_path(review_path: str | None, out_dir: Path, auto_continue: bool) -> str | None:
+    if review_path:
+        return review_path
+    inferred = default_review_path(out_dir)
+    if auto_continue and inferred.exists():
+        return str(inferred)
+    return None
+
+
+def run_command(command: list[str], cwd: Path) -> dict[str, Any]:
+    try:
+        result = subprocess.run(command, cwd=cwd, text=True, capture_output=True, check=False)
+    except FileNotFoundError as exc:
+        return {
+            "command": command,
+            "available": False,
+            "returncode": None,
+            "stdout": "",
+            "stderr": str(exc),
+        }
+    return {
+        "command": command,
+        "available": True,
+        "returncode": result.returncode,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+    }
+
+
+def run_pytest(test_file: Path, cwd: Path) -> dict[str, Any]:
+    return run_command([sys.executable, "-m", "pytest", "-q", str(test_file)], cwd=cwd)
+
+
+def run_mutmut(mutation_dir: Path) -> dict[str, Any]:
+    run_result = run_command(["mutmut", "run"], cwd=mutation_dir)
+    results_result = run_command(["mutmut", "results"], cwd=mutation_dir)
+    return {"run": run_result, "results": results_result}
+
+
+def parse_pytest_counts(output: str) -> dict[str, int]:
+    counts = {"passed": 0, "failed": 0, "errors": 0}
+    for key in counts:
+        match = re.search(rf"(\d+)\s+{key}\b", output)
+        if match:
+            counts[key] = int(match.group(1))
+    return counts
+
+
+def score_metrics(pytest_result: dict[str, Any], mutation_result: dict[str, Any] | None) -> dict[str, Any]:
+    pytest_output = (pytest_result.get("stdout") or "") + "\n" + (pytest_result.get("stderr") or "")
+    if not pytest_result.get("available") or pytest_result.get("returncode") is None:
+        validity = 0.0
+        soundness = 0.0
+    elif pytest_result.get("returncode") == 0:
+        validity = 1.0
+        soundness = 1.0
+    else:
+        counts = parse_pytest_counts(pytest_output)
+        total = counts["passed"] + counts["failed"] + counts["errors"]
+        if total:
+            validity = 1 - counts["errors"] / total
+            soundness = 1 - counts["failed"] / total
+        else:
+            has_errors = bool(re.search(r"\bERROR(S)?\b|ImportError|ModuleNotFoundError|SyntaxError", pytest_output))
+            has_failures = bool(re.search(r"\bFAILED\b|AssertionError|assert ", pytest_output))
+            validity = 0.0 if has_errors else 1.0
+            soundness = 0.0 if has_failures else 1.0
+    mutation_usefulness = None
+
+    if mutation_result:
+        mutation_stdout = (
+            mutation_result.get("results", {}).get("stdout", "")
+            + "\n"
+            + mutation_result.get("run", {}).get("stdout", "")
+        )
+        killed = len(re.findall(r"\bkilled\b", mutation_stdout, re.I))
+        survived = len(re.findall(r"\bsurvived\b", mutation_stdout, re.I))
+        if killed or survived:
+            mutation_usefulness = killed / (killed + survived)
+
+    confidence = 0.45 * validity + 0.45 * soundness
+    if mutation_usefulness is not None:
+        confidence += 0.10 * mutation_usefulness
+    elif mutation_result is None:
+        confidence += 0.05
+
+    return {
+        "validity": validity,
+        "soundness": soundness,
+        "mutation_usefulness": mutation_usefulness,
+        "confidence": round(confidence, 3),
+        "passes_documentation_gate": validity == 1.0 and soundness == 1.0 and confidence >= 0.9,
+        "note": (
+            "Mutation usefulness is best-effort because mutmut output is version dependent."
+            if mutation_result
+            else "Mutation testing was skipped."
+        ),
+    }
+
+
+def metrics_gate_failure(
+    scores: dict[str, Any],
+    *,
+    min_validity: float,
+    min_soundness: float,
+    min_confidence: float,
+    min_mutation: float | None,
+) -> str | None:
+    failures: list[str] = []
+    if scores["validity"] < min_validity:
+        failures.append(f"validity {scores['validity']:.2f} < {min_validity:.2f}")
+    if scores["soundness"] < min_soundness:
+        failures.append(f"soundness {scores['soundness']:.2f} < {min_soundness:.2f}")
+    if scores["confidence"] < min_confidence:
+        failures.append(f"confidence {scores['confidence']:.3f} < {min_confidence:.3f}")
+    mutation_usefulness = scores.get("mutation_usefulness")
+    if min_mutation is not None and mutation_usefulness is not None and mutation_usefulness < min_mutation:
+        failures.append(f"mutation usefulness {mutation_usefulness:.2f} < {min_mutation:.2f}")
+    if not failures:
+        return None
+    return "; ".join(failures)
+
+
+def markdown_metrics(
+    pytest_result: dict[str, Any],
+    mutation_result: dict[str, Any] | None,
+    scores: dict[str, Any],
+    gate_failure: str | None,
+) -> str:
+    lines = [
+        "# Metrics Report",
+        "",
+        "## Scores",
+        "",
+        f"- Validity: {scores['validity']:.2f}",
+        f"- Soundness: {scores['soundness']:.2f}",
+        f"- Mutation usefulness: {scores['mutation_usefulness']}",
+        f"- Confidence: {scores['confidence']:.3f}",
+        f"- Documentation gate: {'pass' if gate_failure is None else 'review needed'}",
+        f"- Note: {scores['note']}",
+        "",
+        "## Pytest",
+        "",
+        f"- Command: `{' '.join(pytest_result['command'])}`",
+        f"- Available: {pytest_result['available']}",
+        f"- Return code: {pytest_result['returncode']}",
+        "",
+        "```text",
+        (pytest_result.get("stdout") or "").strip(),
+        (pytest_result.get("stderr") or "").strip(),
+        "```",
+    ]
+    if mutation_result:
+        lines.extend(
+            [
+                "",
+                "## Mutation Testing",
+                "",
+                f"- Run return code: {mutation_result['run']['returncode']}",
+                f"- Results return code: {mutation_result['results']['returncode']}",
+                "",
+                "```text",
+                (mutation_result["run"].get("stdout") or "").strip(),
+                (mutation_result["run"].get("stderr") or "").strip(),
+                (mutation_result["results"].get("stdout") or "").strip(),
+                (mutation_result["results"].get("stderr") or "").strip(),
+                "```",
+            ]
+        )
+    return "\n".join(lines)
+
+
+def build_common_values(context: ApiContext) -> dict[str, str]:
+    return {
+        "function_name": context.function_name,
+        "function_signature": context.function_signature,
+        "api_source_code": context.source_code,
+        "api_documentation": context.existing_documentation,
+        "existing_documentation": context.existing_documentation,
+    }
+
+
+def run_pipeline(
+    *,
+    source_path: Path,
+    function_name: str | None,
+    docs_path: str | None,
+    review_path: str | None,
+    reviewer_notes: str,
+    prompt_dir: Path,
+    artifact_root: Path,
+    model: str,
+    stream: bool,
+    skip_tests: bool,
+    run_mutation_flag: bool,
+    mutation_dir: Path,
+    auto_approve: bool,
+    auto_continue: bool,
+    force_docs: bool,
+    min_validity: float,
+    min_soundness: float,
+    min_confidence: float,
+    min_mutation: float | None,
+) -> Path:
+    context = find_api_context(source_path, function_name, read_text(docs_path))
+    out_dir = artifact_dir(artifact_root, context.function_name)
+    review_path = resolve_review_path(review_path, out_dir, auto_continue)
+    common = build_common_values(context)
+
+    if not review_path:
+        candidate_prompt = render_prompt(prompt_dir / "properties_prompt.md", common)
+        log_step(f"Generating candidate invariants for {context.function_name}...")
+        candidates = response_text(model, candidate_prompt, stream=stream)
+        write_artifact(out_dir / "candidate_invariants.md", candidates)
+        review_log = (
+            "# Human Review\n\n"
+            "Review the candidate invariants below. Delete rejected invariants, revise weak ones, "
+            "and leave only accepted invariants in this file. Then rerun the same command. "
+            "The script will automatically continue from this review file.\n\n"
+            + candidates
+        )
+        write_artifact(out_dir / "human_review.md", review_log)
+        if not auto_approve:
+            log_stop(
+                f"Stopped for human review. Edit {out_dir / 'human_review.md'} and rerun the same command."
+            )
+            return out_dir
+
+    if review_path:
+        approved_invariants = read_text(review_path)
+        log_step(f"Using human-reviewed invariants from {review_path}")
+    else:
+        approved_invariants = candidates
+
+    import_notes = (
+        f"Source file path: {context.source_path}\n"
+        "If the module is not importable by package name, load the source file with importlib.util "
+        "inside the generated pytest file."
+    )
+    all_reviewer_notes = "\n\n".join(part for part in [import_notes, reviewer_notes] if part)
+
+    test_prompt = render_prompt(
+        prompt_dir / "pbt_generation_prompt.md",
+        common
+        | {
+            "approved_invariants": approved_invariants,
+            "reviewer_notes": all_reviewer_notes,
+        },
+    )
+    log_step(f"Generating Hypothesis properties for {context.function_name}...")
+    generated_tests = strip_markdown_fences(response_text(model, test_prompt, stream=stream))
+    test_path = out_dir / "generated_tests.py"
+    write_artifact(test_path, generated_tests)
+
+    pytest_result = {
+        "command": [sys.executable, "-m", "pytest", "-q", str(test_path)],
+        "available": False,
+        "returncode": None,
+        "stdout": "",
+        "stderr": "Test execution skipped.",
+    }
+    if not skip_tests:
+        log_step(f"Executing generated properties for {context.function_name}...")
+        pytest_result = run_pytest(test_path, cwd=ROOT)
+
+    mutation_result = None
+    if run_mutation_flag:
+        log_step(f"Running mutation checks for {context.function_name}...")
+        mutation_result = run_mutmut(mutation_dir)
+
+    scores = score_metrics(pytest_result, mutation_result)
+    gate_failure = metrics_gate_failure(
+        scores,
+        min_validity=min_validity,
+        min_soundness=min_soundness,
+        min_confidence=min_confidence,
+        min_mutation=min_mutation if run_mutation_flag else None,
+    )
+    metrics_report = markdown_metrics(pytest_result, mutation_result, scores, gate_failure)
+    write_artifact(out_dir / "metrics_report.md", metrics_report)
+    if gate_failure and not force_docs:
+        write_artifact(
+            out_dir / "documentation_blocked.md",
+            "# Documentation Blocked\n\n"
+            "Documentation generation stopped because the metric gate did not pass.\n\n"
+            f"Reason: {gate_failure}\n\n"
+            "Review `metrics_report.md`, revise the accepted invariants or generated tests, "
+            "and rerun. Use `--force-docs` only if you intentionally want documentation "
+            "despite the failed gate.",
+        )
+        log_error(f"Stopped before documentation for {context.function_name}: {gate_failure}")
+        return out_dir
+
+    mutant_analysis = metrics_report
+    if mutation_result:
+        metrics_prompt = render_prompt(
+            prompt_dir / "invariant_metrics_prompt.md",
+            {
+                "original": context.source_code,
+                "mutant": mutation_result["results"].get("stdout", ""),
+                "tests": generated_tests,
+                "approved_invariants": approved_invariants,
+                "metrics": metrics_report,
+            },
+        )
+        log_step(f"Analyzing mutation results for {context.function_name}...")
+        mutant_analysis = response_text(model, metrics_prompt, stream=stream)
+        write_artifact(out_dir / "mutation_analysis.md", mutant_analysis)
+
+    doc_prompt = render_prompt(
+        prompt_dir / "documentation_generation_prompt.md",
+        common
+        | {
+            "invariants": approved_invariants,
+            "tests": generated_tests,
+            "mutant_analysis": mutant_analysis,
+            "reviewer_notes": all_reviewer_notes,
+        },
+    )
+    log_step(f"Generating Markdown documentation for {context.function_name}...")
+    documentation = response_text(model, doc_prompt, stream=stream)
+    write_artifact(out_dir / "reconstructed_documentation.md", strip_markdown_fences(documentation))
+    log_success(f"Documentation complete for {context.function_name}")
+    return out_dir
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Generate invariant-backed API documentation using the bundled prompts."
+    )
+    parser.add_argument("source", nargs="?", help="Python source file to document.")
+    parser.add_argument("--config", help="JSON config file. CLI flags override config values.")
+    parser.add_argument("--function", help="Function/API name to document.")
+    parser.add_argument("--functions", nargs="+", help="Several functions in the same source file.")
+    parser.add_argument("--docs", help="Existing documentation file.")
+    parser.add_argument("--review", help="Human-reviewed invariant file. Required to continue unless --auto-approve is set.")
+    parser.add_argument("--reviewer-notes", default="", help="Extra reviewer notes.")
+    parser.add_argument("--prompt-dir", default=str(DEFAULT_PROMPT_DIR))
+    parser.add_argument("--artifact-root", default=str(ROOT / "artifacts"))
+    parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--no-stream", action="store_true")
+    parser.add_argument("--skip-tests", action="store_true")
+    parser.add_argument("--run-mutation", action="store_true")
+    parser.add_argument("--mutation-dir", help="Directory containing mutmut config.")
+    parser.add_argument("--auto-approve", action="store_true", help="Use generated candidates without human review.")
+    parser.add_argument("--no-auto-continue", action="store_true", help="Do not reuse an existing human_review.md automatically.")
+    parser.add_argument("--force-docs", action="store_true", help="Generate documentation even if metrics fail.")
+    parser.add_argument("--min-validity", type=float, default=0.8)
+    parser.add_argument("--min-soundness", type=float, default=0.8)
+    parser.add_argument("--min-confidence", type=float, default=0.75)
+    parser.add_argument("--min-mutation", type=float, default=0.25)
+    args = parser.parse_args()
+
+    config = load_config(args.config)
+    prompt_dir = Path(config.get("prompt_dir", args.prompt_dir)).expanduser().resolve()
+    artifact_root = Path(config.get("artifact_root", args.artifact_root)).expanduser().resolve()
+    model = config.get("model", args.model)
+    run_mutation_flag = args.run_mutation or bool(config.get("run_mutation", False))
+    skip_tests = args.skip_tests or bool(config.get("skip_tests", False))
+    auto_approve = args.auto_approve or bool(config.get("auto_approve", False))
+    auto_continue = bool(config.get("auto_continue", not args.no_auto_continue))
+    force_docs = args.force_docs or bool(config.get("force_docs", False))
+    min_validity = float(config.get("min_validity", args.min_validity))
+    min_soundness = float(config.get("min_soundness", args.min_soundness))
+    min_confidence = float(config.get("min_confidence", args.min_confidence))
+    min_mutation = config.get("min_mutation", args.min_mutation)
+    min_mutation = None if min_mutation is None else float(min_mutation)
+
+    api_configs = config.get("apis")
+    if api_configs:
+        if not isinstance(api_configs, list):
+            raise SystemExit("Config field 'apis' must be a list.")
+    else:
+        source = args.source or config.get("source")
+        if not source:
+            raise SystemExit("Provide a source file, or a JSON config with 'source' or 'apis'.")
+        function_names = args.functions or [args.function or config.get("function")]
+        api_configs = [
+            {
+                "source": source,
+                "function": function_name,
+                "docs": args.docs or config.get("docs"),
+                "review": args.review or config.get("review"),
+                "reviewer_notes": args.reviewer_notes or config.get("reviewer_notes", ""),
+                "mutation_dir": args.mutation_dir or config.get("mutation_dir"),
+            }
+            for function_name in function_names
+        ]
+
+    output_dirs: list[Path] = []
+    for api_config in api_configs:
+        source = api_config.get("source")
+        if not source:
+            raise SystemExit("Every API config must include a 'source' field.")
+        source_path = Path(source).expanduser().resolve()
+        mutation_dir = Path(
+            api_config.get("mutation_dir")
+            or args.mutation_dir
+            or config.get("mutation_dir")
+            or source_path.parent
+        ).resolve()
+        output_dirs.append(
+            run_pipeline(
+                source_path=source_path,
+                function_name=api_config.get("function"),
+                docs_path=api_config.get("docs"),
+                review_path=api_config.get("review"),
+                reviewer_notes=api_config.get("reviewer_notes", args.reviewer_notes or config.get("reviewer_notes", "")),
+                prompt_dir=prompt_dir,
+                artifact_root=artifact_root,
+                model=api_config.get("model", model),
+                stream=not args.no_stream,
+                skip_tests=skip_tests,
+                run_mutation_flag=run_mutation_flag or bool(api_config.get("run_mutation", False)),
+                mutation_dir=mutation_dir,
+                auto_approve=bool(api_config.get("auto_approve", auto_approve)),
+                auto_continue=bool(api_config.get("auto_continue", auto_continue)),
+                force_docs=bool(api_config.get("force_docs", force_docs)),
+                min_validity=float(api_config.get("min_validity", min_validity)),
+                min_soundness=float(api_config.get("min_soundness", min_soundness)),
+                min_confidence=float(api_config.get("min_confidence", min_confidence)),
+                min_mutation=(
+                    None
+                    if api_config.get("min_mutation", min_mutation) is None
+                    else float(api_config.get("min_mutation", min_mutation))
+                ),
+            )
+        )
+
+    log_success("Done. Artifacts are in:")
+    for output_dir in output_dirs:
+        print(color(f"- {output_dir}", "green"))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

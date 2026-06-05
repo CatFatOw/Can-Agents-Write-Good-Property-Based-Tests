@@ -1,0 +1,27 @@
+{
+  "model": "gpt-5.4-mini",
+  "artifact_root": "artifacts/numpy",
+  "run_mutation": false,
+  "auto_continue": true,
+  "min_validity": 0.8,
+  "min_soundness": 0.8,
+  "min_confidence": 0.75,
+  "min_mutation": 0.25,
+  "apis": [
+    {
+      "source": "source_code/numpy/linalg/_linalg.py",
+      "function": "norm",
+      "reviewer_notes": "Document this as numpy.linalg.norm. For generated tests, use small finite arrays. For keepdims=True, compare to an oracle that also preserves dimensions. Do not make broad invalid-axis exception claims; different invalid axes may raise TypeError, ValueError, OverflowError, or AxisError."
+    },
+    {
+      "source": "source_code/numpy/_core/multiarray.py",
+      "function": "dot",
+      "reviewer_notes": "Document this as numpy.dot. For generated tests, use small finite bounded numeric arrays and avoid NaN, infinities, and huge complex values unless explicitly testing them. Use allclose for floating/complex results. Do not assert that out is returned for scalar dot results."
+    },
+    {
+      "source": "source_code/numpy/_core/strings.py",
+      "function": "add",
+      "reviewer_notes": "Document this as numpy.strings.add. The Python module exposes the add ufunc imported from numpy. For generated tests, import numpy.strings.add from the installed/runtime NumPy namespace. Restrict tests to string-like inputs. Do not claim that numeric operands are rejected because the exposed ufunc may dispatch to numeric addition. For bytes dtype, avoid null bytes in generated data."
+    }
+  ]
+}
