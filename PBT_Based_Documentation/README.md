@@ -1,5 +1,8 @@
 # Invariant-Based Documentation Generator
 
+## Can Invariant Based Documentation Generation Create Better Documentation Than Traditional Documentation?
+
+
 This directory contains a prototype workflow for reconstructing API
 documentation from implementation-backed behavioral claims. The system extracts
 candidate invariants from source code, asks for human review, generates
