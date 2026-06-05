@@ -166,6 +166,34 @@ human_quantize = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), '
 codex_quantize = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 gemini_quantize = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
 
+# Numpy
+
+# Numpy add
+human_np_add = {'validity': 0.6666666666666666, 'soundness': 1.0, 'validity_errors': {'TypeError'}, 'soundness_errors': set()}
+codex_np_add = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+gemini_np_add = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+# Numpy cumsum
+human_np_cumsum = {'validity': 0.6666666666666666, 'soundness': 1.0, 'validity_errors': {'ValueError'}, 'soundness_errors': set()}
+codex_np_cumsum = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+gemini_np_cumsum = {'validity': 1.0, 'soundness': 0.15000000000000002, 'validity_errors': set(), 'soundness_errors': {'\nNot equal to tolerance rtol=0.0001, atol=0.0001\n\nMismatched elements: 1 / 17 (5.88%)\nMax absolute difference among violations: 0.00016275\nMax relative difference among violations: 0.00048825\n ACTUAL: array([256.      , 256.      , 256.      , 256.      , 256.      ,\n       256.      , 256.      , 256.      , 256.      , 256.      ,\n       256.      , 256.      , 256.      , 256.      , 256.      ,\n         0.333496, 256.      ], dtype=float32)\n DESIRED: array([256.      , 256.      , 256.      , 256.      , 256.      ,\n       256.      , 256.      , 256.      , 256.      , 256.      ,\n       256.      , 256.      , 256.      , 256.      , 256.      ,\n         0.333333, 256.      ], dtype=float32)'}}
+
+
+# Numpy dot
+human_np_dot = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+codex_np_dot = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+
+# Numpy linalg.norm()
+human_linalg_norm = {'validity': 0.6666666666666666, 'soundness': 1.0, 'validity_errors': {'ExceptionGroup'}, 'soundness_errors': set()}
+codex_linalg_norm = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
+
+# Numpy sum
+human_np_sum = {'validity': 0.6666666666666666, 'soundness': 0.3333333333333333, 'validity_errors': {'TypeError'}, 'soundness_errors': {''}}
+codex_np_sum = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+gemini_np_sum = {'validity': 1.0, 'soundness': 1.0, 'validity_errors': set(), 'soundness_errors': set()}
+
 def plot_pbt_results(human_results, agent_results, api_name, agent_name="Codex"):
     models = ["Human", agent_name]
 
