@@ -1,6 +1,6 @@
 # Can Agents Write Good Property-Based Tests from Documentation?
 
-Research project for the Carnegie Mellon University REU program by Michael Wu,
+Research project for the Carnegie Mellon University REU program by Michael Wu and Gorden Jin,
 May 2026.
 
 This repository studies whether modern coding agents can generate useful
