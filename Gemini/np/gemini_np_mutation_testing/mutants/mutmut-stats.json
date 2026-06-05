@@ -1,0 +1,66 @@
+{
+    "tests_by_mangled_function_name": {
+        "numpy._core.fromnumeric.x__wrapreduction": [
+            "test_gemini_np_sum_wrapper.py::test_np_sum",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_identity",
+            "test_gemini_np_cumsum_wrapper.py::test_numpy_cumsum",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_where_condition",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_operator_equivalence",
+            "test_gemini_np_dot_wrapper.py::test_numpy_dot",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_output_shape",
+            "test_gemini_np_linalg_norm_wrapper.py::test_linalg_norm"
+        ],
+        "numpy.linalg._linalg.x__makearray": [
+            "test_gemini_np_linalg_norm_wrapper.py::test_linalg_norm",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity"
+        ],
+        "numpy.linalg._linalg.x_isComplexType": [
+            "test_gemini_np_linalg_norm_wrapper.py::test_linalg_norm",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity"
+        ],
+        "numpy.linalg._linalg.x__realType": [
+            "test_gemini_np_linalg_norm_wrapper.py::test_linalg_norm",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity"
+        ],
+        "numpy.linalg._linalg.x__assert_2d": [
+            "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity"
+        ],
+        "numpy.linalg._linalg.x__commonType": [
+            "test_gemini_np_linalg_norm_wrapper.py::test_linalg_norm",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity"
+        ],
+        "numpy.linalg._linalg.x__assert_stacked_2d": [
+            "test_gemini_np_linalg_norm_wrapper.py::test_linalg_norm",
+            "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity"
+        ],
+        "numpy.linalg._linalg.x__assert_stacked_square": [
+            "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity"
+        ],
+        "numpy._core.multiarray.x__override___module__": [
+            "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity"
+        ],
+        "numpy._core.fromnumeric.x__wrapreduction_any_all": [
+            "test_gemini_np_sum_wrapper.py::test_np_sum",
+            "test_gemini_np_linalg_norm_wrapper.py::test_linalg_norm"
+        ],
+        "numpy._core.fromnumeric.x__wrapfunc": [
+            "test_gemini_np_cumsum_wrapper.py::test_numpy_cumsum"
+        ],
+        "numpy.linalg._linalg.x__multi_svd_norm": [
+            "test_gemini_np_linalg_norm_wrapper.py::test_linalg_norm"
+        ]
+    },
+    "duration_by_test": {
+        "test_gemini_np_add_wrapper.py::test_numpy_add_commutativity": 0.16536454201559536,
+        "test_gemini_np_add_wrapper.py::test_numpy_add_identity": 0.08819537400268018,
+        "test_gemini_np_add_wrapper.py::test_numpy_add_operator_equivalence": 0.08677458303282037,
+        "test_gemini_np_add_wrapper.py::test_numpy_add_output_shape": 0.07763000100385398,
+        "test_gemini_np_add_wrapper.py::test_numpy_add_where_condition": 0.1021603739936836,
+        "test_gemini_np_sum_wrapper.py::test_np_sum": 0.14803758397465572,
+        "test_gemini_np_cumsum_wrapper.py::test_numpy_cumsum": 0.11816095799440518,
+        "test_gemini_np_dot_wrapper.py::test_numpy_dot": 0.1117702070332598,
+        "test_gemini_np_linalg_norm_wrapper.py::test_linalg_norm": 0.08627154200803488
+    },
+    "stats_time": 1.5607899999999995
+}

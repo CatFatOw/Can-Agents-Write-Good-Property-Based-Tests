@@ -1,0 +1,54 @@
+{
+    "tests_by_mangled_function_name": {
+        "statistics.x_correlation": [
+            "test_codex_statistics_correlation.py::test_correlation_property"
+        ],
+        "statistics.x_geometric_mean": [
+            "test_codex_statistics_geometric_mean.py::test_geometric_mean_property"
+        ],
+        "statistics.x_fmean": [
+            "test_codex_statistics_geometric_mean.py::test_geometric_mean_property"
+        ],
+        "statistics.x__sum": [
+            "test_codex_statistics_variance_wrapper.py::test_variance_property",
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property",
+            "test_codex_statistics_mean.py::test_mean"
+        ],
+        "statistics.x_linear_regression": [
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property"
+        ],
+        "statistics.x_mean": [
+            "test_codex_statistics_variance_wrapper.py::test_variance_property",
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property",
+            "test_codex_statistics_mean.py::test_mean"
+        ],
+        "statistics.x__convert": [
+            "test_codex_statistics_variance_wrapper.py::test_variance_property",
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property",
+            "test_codex_statistics_mean.py::test_mean"
+        ],
+        "statistics.x__coerce": [
+            "test_codex_statistics_variance_wrapper.py::test_variance_property",
+            "test_codex_statistics_linear_regression.py::test_linear_regression_property",
+            "test_codex_statistics_mean.py::test_mean"
+        ],
+        "statistics.x_median": [
+            "test_codex_statistics_median_wrapper.py::test_median_property"
+        ],
+        "statistics.x_variance": [
+            "test_codex_statistics_variance_wrapper.py::test_variance_property"
+        ],
+        "statistics.x__ss": [
+            "test_codex_statistics_variance_wrapper.py::test_variance_property"
+        ]
+    },
+    "duration_by_test": {
+        "test_codex_statistics_correlation.py::test_correlation_property": 0.08912895902176388,
+        "test_codex_statistics_geometric_mean.py::test_geometric_mean_property": 0.03122324901050888,
+        "test_codex_statistics_linear_regression.py::test_linear_regression_property": 0.02522012501140125,
+        "test_codex_statistics_mean.py::test_mean": 0.1029646260139998,
+        "test_codex_statistics_median_wrapper.py::test_median_property": 0.052749958995264024,
+        "test_codex_statistics_variance_wrapper.py::test_variance_property": 0.08781462503247894
+    },
+    "stats_time": 0.941586
+}

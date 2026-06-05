@@ -1,0 +1,114 @@
+{
+    "tests_by_mangled_function_name": {
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1__init__": [
+            "test_gemini_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isotime": [
+            "test_gemini_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1__init__": [
+            "test_gemini_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1_convert": [
+            "test_gemini_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isodate": [
+            "test_gemini_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_tzstr": [
+            "test_gemini_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1__init__": [
+            "test_gemini_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser.isoparser.x\u01c1isoparser\u01c1_parse_isodate_common": [
+            "test_gemini_isoparse_wrapper.py::test_isoparse"
+        ],
+        "dateutil.parser._parser.x\u01c1_timelex\u01c1__init__": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_find_hms_idx": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_recombine_skipped": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1_timelex\u01c1__next__": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1resolve_ymd": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_to_decimal": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_build_naive": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x_parse": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_could_be_tzname": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1__init__": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1_timelex\u01c1get_token": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1parse": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parsems": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parse": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parse_min_sec": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1validate": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1weekday": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1convertyear": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1_resultbase\u01c1__init__": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1hms": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1_ymd\u01c1append": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1jump": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1ampm": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1_resultbase\u01c1__len__": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parserinfo\u01c1month": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_parse_numeric_token": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ],
+        "dateutil.parser._parser.x\u01c1parser\u01c1_build_tzaware": [
+            "test_gemini_parse_wrapper.py::test_parse_property"
+        ]
+    },
+    "duration_by_test": {
+        "test_gemini_isoparse_wrapper.py::test_isoparse": 0.07808566698804498,
+        "test_gemini_parse_wrapper.py::test_parse_property": 0.10036870898329653
+    },
+    "stats_time": 0.814263
+}

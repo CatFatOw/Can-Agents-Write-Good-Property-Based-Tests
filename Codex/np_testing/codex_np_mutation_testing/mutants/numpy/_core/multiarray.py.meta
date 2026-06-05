@@ -1,0 +1,27 @@
+{
+    "exit_code_by_key": {
+        "numpy._core.multiarray.x__override___module____mutmut_1": 0,
+        "numpy._core.multiarray.x__override___module____mutmut_2": 0,
+        "numpy._core.multiarray.x__override___module____mutmut_3": 0,
+        "numpy._core.multiarray.x__override___module____mutmut_4": 0,
+        "numpy._core.multiarray.x__override___module____mutmut_5": 0,
+        "numpy._core.multiarray.x__override___module____mutmut_6": 0
+    },
+    "durations_by_key": {
+        "numpy._core.multiarray.x__override___module____mutmut_1": 0.766698,
+        "numpy._core.multiarray.x__override___module____mutmut_2": 0.850035,
+        "numpy._core.multiarray.x__override___module____mutmut_3": 1.36345,
+        "numpy._core.multiarray.x__override___module____mutmut_4": 1.252706,
+        "numpy._core.multiarray.x__override___module____mutmut_5": 1.255594,
+        "numpy._core.multiarray.x__override___module____mutmut_6": 1.272855
+    },
+    "type_check_error_by_key": {},
+    "estimated_durations_by_key": {
+        "numpy._core.multiarray.x__override___module____mutmut_1": 0.1902666239766404,
+        "numpy._core.multiarray.x__override___module____mutmut_2": 0.1902666239766404,
+        "numpy._core.multiarray.x__override___module____mutmut_3": 0.1902666239766404,
+        "numpy._core.multiarray.x__override___module____mutmut_4": 0.1902666239766404,
+        "numpy._core.multiarray.x__override___module____mutmut_5": 0.1902666239766404,
+        "numpy._core.multiarray.x__override___module____mutmut_6": 0.1902666239766404
+    }
+}

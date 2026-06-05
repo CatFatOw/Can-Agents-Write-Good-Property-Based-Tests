@@ -1,0 +1,61 @@
+{
+    "tests_by_mangled_function_name": {
+        "numpy._core.fromnumeric.x__wrapreduction_any_all": [
+            "test_codex_np_sum_wrapper.py::test_sum",
+            "test_codex_np_add_wrapper.py::test_add",
+            "test_codex_np_cumsum_wrapper.py::test_cumsum",
+            "test_codex_np_linalg_norm_wrapper.py::test_linalg_norm",
+            "test_codex_np_dot_wrapper.py::test_dot"
+        ],
+        "numpy.linalg._linalg.x__assert_2d": [
+            "test_codex_np_add_wrapper.py::test_add"
+        ],
+        "numpy._core.multiarray.x__override___module__": [
+            "test_codex_np_add_wrapper.py::test_add"
+        ],
+        "numpy.linalg._linalg.x__realType": [
+            "test_codex_np_add_wrapper.py::test_add",
+            "test_codex_np_linalg_norm_wrapper.py::test_linalg_norm"
+        ],
+        "numpy.linalg._linalg.x__assert_stacked_2d": [
+            "test_codex_np_add_wrapper.py::test_add",
+            "test_codex_np_linalg_norm_wrapper.py::test_linalg_norm"
+        ],
+        "numpy.linalg._linalg.x__commonType": [
+            "test_codex_np_add_wrapper.py::test_add",
+            "test_codex_np_linalg_norm_wrapper.py::test_linalg_norm"
+        ],
+        "numpy._core.fromnumeric.x__wrapreduction": [
+            "test_codex_np_sum_wrapper.py::test_sum",
+            "test_codex_np_add_wrapper.py::test_add",
+            "test_codex_np_cumsum_wrapper.py::test_cumsum",
+            "test_codex_np_linalg_norm_wrapper.py::test_linalg_norm",
+            "test_codex_np_dot_wrapper.py::test_dot"
+        ],
+        "numpy.linalg._linalg.x_isComplexType": [
+            "test_codex_np_add_wrapper.py::test_add",
+            "test_codex_np_linalg_norm_wrapper.py::test_linalg_norm"
+        ],
+        "numpy.linalg._linalg.x__assert_stacked_square": [
+            "test_codex_np_add_wrapper.py::test_add"
+        ],
+        "numpy.linalg._linalg.x__makearray": [
+            "test_codex_np_add_wrapper.py::test_add",
+            "test_codex_np_linalg_norm_wrapper.py::test_linalg_norm"
+        ],
+        "numpy._core.fromnumeric.x__wrapfunc": [
+            "test_codex_np_cumsum_wrapper.py::test_cumsum"
+        ],
+        "numpy.linalg._linalg.x__multi_svd_norm": [
+            "test_codex_np_linalg_norm_wrapper.py::test_linalg_norm"
+        ]
+    },
+    "duration_by_test": {
+        "test_codex_np_add_wrapper.py::test_add": 0.1902666239766404,
+        "test_codex_np_sum_wrapper.py::test_sum": 0.12551124999299645,
+        "test_codex_np_cumsum_wrapper.py::test_cumsum": 0.12805241701425985,
+        "test_codex_np_dot_wrapper.py::test_dot": 0.11145166595815681,
+        "test_codex_np_linalg_norm_wrapper.py::test_linalg_norm": 0.12924591699265875
+    },
+    "stats_time": 1.2062940000000002
+}

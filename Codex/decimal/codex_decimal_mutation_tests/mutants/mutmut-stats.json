@@ -1,0 +1,310 @@
+{
+    "tests_by_mangled_function_name": {
+        "decimal.x\u01c1Decimal\u01c1__abs__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__float__": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__mul__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Context\u01c1_set_signal_dict": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__lt__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1quantize": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Context\u01c1Etiny": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_isinteger": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1_Log10Memoize\u01c1__init__": [
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_isinfinity": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Context\u01c1quantize": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__bool__": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x_getcontext": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__hash__": [
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_check_nans": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__pos__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_rescale": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_compare_check_nans": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1is_nan": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x__convert_other": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1is_finite": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__str__": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1as_integer_ratio": [
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_power_exact": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__ge__": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_cmp": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Context\u01c1divide": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1copy_negate": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Context\u01c1Etop": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__truediv__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1is_signed": [
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Context\u01c1_set_integer_check": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__neg__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_isnan": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__eq__": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x__dec_from_triple": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__pow__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1adjusted": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1is_zero": [
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_fix": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1_WorkRep\u01c1__init__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x__convert_for_comparison": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property",
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Context\u01c1__init__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__int__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Context\u01c1multiply": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_log10_exp_bound": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property",
+            "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1is_snan": [
+            "test_codex_decimal_compare_wrapper.py::test_compare_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1compare": [
+            "test_codex_decimal_compare_wrapper.py::test_compare_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_fix_nan": [
+            "test_codex_decimal_compare_wrapper.py::test_compare_property",
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__add__": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1fma": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x__normalize": [
+            "test_codex_decimal_fma_wrapper.py::test_fma_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__gt__": [
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property"
+        ],
+        "decimal.x\u01c1Context\u01c1_raise_error": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property",
+            "test_codex_decimal_from_float_wrapper.py::test_from_float_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1as_tuple": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_round_ceiling": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_round_down": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_round_half_up": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_round_up": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_round_half_even": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1to_integral_value": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_round_floor": [
+            "test_codex_decimal_quantize_wrapper.py::test_quantize_property"
+        ]
+    },
+    "duration_by_test": {
+        "test_codex_decimal_as_integer_wrapper.py::test_as_integer_ratio_property": 0.06486579202464782,
+        "test_codex_decimal_compare_wrapper.py::test_compare_property": 0.08559591701487079,
+        "test_codex_decimal_fma_wrapper.py::test_fma_property": 0.08321866800542921,
+        "test_codex_decimal_from_float_wrapper.py::test_from_float_property": 0.03562104099546559,
+        "test_codex_decimal_quantize_wrapper.py::test_quantize_property": 0.05952316799084656
+    },
+    "stats_time": 0.8911200000000001
+}

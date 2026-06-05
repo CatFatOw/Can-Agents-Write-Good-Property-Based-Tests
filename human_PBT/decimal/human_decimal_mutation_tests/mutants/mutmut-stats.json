@@ -1,0 +1,393 @@
+{
+    "tests_by_mangled_function_name": {
+        "decimal.x\u01c1Context\u01c1_set_signal_dict": [
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_as_integer_wrapper.py::test_same_value"
+        ],
+        "decimal.x\u01c1_Log10Memoize\u01c1__init__": [
+            "test_human_decimal_as_integer_wrapper.py::test_same_value"
+        ],
+        "decimal.x\u01c1Decimal\u01c1as_integer_ratio": [
+            "test_human_decimal_as_integer_wrapper.py::test_gcd",
+            "test_human_decimal_as_integer_wrapper.py::test_same_value",
+            "test_human_decimal_as_integer_wrapper.py::test_zero",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__bool__": [
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering",
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_from_float_wrapper.py::test_sign",
+            "test_human_decimal_as_integer_wrapper.py::test_same_value",
+            "test_human_decimal_as_integer_wrapper.py::test_zero",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_compare_wrapper.py::test_transitivity",
+            "test_human_decimal_as_integer_wrapper.py::test_gcd",
+            "test_human_decimal_compare_wrapper.py::test_reflexivity",
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_compare_wrapper.py::test_symmetric",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_compare_wrapper.py::test_correct_return",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt"
+        ],
+        "decimal.x\u01c1Context\u01c1__init__": [
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_as_integer_wrapper.py::test_same_value"
+        ],
+        "decimal.x\u01c1Context\u01c1_set_integer_check": [
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_as_integer_wrapper.py::test_same_value"
+        ],
+        "decimal.x__convert_for_comparison": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_from_float_wrapper.py::test_preserved",
+            "test_human_decimal_compare_wrapper.py::test_reflexivity",
+            "test_human_decimal_from_float_wrapper.py::test_sign",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_compare_wrapper.py::test_symmetric",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_compare_wrapper.py::test_correct_return",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_compare_wrapper.py::test_transitivity",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_cmp": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_from_float_wrapper.py::test_preserved",
+            "test_human_decimal_compare_wrapper.py::test_reflexivity",
+            "test_human_decimal_from_float_wrapper.py::test_sign",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_compare_wrapper.py::test_symmetric",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_compare_wrapper.py::test_correct_return",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_compare_wrapper.py::test_transitivity",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__eq__": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_from_float_wrapper.py::test_preserved",
+            "test_human_decimal_compare_wrapper.py::test_reflexivity",
+            "test_human_decimal_from_float_wrapper.py::test_sign",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_compare_wrapper.py::test_symmetric",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_compare_wrapper.py::test_correct_return",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_compare_wrapper.py::test_transitivity",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering"
+        ],
+        "decimal.x\u01c1Decimal\u01c1compare": [
+            "test_human_decimal_compare_wrapper.py::test_reflexivity",
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_compare_wrapper.py::test_symmetric",
+            "test_human_decimal_compare_wrapper.py::test_correct_return",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering",
+            "test_human_decimal_compare_wrapper.py::test_transitivity"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_check_nans": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_from_float_wrapper.py::test_preserved",
+            "test_human_decimal_compare_wrapper.py::test_reflexivity",
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_from_float_wrapper.py::test_sign",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_compare_wrapper.py::test_symmetric",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_compare_wrapper.py::test_correct_return",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_compare_wrapper.py::test_transitivity",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering"
+        ],
+        "decimal.x\u01c1Decimal\u01c1adjusted": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_compare_wrapper.py::test_reflexivity",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_compare_wrapper.py::test_symmetric",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_compare_wrapper.py::test_correct_return",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_compare_wrapper.py::test_transitivity",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_isnan": [
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_from_float_wrapper.py::test_preserved",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering",
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_from_float_wrapper.py::test_sign",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_compare_wrapper.py::test_transitivity",
+            "test_human_decimal_from_float_wrapper.py::test_round_trip",
+            "test_human_decimal_compare_wrapper.py::test_reflexivity",
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_compare_wrapper.py::test_symmetric",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_compare_wrapper.py::test_correct_return",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt"
+        ],
+        "decimal.x__convert_other": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_compare_wrapper.py::test_reflexivity",
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_compare_wrapper.py::test_symmetric",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_compare_wrapper.py::test_correct_return",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_compare_wrapper.py::test_transitivity",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_fix_nan": [
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering"
+        ],
+        "decimal.x\u01c1Decimal\u01c1is_nan": [
+            "test_human_decimal_from_float_wrapper.py::test_preserved",
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering",
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases"
+        ],
+        "decimal.x_getcontext": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_from_float_wrapper.py::test_round_trip",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_compare_wrapper.py::test_nan_return",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_from_float_wrapper.py::test_sign"
+        ],
+        "decimal.x\u01c1_WorkRep\u01c1__init__": [
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add"
+        ],
+        "decimal.x__dec_from_triple": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_from_float_wrapper.py::test_round_trip",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_from_float_wrapper.py::test_sign"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_fix": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma"
+        ],
+        "decimal.x\u01c1Context\u01c1Etop": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__mul__": [
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add"
+        ],
+        "decimal.x\u01c1Decimal\u01c1fma": [
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_fma_wrapper.py::test_coefficients"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__add__": [
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_fma_wrapper.py::test_coefficients"
+        ],
+        "decimal.x__normalize": [
+            "test_human_decimal_fma_wrapper.py::test_fma",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add"
+        ],
+        "decimal.x\u01c1Context\u01c1Etiny": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_rescale": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_fma_wrapper.py::test_coefficients",
+            "test_human_decimal_wrapper.py::test_fma_matches_multiply_add",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_fma_wrapper.py::test_commutivity",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_fma_wrapper.py::test_fma"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_isinfinity": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_from_float_wrapper.py::test_preserved"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__lt__": [
+            "test_human_decimal_from_float_wrapper.py::test_sign",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_compare_check_nans": [
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt",
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_from_float_wrapper.py::test_sign"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__gt__": [
+            "test_human_decimal_from_float_wrapper.py::test_sign",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value",
+            "test_human_decimal_wrapper.py::test_compare_returns_ordering"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__str__": [
+            "test_human_decimal_from_float_wrapper.py::test_round_trip",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__float__": [
+            "test_human_decimal_from_float_wrapper.py::test_round_trip",
+            "test_human_decimal_wrapper.py::test_from_float_preserves_float_value"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__hash__": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__ge__": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt"
+        ],
+        "decimal.x\u01c1Decimal\u01c1quantize": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_round_half_up": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt"
+        ],
+        "decimal.x\u01c1Context\u01c1_raise_error": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt"
+        ],
+        "decimal.x\u01c1Decimal\u01c1_round_half_even": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent",
+            "test_human_decimal_quantized_wrapper.py::test_ideompt"
+        ],
+        "decimal.x\u01c1Decimal\u01c1as_tuple": [
+            "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases",
+            "test_human_decimal_quantized_wrapper.py::test_same_exponent"
+        ],
+        "decimal.x\u01c1Decimal\u01c1__truediv__": [
+            "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction"
+        ]
+    },
+    "duration_by_test": {
+        "test_human_decimal_as_integer_wrapper.py::test_same_value": 0.06541912499233149,
+        "test_human_decimal_as_integer_wrapper.py::test_gcd": 0.06360345703433268,
+        "test_human_decimal_as_integer_wrapper.py::test_zero": 0.031943499023327604,
+        "test_human_decimal_compare_wrapper.py::test_correct_return": 0.039046833000611514,
+        "test_human_decimal_compare_wrapper.py::test_reflexivity": 0.03269041600287892,
+        "test_human_decimal_compare_wrapper.py::test_symmetric": 0.039957167027750984,
+        "test_human_decimal_compare_wrapper.py::test_transitivity": 0.09247587397112511,
+        "test_human_decimal_compare_wrapper.py::test_nan_return": 0.04168412502622232,
+        "test_human_decimal_fma_wrapper.py::test_fma": 0.04955812502885237,
+        "test_human_decimal_fma_wrapper.py::test_commutivity": 0.052661499998066574,
+        "test_human_decimal_fma_wrapper.py::test_coefficients": 0.04828795796493068,
+        "test_human_decimal_from_float_wrapper.py::test_preserved": 0.00020804197993129492,
+        "test_human_decimal_from_float_wrapper.py::test_sign": 0.030249291012296453,
+        "test_human_decimal_from_float_wrapper.py::test_round_trip": 0.02886566595407203,
+        "test_human_decimal_quantized_wrapper.py::test_ideompt": 0.0408273330249358,
+        "test_human_decimal_quantized_wrapper.py::test_special_cases": 0.0026484169939067215,
+        "test_human_decimal_quantized_wrapper.py::test_same_exponent": 0.03549766700598411,
+        "test_human_decimal_wrapper.py::test_as_integer_ratio_value_and_reduction": 0.03259133399114944,
+        "test_human_decimal_wrapper.py::test_compare_returns_ordering": 0.07626591599546373,
+        "test_human_decimal_wrapper.py::test_fma_matches_multiply_add": 0.04878579100477509,
+        "test_human_decimal_wrapper.py::test_from_float_preserves_float_value": 0.03216004199930467,
+        "test_human_decimal_wrapper.py::test_quantize_exponent_and_special_cases": 0.041044458048418164
+    },
+    "stats_time": 1.5115959999999995
+}

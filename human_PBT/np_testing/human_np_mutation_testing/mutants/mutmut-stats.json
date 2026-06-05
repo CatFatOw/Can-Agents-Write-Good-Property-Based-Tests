@@ -1,0 +1,44 @@
+{
+    "tests_by_mangled_function_name": {
+        "numpy._core.fromnumeric.x__wrapreduction_any_all": [
+            "test_human_np_sum_wrapper.py::test_axis",
+            "test_human_np_sum_wrapper.py::test_edge_cases",
+            "test_human_np_sum_wrapper.py::test_scalar"
+        ],
+        "numpy._core.fromnumeric.x__wrapreduction": [
+            "test_human_np_sum_wrapper.py::test_axis",
+            "test_human_np_sum_wrapper.py::test_edge_cases",
+            "test_human_np_sum_wrapper.py::test_scalar",
+            "test_human_np_cumsum_wrapper.py::test_sum"
+        ],
+        "numpy.linalg._linalg.x_isComplexType": [
+            "test_human_np_linalg_norm_wrapper.py::test_l2norm",
+            "test_human_np_linalg_norm_wrapper.py::test_triangle",
+            "test_human_np_linalg_norm_wrapper.py::test_specific_norms"
+        ],
+        "numpy._core.fromnumeric.x__wrapfunc": [
+            "test_human_np_cumsum_wrapper.py::test_sum",
+            "test_human_np_cumsum_wrapper.py::test_scale",
+            "test_human_np_cumsum_wrapper.py::test_range_sum"
+        ]
+    },
+    "duration_by_test": {
+        "test_human_np_sum_wrapper.py::test_axis": 0.05027262298972346,
+        "test_human_np_sum_wrapper.py::test_edge_cases": 0.009925709018716589,
+        "test_human_np_sum_wrapper.py::test_scalar": 0.10500591699383222,
+        "test_human_np_add_wrapper.py::test_preservation": 0.14869504098896869,
+        "test_human_np_linalg_norm_wrapper.py::test_triangle": 0.10840429100790061,
+        "test_human_np_cumsum_wrapper.py::test_scale": 0.1316242069879081,
+        "test_human_np_add_wrapper.py::test_dtype": 0.09948912501567975,
+        "test_human_np_add_wrapper.py::test_commutative": 0.10605854200548492,
+        "test_human_np_dot_wrapper.py::test_scaling": 0.11581133399158716,
+        "test_human_np_linalg_norm_wrapper.py::test_l2norm": 0.07892495798296295,
+        "test_human_np_cumsum_wrapper.py::test_range_sum": 0.15701645697117783,
+        "test_human_np_linalg_norm_wrapper.py::test_specific_norms": 0.07014337499276735,
+        "test_human_np_cumsum_wrapper.py::test_sum": 0.07305783298215829,
+        "test_human_np_dot_wrapper.py::test_same": 0.09715000097639859,
+        "test_human_np_dot_wrapper.py::test_scalar": 0.09599441601312719,
+        "test_human_np_dot_wrapper.py::test_formula": 0.11549441798706539
+    },
+    "stats_time": 0.86063
+}

@@ -1,0 +1,21 @@
+{
+    "tests_by_mangled_function_name": {
+        "zlib_target.x_compress": [
+            "test_codex_zlib_decompress_wrapper.py::test_decompress_property",
+            "test_codex_zlib_compress_wrapper.py::test_compress_property"
+        ],
+        "zlib_target.x_decompress": [
+            "test_codex_zlib_decompress_wrapper.py::test_decompress_property",
+            "test_codex_zlib_compress_wrapper.py::test_compress_property"
+        ],
+        "zlib_target.x_adler32": [
+            "test_codex_zlib_adler32_wrapper.py::test_adler32_property"
+        ]
+    },
+    "duration_by_test": {
+        "test_codex_zlib_compress_wrapper.py::test_compress_property": 0.056904166005551815,
+        "test_codex_zlib_decompress_wrapper.py::test_decompress_property": 0.060916374990483746,
+        "test_codex_zlib_adler32_wrapper.py::test_adler32_property": 0.03683224902488291
+    },
+    "stats_time": 0.49534600000000006
+}
