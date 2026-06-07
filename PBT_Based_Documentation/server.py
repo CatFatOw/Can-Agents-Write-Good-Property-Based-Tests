@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import importlib
+import inspect
 from contextlib import contextmanager
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -58,36 +60,59 @@ def parse_json_array(text: str) -> list[str]:
     return data
 
 
-def invariant_prompt(api_name: str, documentation: str) -> str:
+def resolve_source(object_name: str) -> tuple[str, str]:
+    normalized = object_name.strip()
+    if not normalized:
+        raise ValueError("Enter a Python object name, for example np.linspace.")
+    if normalized.startswith("np."):
+        normalized = "numpy." + normalized[3:]
+
+    parts = normalized.split(".")
+    last_error: Exception | None = None
+    for index in range(len(parts), 0, -1):
+        module_name = ".".join(parts[:index])
+        attr_parts = parts[index:]
+        try:
+            obj: Any = importlib.import_module(module_name)
+            for attr in attr_parts:
+                obj = getattr(obj, attr)
+            return normalized, inspect.getsource(obj)
+        except Exception as exc:
+            last_error = exc
+
+    raise ValueError(f"Could not inspect {object_name}: {last_error}")
+
+
+def invariant_prompt(api_name: str, source_code: str) -> str:
     return f"""You are extracting candidate invariants for property-based testing and invariant-based documentation.
 
 API name:
 {api_name}
 
-Existing documentation:
-{documentation}
+Source code:
+{source_code}
 
 Task:
-Identify 5 to 8 high-value semantic invariants that are directly supported by the documentation.
+Identify 5 to 8 high-value semantic invariants that are directly supported by the source code and its docstring.
 
 Requirements:
 - Focus on observable behavior users can rely on.
 - Include preconditions when a property is not valid for every input.
 - Prefer strong API contracts over vague restatements.
-- Include edge cases suggested by parameters, return values, examples, dtype, shape, axis, or version notes.
-- Do not invent behavior not supported by the documentation.
+- Include edge cases suggested by branches, exceptions, dtype, shape, axis handling, return values, or version notes.
+- Do not invent behavior not supported by the source code.
 - Do not write tests.
 
 Return ONLY a JSON array of strings. No markdown, no commentary."""
 
 
-def documentation_prompt(api_name: str, documentation: str, invariants: list[str], tone: str) -> str:
+def documentation_prompt(api_name: str, source_code: str, invariants: list[str], tone: str) -> str:
     return f"""You are a professional Python API documentation writer.
 
 Generate publishable Markdown documentation for {api_name}.
 
-Existing documentation:
-{documentation}
+Source code:
+{source_code}
 
 Human-approved semantic invariants:
 {json.dumps(invariants, indent=2)}
@@ -98,7 +123,7 @@ Requested tone:
 Important:
 - Do not mention GPT, prompts, validity scores, soundness scores, mutation scores, or testing methodology.
 - Use the approved invariants as semantic guarantees.
-- Preserve useful factual details from the original documentation.
+- Derive the documentation from the source code, including docstring facts, branches, exceptions, and return behavior.
 - Be careful around behavior that depends on dtype, endpoint, axis, version, platform, or input validity.
 
 Output exactly this Markdown structure:
@@ -141,30 +166,37 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         try:
+            if self.path == "/api/source":
+                payload = self.read_json()
+                object_name = str(payload.get("object_name") or "")
+                api_name, source_code = resolve_source(object_name)
+                self.send_json(200, {"api_name": api_name, "source_code": source_code})
+                return
+
             if self.path == "/api/invariants":
                 payload = self.read_json()
                 api_name = str(payload.get("api_name") or "api.function")
-                documentation = str(payload.get("documentation") or "")
+                source_code = str(payload.get("source_code") or payload.get("documentation") or "")
                 openai_key = str(payload.get("openai_key") or "")
-                if not documentation.strip():
-                    self.send_json(400, {"error": "Documentation is required."})
+                if not source_code.strip():
+                    self.send_json(400, {"error": "Source code is required."})
                     return
-                raw = run_project_gpt(invariant_prompt(api_name, documentation), openai_key)
+                raw = run_project_gpt(invariant_prompt(api_name, source_code), openai_key)
                 self.send_json(200, {"invariants": parse_json_array(raw), "model": MODEL})
                 return
 
             if self.path == "/api/documentation":
                 payload = self.read_json()
                 api_name = str(payload.get("api_name") or "api.function")
-                documentation = str(payload.get("documentation") or "")
+                source_code = str(payload.get("source_code") or payload.get("documentation") or "")
                 invariants = payload.get("invariants") or []
                 tone = str(payload.get("tone") or "contract")
                 openai_key = str(payload.get("openai_key") or "")
-                if not documentation.strip() or not isinstance(invariants, list):
-                    self.send_json(400, {"error": "Documentation and invariants are required."})
+                if not source_code.strip() or not isinstance(invariants, list):
+                    self.send_json(400, {"error": "Source code and invariants are required."})
                     return
                 markdown = strip_markdown_fences(
-                    run_project_gpt(documentation_prompt(api_name, documentation, invariants, tone), openai_key)
+                    run_project_gpt(documentation_prompt(api_name, source_code, invariants, tone), openai_key)
                 )
                 self.send_json(200, {"markdown": markdown, "model": MODEL})
                 return

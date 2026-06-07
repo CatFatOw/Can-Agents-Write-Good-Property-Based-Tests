@@ -4,7 +4,7 @@
 
 ## Interactive Website Demo
 
-This folder also includes a browser demo for the invariant-documentation
+This folder also includes a browser demo for the source-code-to-documentation
 workflow:
 
 ```bash
@@ -18,11 +18,33 @@ Then open:
 http://127.0.0.1:8011
 ```
 
-The site lets you paste an existing documentation block on the left, load the
-formatted `numpy.linspace` example, paste an OpenAI API key, click **Run**,
-review the GPT-generated candidate invariants on the right, and then generate a
-Markdown comparison between the original documentation and the invariant-based
-rewrite.
+The site lets you paste source code on the left, load the exact `numpy.linspace`
+source example, paste an OpenAI API key, click **Run**, review the GPT-generated
+candidate invariants on the right, and then generate a Markdown comparison
+between the original source code and the invariant-based documentation.
+
+You can also try pulling source code from an installed Python object name. The
+site does the local backend equivalent of:
+
+```python
+import numpy as np
+import inspect
+
+print(inspect.getsource(np.linspace))
+```
+
+If lookup fails because the package is missing or the object cannot be
+inspected, paste the source code manually.
+
+### Demo Images
+
+Source lookup with `inspect.getsource(np.linspace)`:
+
+![Source lookup demo](./assets/demo-source-lookup.png)
+
+Backend key check before GPT calls:
+
+![OpenAI key required demo](./assets/demo-openai-key-required.png)
 
 The web server calls this folder's existing `gpt_documentation_generator.py`
 OpenAI wrapper. The default model is `gpt-5.5`, or set `OPENAI_MODEL` before

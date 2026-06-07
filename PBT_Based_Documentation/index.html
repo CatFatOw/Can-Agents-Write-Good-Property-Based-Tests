@@ -16,14 +16,14 @@
           </div>
           <div class="status" id="flow-status" data-mode="draft">
             <span class="status-dot" aria-hidden="true"></span>
-            <span>Paste docs</span>
+            <span>Paste source</span>
           </div>
         </div>
 
         <div class="step-tabs" aria-label="Workflow stages">
           <button type="button" class="step-tab is-active" data-step="input">
             <span aria-hidden="true">01</span>
-            Documentation
+            Source code
           </button>
           <button type="button" class="step-tab" data-step="review">
             <span aria-hidden="true">02</span>
@@ -36,16 +36,24 @@
         </div>
 
         <form class="generator" id="documentation-form">
-          <label for="documentation">Paste documentation</label>
+          <div class="source-lookup" aria-label="Source lookup">
+            <label class="field" for="source-object">
+              <span>Pull source with inspect</span>
+              <input id="source-object" name="source_object" type="text" value="np.linspace" placeholder="np.linspace">
+            </label>
+            <button type="button" class="lookup-button" id="lookup-button">Load source</button>
+          </div>
+
+          <label for="documentation">Paste source code</label>
           <textarea
             id="documentation"
-            name="documentation"
+            name="source_code"
             rows="13"
-            placeholder="Paste an API docstring, reference page, or README section..."
+            placeholder="Paste Python source code, or load it with inspect.getsource(...)."
             required
           ></textarea>
 
-          <div class="prompt-examples" id="prompt-examples" aria-label="Example documentation">
+          <div class="prompt-examples" id="prompt-examples" aria-label="Example source code">
             <button type="button" class="example-prompt" data-example="numpy-linspace">Example: numpy.linspace</button>
           </div>
 
@@ -80,7 +88,7 @@
           <p class="eyebrow">How it works</p>
           <h2 id="model-title">Human-in-the-loop contracts</h2>
           <p>
-            The first pass extracts candidate invariants from the pasted docs.
+            The first pass extracts candidate invariants from the pasted source code.
             You approve the claims, then the studio rewrites the documentation
             as a Markdown contract with preconditions, guarantees, and edge cases.
           </p>
@@ -98,14 +106,14 @@
 
         <div class="paper review-panel" id="review-panel">
           <p class="placeholder">
-            Paste documentation on the left, choose an example if you want, then click Run.
+            Paste source code on the left, load it with inspect, or choose the example, then click Run.
             Candidate invariants will appear here for review.
           </p>
         </div>
 
         <div class="compare-panel is-hidden" id="compare-panel">
           <article class="paper compare-paper" aria-labelledby="original-title">
-            <p class="eyebrow">Original documentation</p>
+            <p class="eyebrow">Original source code</p>
             <h3 id="original-title">Before</h3>
             <pre id="original-doc"></pre>
           </article>
@@ -119,8 +127,8 @@
     </main>
 
     <aside class="notes" aria-label="Workflow notes">
-      <span>Local demo: generated text is deterministic and runs in the browser.</span>
-      <span>Use it to prototype the review UX before connecting the GPT pipeline.</span>
+      <span>Real generation runs through the local Python backend.</span>
+      <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
     <script src="app.js"></script>
