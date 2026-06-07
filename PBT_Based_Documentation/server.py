@@ -5,16 +5,20 @@ import os
 import re
 import importlib
 import inspect
+import pydoc
+import sys
 from contextlib import contextmanager
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from gpt_documentation_generator import response_text as project_response_text
 from gpt_documentation_generator import strip_markdown_fences
 
-
-ROOT = Path(__file__).resolve().parent
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
 
 
@@ -60,12 +64,60 @@ def parse_json_array(text: str) -> list[str]:
     return data
 
 
-def resolve_source(object_name: str) -> tuple[str, str]:
+ALIASES = {
+    "np": "numpy",
+    "pd": "pandas",
+    "plt": "matplotlib.pyplot",
+    "sp": "scipy",
+    "tf": "tensorflow",
+}
+
+
+def normalize_object_name(object_name: str) -> str:
     normalized = object_name.strip()
     if not normalized:
         raise ValueError("Enter a Python object name, for example np.linspace.")
-    if normalized.startswith("np."):
-        normalized = "numpy." + normalized[3:]
+    first, dot, rest = normalized.partition(".")
+    if dot and first in ALIASES:
+        return f"{ALIASES[first]}.{rest}"
+    return normalized
+
+
+def fallback_source(api_name: str, obj: Any, source_error: Exception) -> tuple[str, str]:
+    try:
+        signature = str(inspect.signature(obj))
+    except Exception:
+        signature = "(signature unavailable)"
+    doc = inspect.getdoc(obj) or pydoc.render_doc(obj, "Help on %s")
+    fallback = f'''# Python source unavailable for {api_name}
+#
+# inspect.getsource({api_name}) failed because this object does not expose
+# Python source in the current environment.
+#
+# Common reasons:
+# - the object is implemented in C/C++/Rust/Fortran,
+# - the object is a NumPy ufunc or builtin,
+# - the package was installed without source files.
+#
+# Original inspect error:
+# {source_error}
+#
+# Signature:
+# {api_name}{signature}
+#
+# Docstring / help text:
+"""
+{doc}
+"""
+'''
+    return fallback, (
+        "Python source was not available, so the app loaded the object's signature and docstring/help text instead. "
+        "For true source-code invariants, paste source manually."
+    )
+
+
+def resolve_source(object_name: str) -> dict[str, str]:
+    normalized = normalize_object_name(object_name)
 
     parts = normalized.split(".")
     last_error: Exception | None = None
@@ -76,11 +128,28 @@ def resolve_source(object_name: str) -> tuple[str, str]:
             obj: Any = importlib.import_module(module_name)
             for attr in attr_parts:
                 obj = getattr(obj, attr)
-            return normalized, inspect.getsource(obj)
+            try:
+                return {
+                    "api_name": normalized,
+                    "source_code": inspect.getsource(inspect.unwrap(obj)),
+                    "source_kind": "source",
+                    "warning": "",
+                }
+            except Exception as source_error:
+                source_code, warning = fallback_source(normalized, obj, source_error)
+                return {
+                    "api_name": normalized,
+                    "source_code": source_code,
+                    "source_kind": "fallback",
+                    "warning": warning,
+                }
         except Exception as exc:
             last_error = exc
 
-    raise ValueError(f"Could not inspect {object_name}: {last_error}")
+    raise ValueError(
+        f"Could not import or inspect {object_name}. Try a fully qualified name like numpy.linspace, "
+        f"or paste the source code manually. Last error: {last_error}"
+    )
 
 
 def invariant_prompt(api_name: str, source_code: str) -> str:
@@ -169,8 +238,7 @@ class Handler(SimpleHTTPRequestHandler):
             if self.path == "/api/source":
                 payload = self.read_json()
                 object_name = str(payload.get("object_name") or "")
-                api_name, source_code = resolve_source(object_name)
-                self.send_json(200, {"api_name": api_name, "source_code": source_code})
+                self.send_json(200, resolve_source(object_name))
                 return
 
             if self.path == "/api/invariants":

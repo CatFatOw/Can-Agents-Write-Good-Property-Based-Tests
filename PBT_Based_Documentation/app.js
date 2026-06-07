@@ -168,7 +168,20 @@ lookupButton.addEventListener("click", async () => {
     documentationInput.value = data.source_code;
     apiNameInput.value = data.api_name;
     setStage("input");
-    setStatus("draft", "Source loaded");
+    setStatus("draft", data.source_kind === "fallback" ? "Fallback loaded" : "Source loaded");
+    if (data.warning) {
+      reviewPanel.classList.remove("is-hidden");
+      comparePanel.classList.add("is-hidden");
+      outputEyebrow.textContent = "Source lookup";
+      outputTitle.textContent = "Fallback loaded";
+      reviewPanel.innerHTML = `
+        <div class="review-copy">
+          <p class="eyebrow">Inspect fallback</p>
+          <h3>No Python source available</h3>
+          <p>${escapeHtml(data.warning)}</p>
+        </div>
+      `;
+    }
   } catch (error) {
     renderError(`${error.message || "Could not load source."} If lookup fails, copy and paste the source code manually.`);
   } finally {

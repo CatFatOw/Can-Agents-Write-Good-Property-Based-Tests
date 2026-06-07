@@ -36,6 +36,11 @@ print(inspect.getsource(np.linspace))
 If lookup fails because the package is missing or the object cannot be
 inspected, paste the source code manually.
 
+Some library objects, such as `np.add`, are implemented as compiled ufuncs and
+do not expose Python source through `inspect.getsource`. In those cases the app
+loads a clearly labeled signature/docstring fallback so the button still gives
+useful context, but true source-code analysis still requires pasted source.
+
 ### Demo Images
 
 Source lookup with `inspect.getsource(np.linspace)`:
