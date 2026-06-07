@@ -18,10 +18,10 @@ Then open:
 http://127.0.0.1:8011
 ```
 
-The site lets you paste an existing documentation block on the left, try example
-inputs such as `numpy.add` or `torch.softmax`, click **Run**, review the
-candidate invariants on the right, and then generate a Markdown comparison
-between the original documentation and the invariant-based rewrite.
+The site lets you paste an existing documentation block on the left, load the
+formatted `numpy.linspace` example, click **Run**, review the candidate
+invariants on the right, and then generate a Markdown comparison between the
+original documentation and the invariant-based rewrite.
 
 
 This directory contains a prototype workflow for reconstructing API
