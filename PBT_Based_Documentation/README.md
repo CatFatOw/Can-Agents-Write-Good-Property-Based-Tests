@@ -2,6 +2,27 @@
 
 ## Can Invariant Based Documentation Generation Create Better Documentation Than Traditional Documentation?
 
+## Interactive Website Demo
+
+This folder also includes a browser demo for the invariant-documentation
+workflow:
+
+```bash
+cd PBT_Based_Documentation
+python3 -m http.server 8011
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8011
+```
+
+The site lets you paste an existing documentation block on the left, try example
+inputs such as `numpy.add` or `torch.softmax`, click **Run**, review the
+candidate invariants on the right, and then generate a Markdown comparison
+between the original documentation and the invariant-based rewrite.
+
 
 This directory contains a prototype workflow for reconstructing API
 documentation from implementation-backed behavioral claims. The system extracts

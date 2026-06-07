@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invariant Documentation Studio</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="stage-review">
+    <main class="app-shell">
+      <section class="workspace" aria-labelledby="page-title">
+        <div class="masthead">
+          <div>
+            <p class="eyebrow">PBT documentation lab</p>
+            <h1 id="page-title">Invariant Documentation Studio</h1>
+          </div>
+          <div class="status" id="flow-status" data-mode="draft">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>Paste docs</span>
+          </div>
+        </div>
+
+        <div class="step-tabs" aria-label="Workflow stages">
+          <button type="button" class="step-tab is-active" data-step="input">
+            <span aria-hidden="true">01</span>
+            Documentation
+          </button>
+          <button type="button" class="step-tab" data-step="review">
+            <span aria-hidden="true">02</span>
+            Invariants
+          </button>
+          <button type="button" class="step-tab" data-step="compare">
+            <span aria-hidden="true">03</span>
+            Compare
+          </button>
+        </div>
+
+        <form class="generator" id="documentation-form">
+          <label for="documentation">Paste documentation</label>
+          <textarea
+            id="documentation"
+            name="documentation"
+            rows="13"
+            placeholder="Paste an API docstring, reference page, or README section..."
+            required
+          ></textarea>
+
+          <div class="prompt-examples" id="prompt-examples" aria-label="Example documentation">
+            <button type="button" class="example-prompt" data-example="numpy-add">Example: numpy.add</button>
+            <button type="button" class="example-prompt" data-example="torch-softmax">Example: torch.softmax</button>
+            <button type="button" class="example-prompt" data-example="python-sorted">Example: sorted</button>
+          </div>
+
+          <div class="controls" aria-label="Generation controls">
+            <label class="field" for="api-name">
+              <span>API name</span>
+              <input id="api-name" name="api_name" type="text" value="numpy.add">
+            </label>
+
+            <label class="field" for="tone">
+              <span>Doc tone</span>
+              <select id="tone" name="tone">
+                <option value="contract">Contract first</option>
+                <option value="friendly">Friendly reference</option>
+                <option value="strict">Strict edge cases</option>
+              </select>
+            </label>
+
+            <button type="submit" id="run-button">
+              <span class="button-icon" aria-hidden="true">+</span>
+              Run
+            </button>
+          </div>
+        </form>
+
+        <section class="model-card" aria-labelledby="model-title">
+          <p class="eyebrow">How it works</p>
+          <h2 id="model-title">Human-in-the-loop contracts</h2>
+          <p>
+            The first pass extracts candidate invariants from the pasted docs.
+            You approve the claims, then the studio rewrites the documentation
+            as a Markdown contract with preconditions, guarantees, and edge cases.
+          </p>
+        </section>
+      </section>
+
+      <section class="output-panel" aria-labelledby="output-title">
+        <div class="output-header">
+          <div>
+            <p class="eyebrow" id="output-eyebrow">Review invariants</p>
+            <h2 id="output-title">Check the claims</h2>
+          </div>
+          <button type="button" class="copy-button" id="copy-button" disabled>Copy MD</button>
+        </div>
+
+        <div class="paper review-panel" id="review-panel">
+          <p class="placeholder">
+            Paste documentation on the left, choose an example if you want, then click Run.
+            Candidate invariants will appear here for review.
+          </p>
+        </div>
+
+        <div class="compare-panel is-hidden" id="compare-panel">
+          <article class="paper compare-paper" aria-labelledby="original-title">
+            <p class="eyebrow">Original documentation</p>
+            <h3 id="original-title">Before</h3>
+            <pre id="original-doc"></pre>
+          </article>
+          <article class="paper compare-paper" aria-labelledby="generated-title">
+            <p class="eyebrow">Invariant-based Markdown</p>
+            <h3 id="generated-title">After</h3>
+            <pre id="generated-doc"></pre>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <aside class="notes" aria-label="Workflow notes">
+      <span>Local demo: generated text is deterministic and runs in the browser.</span>
+      <span>Use it to prototype the review UX before connecting the GPT pipeline.</span>
+    </aside>
+
+    <script src="app.js"></script>
+  </body>
+</html>
