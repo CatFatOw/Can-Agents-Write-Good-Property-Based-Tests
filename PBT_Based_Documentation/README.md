@@ -9,7 +9,7 @@ workflow:
 
 ```bash
 cd PBT_Based_Documentation
-python3 -m http.server 8011
+python3 server.py
 ```
 
 Then open:
@@ -19,9 +19,18 @@ http://127.0.0.1:8011
 ```
 
 The site lets you paste an existing documentation block on the left, load the
-formatted `numpy.linspace` example, click **Run**, review the candidate
-invariants on the right, and then generate a Markdown comparison between the
-original documentation and the invariant-based rewrite.
+formatted `numpy.linspace` example, paste an OpenAI API key, click **Run**,
+review the GPT-generated candidate invariants on the right, and then generate a
+Markdown comparison between the original documentation and the invariant-based
+rewrite.
+
+The web server calls this folder's existing `gpt_documentation_generator.py`
+OpenAI wrapper. The default model is `gpt-5.5`, or set `OPENAI_MODEL` before
+starting the server to override it.
+
+Note: viewing the files on GitHub or hosting only the static files will not run
+GPT. Real generation requires this Python backend, or another server host that
+can run `server.py`.
 
 
 This directory contains a prototype workflow for reconstructing API

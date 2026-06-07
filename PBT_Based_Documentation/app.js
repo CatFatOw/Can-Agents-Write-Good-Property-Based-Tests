@@ -2,6 +2,7 @@ const form = document.querySelector("#documentation-form");
 const documentationInput = document.querySelector("#documentation");
 const apiNameInput = document.querySelector("#api-name");
 const toneInput = document.querySelector("#tone");
+const openaiKeyInput = document.querySelector("#openai-key");
 const reviewPanel = document.querySelector("#review-panel");
 const comparePanel = document.querySelector("#compare-panel");
 const originalDoc = document.querySelector("#original-doc");
@@ -10,6 +11,7 @@ const outputTitle = document.querySelector("#output-title");
 const outputEyebrow = document.querySelector("#output-eyebrow");
 const flowStatus = document.querySelector("#flow-status");
 const copyButton = document.querySelector("#copy-button");
+const runButton = document.querySelector("#run-button");
 const stepTabs = Array.from(document.querySelectorAll(".step-tab"));
 const examples = document.querySelector("#prompt-examples");
 
@@ -153,58 +155,35 @@ function setStatus(mode, label) {
   flowStatus.querySelector("span:last-child").textContent = label;
 }
 
-function guessInvariants(apiName, docText) {
-  const lower = docText.toLowerCase();
-  const invariants = [];
+async function postJson(path, payload) {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...payload,
+      openai_key: openaiKeyInput.value.trim()
+    })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Request failed.");
+  }
+  return data;
+}
 
-  if (/broadcast|shape/.test(lower)) {
-    invariants.push("Inputs that participate in element-wise operations must be broadcastable to a common shape.");
-  }
-  if (/evenly spaced|spacing|interval/.test(lower)) {
-    invariants.push("Generated samples must be evenly spaced across the documented interval.");
-  }
-  if (/endpoint|half-open|closed interval/.test(lower)) {
-    invariants.push("The endpoint flag must determine whether the stop value is included or excluded.");
-  }
-  if (/num.*non-negative|must be non-negative|number of samples/.test(lower)) {
-    invariants.push("The number of requested samples must be non-negative and must control the output length.");
-  }
-  if (/retstep|return .*step|spacing between samples/.test(lower)) {
-    invariants.push("When retstep is true, the API must return both samples and the computed step size.");
-  }
-  if (/dtype|cast|promotion|type/.test(lower)) {
-    invariants.push("Documented dtype conversion or promotion must happen before the result contract is evaluated.");
-  }
-  if (/out parameter|out=|existing array|output buffer|place the result/.test(lower)) {
-    invariants.push("When an output buffer is accepted, valid writes must respect the documented output shape and dtype.");
-  }
-  if (/where mask|\bmask\b|\bmasked\b/.test(lower)) {
-    invariants.push("Masked or conditional updates must leave unselected positions outside the documented operation.");
-  }
-  if (/sum to 1|softmax|probabilit/.test(lower)) {
-    invariants.push("Each normalized slice must contain finite probabilities whose sum is approximately one.");
-  }
-  if (/\[0,\s*1\]|between 0 and 1/.test(lower)) {
-    invariants.push("Normalized outputs must stay within the closed interval from zero to one.");
-  }
-  if (/dim|axis/.test(lower)) {
-    invariants.push("Axis-specific behavior must affect only the selected dimension and preserve the other dimensions.");
-  }
-  if (/device|array-api|cpu/.test(lower)) {
-    invariants.push("If a device argument is provided, it must satisfy the documented Array-API device constraint.");
-  }
-  if (/new .*list|not modified|original/.test(lower)) {
-    invariants.push("The operation must not mutate the original input when the documentation promises a new result.");
-  }
-  if (/\bstable\b/.test(lower)) {
-    invariants.push("Items with equal comparison keys must preserve their original relative order.");
-  }
-  if (/reverse|descending/.test(lower)) {
-    invariants.push("Reverse ordering must invert the final ordering without changing the set of returned elements.");
-  }
-
-  invariants.push(`${apiName} must preserve every explicit precondition, return-shape rule, and exception boundary stated in the original documentation.`);
-  return Array.from(new Set(invariants)).slice(0, 8);
+function renderError(message) {
+  reviewPanel.classList.remove("is-hidden");
+  comparePanel.classList.add("is-hidden");
+  reviewPanel.innerHTML = `
+    <div class="review-copy">
+      <p class="eyebrow">GPT call failed</p>
+      <h3>Could not run the pipeline</h3>
+      <p>${escapeHtml(message)}</p>
+    </div>
+  `;
+  outputEyebrow.textContent = "Needs attention";
+  outputTitle.textContent = "Backend error";
+  setStatus("draft", "Check key");
 }
 
 function renderInvariantReview(invariants) {
@@ -228,82 +207,40 @@ function renderInvariantReview(invariants) {
   document.querySelector("#approve-button").addEventListener("click", generateMarkdownFromReview);
 }
 
-function generateMarkdown(apiName, sourceDoc, acceptedInvariants, tone) {
-  const firstLine = sourceDoc.split(/\n+/).find(Boolean) || apiName;
-  const summary = sourceDoc
-    .split(/\n+/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .slice(1, 4)
-    .join(" ");
-  const toneLine = {
-    contract: "This documentation is organized as a behavioral contract.",
-    friendly: "This version keeps the original reference feel while making the behavior easier to test.",
-    strict: "This version foregrounds preconditions, invalid states, and edge-case boundaries."
-  }[tone];
-
-  const invariantLines = acceptedInvariants.map((item) => `- ${item}`).join("\n");
-  const edgeCases = acceptedInvariants
-    .filter((item) => /dtype|shape|axis|mask|mutate|exception|precondition|output/i.test(item))
-    .map((item) => `- Check: ${item}`)
-    .join("\n") || "- No additional edge cases were inferred from the accepted invariants.";
-
-  return `# ${apiName}
-
-\`${firstLine}\`
-
-${summary || "This API should be documented through explicit behavior that can be reviewed and tested."}
-
-${toneLine}
-
-## Preconditions
-
-The caller should satisfy every input-domain rule implied by the original documentation. In particular:
-
-${invariantLines}
-
-## Behavioral Guarantees
-
-For valid inputs, \`${apiName}\` should preserve the accepted invariants above. These claims are written so they can become property-based tests instead of remaining prose-only documentation.
-
-## Edge Cases To Test
-
-${edgeCases}
-
-## Example Property-Based Test Sketch
-
-\`\`\`python
-from hypothesis import given, strategies as st
-
-@given(st.data())
-def test_${apiName.replace(/[^a-zA-Z0-9_]/g, "_")}_contract(data):
-    # Generate valid inputs from the documented preconditions.
-    # Call ${apiName}.
-    # Assert each accepted invariant against the result.
-    pass
-\`\`\`
-
-## Notes
-
-This invariant-based version intentionally separates contract claims from examples. That makes review easier and gives test generators a cleaner target.`;
-}
-
-function generateMarkdownFromReview() {
+async function generateMarkdownFromReview() {
   const apiName = apiNameInput.value.trim() || "api.function";
   const accepted = Array.from(reviewPanel.querySelectorAll("input[type='checkbox']"))
     .filter((input) => input.checked)
     .map((input) => currentInvariants[Number(input.dataset.index)]);
 
-  currentMarkdown = generateMarkdown(apiName, documentationInput.value.trim(), accepted, toneInput.value);
-  originalDoc.textContent = documentationInput.value.trim();
-  generatedDoc.textContent = currentMarkdown;
-  reviewPanel.classList.add("is-hidden");
-  comparePanel.classList.remove("is-hidden");
-  outputEyebrow.textContent = "Markdown comparison";
-  outputTitle.textContent = "Before and after";
-  copyButton.disabled = false;
-  setStage("compare");
-  setStatus("ready", "MD ready");
+  const approveButton = document.querySelector("#approve-button");
+  approveButton.disabled = true;
+  approveButton.textContent = "Calling GPT...";
+  setStatus("review", "Writing MD");
+
+  try {
+    const data = await postJson("/api/documentation", {
+      api_name: apiName,
+      documentation: documentationInput.value.trim(),
+      invariants: accepted,
+      tone: toneInput.value
+    });
+    currentMarkdown = data.markdown;
+    originalDoc.textContent = documentationInput.value.trim();
+    generatedDoc.textContent = currentMarkdown;
+    reviewPanel.classList.add("is-hidden");
+    comparePanel.classList.remove("is-hidden");
+    outputEyebrow.textContent = "Markdown comparison";
+    outputTitle.textContent = "Before and after";
+    copyButton.disabled = false;
+    setStage("compare");
+    setStatus("ready", "MD ready");
+  } catch (error) {
+    renderError(error.message || "Documentation generation failed.");
+  } finally {
+    approveButton.disabled = false;
+    approveButton.textContent = "Looks good, generate Markdown";
+  }
 }
 
 examples.addEventListener("click", (event) => {
@@ -317,21 +254,37 @@ examples.addEventListener("click", (event) => {
   setStatus("draft", "Example loaded");
 });
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const docText = documentationInput.value.trim();
   const apiName = apiNameInput.value.trim() || "api.function";
   if (!docText) return;
 
-  currentInvariants = guessInvariants(apiName, docText);
+  runButton.disabled = true;
+  runButton.textContent = "Calling GPT...";
   comparePanel.classList.add("is-hidden");
   reviewPanel.classList.remove("is-hidden");
+  reviewPanel.innerHTML = '<p class="placeholder">Calling the project GPT pipeline for candidate invariants...</p>';
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
   copyButton.disabled = true;
-  renderInvariantReview(currentInvariants);
   setStage("review");
-  setStatus("review", "Check invariants");
+  setStatus("review", "Calling GPT");
+
+  try {
+    const data = await postJson("/api/invariants", {
+      api_name: apiName,
+      documentation: docText
+    });
+    currentInvariants = data.invariants;
+    renderInvariantReview(currentInvariants);
+    setStatus("review", "Check invariants");
+  } catch (error) {
+    renderError(error.message || "Invariant extraction failed.");
+  } finally {
+    runButton.disabled = false;
+    runButton.innerHTML = '<span class="button-icon" aria-hidden="true">+</span> Run';
+  }
 });
 
 copyButton.addEventListener("click", async () => {
