@@ -23,6 +23,7 @@ const examples = document.querySelector("#prompt-examples");
 let currentMarkdown = "";
 let currentInvariants = [];
 let currentMetrics = [];
+let selectedTestIndex = 0;
 let currentSource = "";
 const requestCache = new Map();
 
@@ -197,11 +198,13 @@ function showCompareStage(force = false) {
   setStatus("ready", "MD ready");
 }
 
-function showTestsStage() {
+function showTestsStage(testIndex = selectedTestIndex) {
   if (!currentMetrics.length) {
     showReviewStage();
     return;
   }
+  selectedTestIndex = Number.isInteger(testIndex) ? testIndex : 0;
+  renderTestsPanel();
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.remove("is-hidden");
@@ -242,11 +245,12 @@ function metricMarkup(metric) {
   if (!metric) {
     return "";
   }
+  const index = currentMetrics.indexOf(metric);
   return `
     <span class="metric-pills">
       <span>Validity ${formatScore(metric.validity)}</span>
       <span>Soundness ${formatScore(metric.soundness)}</span>
-      ${metric.error ? '<span class="metric-warning">Check test</span>' : ""}
+      <button type="button" class="metric-test-button ${metric.error ? "metric-warning" : ""}" data-test-index="${index}">Check test</button>
     </span>
   `;
 }
@@ -321,7 +325,7 @@ function renderTestsPanel() {
     </div>
     <div class="test-list">
       ${currentMetrics.map((metric, index) => `
-        <details class="test-item" ${index === 0 ? "open" : ""}>
+        <details class="test-item" ${index === selectedTestIndex ? "open" : ""}>
           <summary>
             <span>Invariant ${index + 1}</span>
             <span>${formatScore(metric.validity)} valid / ${formatScore(metric.soundness)} sound</span>
@@ -412,6 +416,7 @@ examples.addEventListener("click", async (event) => {
     currentMarkdown = "";
     currentInvariants = [];
     currentMetrics = [];
+    selectedTestIndex = 0;
     apiNameInput.value = example.api;
     sourceObjectInput.value = "np.linspace";
     documentationInput.focus();
@@ -434,6 +439,7 @@ lookupButton.addEventListener("click", async () => {
     currentMarkdown = "";
     currentInvariants = [];
     currentMetrics = [];
+    selectedTestIndex = 0;
     apiNameInput.value = data.api_name;
     setStage("input");
     setStatus("draft", data.source_kind === "fallback" ? "Fallback loaded" : "Source loaded");
@@ -489,6 +495,7 @@ form.addEventListener("submit", async (event) => {
     currentMarkdown = "";
     currentInvariants = data.invariants;
     currentMetrics = [];
+    selectedTestIndex = 0;
     await renderInvariantReviewAnimated(currentInvariants);
     await assessMetricsForReview();
     setStatus("review", "Check invariants");
@@ -510,6 +517,14 @@ copyButton.addEventListener("click", async () => {
 });
 
 backReviewButton.addEventListener("click", showReviewStage);
+
+reviewPanel.addEventListener("click", (event) => {
+  const button = event.target.closest(".metric-test-button");
+  if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  showTestsStage(Number(button.dataset.testIndex || 0));
+});
 
 assessMetricsInput.addEventListener("change", async () => {
   if (!currentInvariants.length) {

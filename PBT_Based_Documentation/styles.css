@@ -527,7 +527,8 @@ button {
   max-width: 220px;
 }
 
-.metric-pills span {
+.metric-pills span,
+.metric-test-button {
   min-height: 28px;
   display: inline-flex;
   align-items: center;
@@ -538,6 +539,16 @@ button {
   color: var(--blue);
   font-size: 0.8rem;
   font-weight: 800;
+}
+
+.metric-test-button {
+  cursor: pointer;
+}
+
+.metric-test-button:hover {
+  border-color: rgba(49, 92, 104, 0.42);
+  background: rgba(255, 250, 242, 0.92);
+  color: var(--clay-dark);
 }
 
 .metric-pills.is-loading span,
