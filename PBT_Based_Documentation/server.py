@@ -21,7 +21,7 @@ from gpt_documentation_generator import strip_markdown_fences
 from gpt_documentation_generator import generate_pbt_test
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
-METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.5-mini")
+METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.4-mini")
 GPT_CACHE: dict[tuple[str, str], str] = {}
 METRICS_CACHE: dict[tuple[str, str, str], dict[str, Any]] = {}
 SOURCE_CACHE: dict[str, dict[str, str]] = {}
