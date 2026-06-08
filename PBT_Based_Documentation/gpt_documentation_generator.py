@@ -7,23 +7,40 @@ test/mutation metrics -> high-confidence Markdown documentation.
 """
 
 from __future__ import annotations
-
+# parse cli arguments
 import argparse
+# abstract syntax tree for analysis of code
 import ast
 import json
 import os
 import re
+# Runs temrinal commands
 import subprocess
 import sys
+# Autogenerate constructor and methods for classes 
 from dataclasses import dataclass
 from pathlib import Path
+# Used to import saved python functions
+import importlib.util
+# temp dict
+import tempfile 
 from typing import Any
+# Adding test_validity
+from metrics import test_metrics
+# Import hypothesis in case user wants to display how valid/sound it is 
+from hypothesis import given, settings, Verbosity, note
+from hypothesis.strategies import composite, integers, floats, lists, boolean, text
+from openai import OpenAI
 
 
 ROOT = Path(__file__).resolve().parent
+# - Default OpenAI model selection
 DEFAULT_PROMPT_DIR = ROOT / "invariant_extraction_prompts"
+# - Terminal color enable/disable settings
 DEFAULT_MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.4-mini")
+# - Root directory and prompt locations
 COLOR_ENABLED = os.environ.get("NO_COLOR") is None
+# ANSI colors for displaying status updates
 COLORS = {
     "green": "\033[92m",
     "red": "\033[91m",
@@ -33,7 +50,7 @@ COLORS = {
     "reset": "\033[0m",
 }
 
-
+# Use the dataclass to create ApiContext class quickly and frozen=True makes it immutable
 @dataclass(frozen=True)
 class ApiContext:
     source_path: Path
@@ -44,54 +61,69 @@ class ApiContext:
 
 
 def read_text(path: str | Path | None, default: str = "") -> str:
+    """Function, given a .txt object reads/displays the contents of the file"""
     if not path:
         return default
-    return Path(path).expanduser().resolve().read_text(encoding="utf-8")
+    # read the contents 
+    with open(path, encoding="utf-8") as file:
+       return file.read()
 
 
 def color(text: str, name: str) -> str:
+    """Function allows colored text to be printed in terminal"""
     if not COLOR_ENABLED:
         return text
     return f"{COLORS.get(name, '')}{text}{COLORS['reset']}"
 
 
 def log_step(message: str) -> None:
+    """Function logs a running message"""
     print(color(f"[RUN] {message}", "blue"))
 
 
 def log_success(message: str) -> None:
+    """function logs a success instance"""
     print(color(f"[OK] {message}", "green"))
 
 
 def log_stop(message: str) -> None:
+    """function logs a stop message"""
     print(color(f"[STOP] {message}", "yellow"))
 
 
 def log_error(message: str) -> None:
+    """function logs an error message due to low metrics (validity, soundness, and mutation)"""
     print(color(f"[BLOCKED] {message}", "red"))
 
 
 def load_config(path: str | None) -> dict[str, Any]:
+    """Function loads a JSON file and returns it as a dictionary"""
+    
+    # path not given
     if not path:
         return {}
-    config_path = Path(path).expanduser().resolve()
-    if config_path.suffix.lower() != ".json":
-        raise SystemExit("Only JSON config files are supported.")
-    return json.loads(config_path.read_text(encoding="utf-8"))
+    with open(path, encoding="utf-8") as file:
+        return json.load(file)
 
 
 def strip_markdown_fences(text: str) -> str:
+    """removes model markdown code and returns only the paython code"""
+    # Remove whitespace
     text = text.strip()
     match = re.fullmatch(r"```(?:python|py|markdown|md)?\s*(.*?)\s*```", text, re.S)
     return match.group(1).strip() if match else text
 
 
 def render_prompt(prompt_path: Path, values: dict[str, str]) -> str:
-    template = prompt_path.read_text(encoding="utf-8")
-    return template.format(**values)
+    """Function loads a template file and fills in placeholder using values of the dictionary, utf for telling python to convert into characters"""
+    with open(prompt_path, encoding="utf-8") as file:
+        template = file.read()
+        return template.format(**values)
+
 
 
 def extract_signature(source_code: str, node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
+    """Function extracts the full function code from source code (even if it spans multi-lined)"""
     lines = source_code.splitlines()
     signature_lines: list[str] = []
     depth = 0
@@ -110,6 +142,8 @@ def extract_signature(source_code: str, node: ast.FunctionDef | ast.AsyncFunctio
 
 
 def response_text(model: str, prompt: str, stream: bool = True) -> str:
+    """Function is an OpenAI Wrapper that calls the model"""
+    # Check if user provided an API key via os.environ
     if not os.environ.get("OPENAI_API_KEY"):
         raise SystemExit("Set OPENAI_API_KEY before running GPT stages.")
 
@@ -117,13 +151,15 @@ def response_text(model: str, prompt: str, stream: bool = True) -> str:
         from openai import OpenAI
     except ImportError:
         return response_text_with_legacy_openai(model, prompt, stream=stream)
-
+    # We create the openAI client
     client = OpenAI()
+    # Checks if contains responses attribute
     if hasattr(client, "responses"):
         try:
             return response_text_with_responses(client, model, prompt, stream=stream)
         except AttributeError:
             pass
+    # If has attribute chat and completition
     if hasattr(client, "chat") and hasattr(client.chat, "completions"):
         return response_text_with_chat_completions(client, model, prompt, stream=stream)
     raise SystemExit(
@@ -133,13 +169,16 @@ def response_text(model: str, prompt: str, stream: bool = True) -> str:
 
 
 def response_text_with_responses(client: Any, model: str, prompt: str, stream: bool = True) -> str:
+    # If stream = false, then we just output the data immediately
     if not stream:
         response = client.responses.create(model=model, input=prompt)
         return getattr(response, "output_text", "") or extract_response_output_text(response)
 
+    # Otherwise we stream the data
     chunks: list[str] = []
     events = client.responses.create(model=model, input=prompt, stream=True)
     for event in events:
+        # Log only the output_text.delta events
         if event.type == "response.output_text.delta":
             print(event.delta, end="", flush=True)
             chunks.append(event.delta)
@@ -182,6 +221,7 @@ def response_text_with_legacy_openai(model: str, prompt: str, stream: bool = Tru
 
 
 def response_text_with_chat_completions(client: Any, model: str, prompt: str, stream: bool = True) -> str:
+    """Older version in case OpenAI version is old"""
     messages = [
         {
             "role": "system",
@@ -205,6 +245,7 @@ def response_text_with_chat_completions(client: Any, model: str, prompt: str, st
 
 
 def extract_response_output_text(response: Any) -> str:
+    """Backup code for older version openai versions"""
     chunks: list[str] = []
     for item in getattr(response, "output", []) or []:
         for content in getattr(item, "content", []) or []:
@@ -219,6 +260,7 @@ def find_api_context(
     function_name: str | None,
     existing_documentation: str,
 ) -> ApiContext:
+    """Function extracts source code and feeds into GPT"""
     source_code = source_path.read_text(encoding="utf-8")
     tree = ast.parse(source_code)
     candidates: list[ast.FunctionDef | ast.AsyncFunctionDef] = [
@@ -444,6 +486,94 @@ def build_common_values(context: ApiContext) -> dict[str, str]:
     }
 
 
+import re
+
+def strip_markdown_fences(text: str) -> str:
+    text = text.strip()
+    match = re.fullmatch(r"```(?:python|py)?\s*(.*?)\s*```", text, re.S)
+    return match.group(1).strip() if match else text
+
+
+def generate_pbt_test(model, source_code, invariants, streaming=True):
+    """Function feeds gpt the test_invariant (text) that is generated and creates an hypohtesis test via the fed text"""
+
+    # Call the model each time /invariants
+    results = []
+
+    for test_invariant in invariants:
+        prompt = f"""
+            You are an expert in property-based testing using Hypothesis.
+
+            Source Code:
+            {source_code}
+
+            Invariant Candidate:
+            {test_invariant}
+
+            Generate a Small Hypothesis property-based test that attempts test invariant above while also being quick/fast.
+
+            Requirements:
+            - Use Hypothesis strategies appropriate for the function inputs.
+            - Avoid expensive or slow strategies.
+            - Limit generated collection sizes to keep runtime reasonable (especially crucial for a working app/tool).
+            - Include edge cases naturally through Hypothesis.
+            - Assume the function under test already exists and do not redefine it.
+            - Import all required Hypothesis modules.
+            - The test should fail if a counterexample to the invariant exists.
+            - Produce only executable Python code.
+            - Do not include markdown fences.
+            - Do not include explanations or comments.
+            - Do not include extra clutter, markdown, etc that interferes with code running.
+            - generate ONE FUNCTION.
+            """
+        
+        client = OpenAI()
+        # If not streaming, just display the generated gpt text all at once
+        if not streaming:
+            response = client.responses.create(
+                model=model,
+                input=prompt,
+                stream=False,
+            )
+            output = response.output_text
+        # if streaming, we display the text as it is getting generated
+        else:
+            chunks = []
+            events = client.responses.create(
+                model=model,
+                input=prompt,
+                stream=True,
+            )
+            
+            for event in events:
+                if event.type == "response.output_text.delta":
+                    # Flush=True makes it show everything at once 
+                    print(event.delta, end="", flush=True)
+                    chunks.append(event.delta)
+                print()
+
+            output = "".join(chunks)
+        # Post process it to make it clean
+        output = strip_markdown_fences(output)
+
+        # Execture the test_metrics function on the file
+        namespace = {}
+        exec(source_code, namespace)
+        exec(output, namespace)
+
+        test_function = next(
+            value for name, value in namespace.items()
+            if name.startswith("test_") and callable(value)
+        )
+        validity, soundness = test_metrics(test_function)
+        results.append(
+            ({"invariant": test_invariant, "test_code": output, "validity": validity, "soundness": soundness}))
+        
+    return {"results": results}
+
+    
+
+
 def run_pipeline(
     *,
     source_path: Path,
@@ -465,6 +595,7 @@ def run_pipeline(
     min_soundness: float,
     min_confidence: float,
     min_mutation: float | None,
+    display_metrics: bool = True,
 ) -> Path:
     context = find_api_context(source_path, function_name, read_text(docs_path))
     out_dir = artifact_dir(artifact_root, context.function_name)
@@ -484,6 +615,11 @@ def run_pipeline(
             + candidates
         )
         write_artifact(out_dir / "human_review.md", review_log)
+        # Display the soundness and validity metrics + the invariant test by the proposted invariants 
+        if display_metrics:
+            # Use a cheaper model for faster generation
+            results = generate_pbt_test(source_code=context.source_code, invariants=candidates, model="gpt-5.4-mini")
+
         if not auto_approve:
             log_stop(
                 f"Stopped for human review. Edit {out_dir / 'human_review.md'} and rerun the same command."
