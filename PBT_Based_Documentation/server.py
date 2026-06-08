@@ -20,6 +20,8 @@ from gpt_documentation_generator import response_text as project_response_text
 from gpt_documentation_generator import strip_markdown_fences
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
+GPT_CACHE: dict[tuple[str, str], str] = {}
+SOURCE_CACHE: dict[str, dict[str, str]] = {}
 
 
 def strip_fences(text: str) -> str:
@@ -46,8 +48,13 @@ def request_openai_key(openai_key: str | None):
 def run_project_gpt(prompt: str, openai_key: str | None) -> str:
     if not openai_key and not os.environ.get("OPENAI_API_KEY"):
         raise RuntimeError("Paste an OpenAI API key or set OPENAI_API_KEY before starting server.py.")
+    cache_key = (MODEL, prompt)
+    if cache_key in GPT_CACHE:
+        return GPT_CACHE[cache_key]
     with request_openai_key(openai_key):
-        return project_response_text(MODEL, prompt, stream=False)
+        text = project_response_text(MODEL, prompt, stream=False)
+    GPT_CACHE[cache_key] = text
+    return text
 
 
 def parse_json_array(text: str) -> list[str]:
@@ -118,6 +125,8 @@ def fallback_source(api_name: str, obj: Any, source_error: Exception) -> tuple[s
 
 def resolve_source(object_name: str) -> dict[str, str]:
     normalized = normalize_object_name(object_name)
+    if normalized in SOURCE_CACHE:
+        return SOURCE_CACHE[normalized]
 
     parts = normalized.split(".")
     last_error: Exception | None = None
@@ -129,20 +138,24 @@ def resolve_source(object_name: str) -> dict[str, str]:
             for attr in attr_parts:
                 obj = getattr(obj, attr)
             try:
-                return {
+                result = {
                     "api_name": normalized,
                     "source_code": inspect.getsource(inspect.unwrap(obj)),
                     "source_kind": "source",
                     "warning": "",
                 }
+                SOURCE_CACHE[normalized] = result
+                return result
             except Exception as source_error:
                 source_code, warning = fallback_source(normalized, obj, source_error)
-                return {
+                result = {
                     "api_name": normalized,
                     "source_code": source_code,
                     "source_kind": "fallback",
                     "warning": warning,
                 }
+                SOURCE_CACHE[normalized] = result
+                return result
         except Exception as exc:
             last_error = exc
 

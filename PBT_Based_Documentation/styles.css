@@ -360,7 +360,15 @@ button {
   border-bottom: 1px solid rgba(38, 31, 26, 0.1);
 }
 
-.copy-button {
+.output-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.copy-button,
+.secondary-button {
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -368,6 +376,16 @@ button {
   color: var(--ink);
   cursor: pointer;
   font-weight: 760;
+}
+
+.secondary-button {
+  background: rgba(255, 250, 242, 0.74);
+  color: var(--blue);
+}
+
+.secondary-button:hover {
+  border-color: rgba(49, 92, 104, 0.42);
+  color: var(--clay-dark);
 }
 
 .copy-button:disabled {

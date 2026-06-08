@@ -13,12 +13,15 @@ const outputTitle = document.querySelector("#output-title");
 const outputEyebrow = document.querySelector("#output-eyebrow");
 const flowStatus = document.querySelector("#flow-status");
 const copyButton = document.querySelector("#copy-button");
+const backReviewButton = document.querySelector("#back-review-button");
 const runButton = document.querySelector("#run-button");
 const stepTabs = Array.from(document.querySelectorAll(".step-tab"));
 const examples = document.querySelector("#prompt-examples");
 
 let currentMarkdown = "";
 let currentInvariants = [];
+let currentSource = "";
+const requestCache = new Map();
 
 const exampleDocs = {
   "numpy-linspace": {
@@ -53,6 +56,10 @@ function setStatus(mode, label) {
 }
 
 async function postJson(path, payload) {
+  const cacheKey = `${path}:${JSON.stringify(payload)}`;
+  if (requestCache.has(cacheKey)) {
+    return requestCache.get(cacheKey);
+  }
   const response = await fetch(path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -65,16 +72,55 @@ async function postJson(path, payload) {
   if (!response.ok) {
     throw new Error(data.error || "Request failed.");
   }
+  requestCache.set(cacheKey, data);
   return data;
 }
 
-function renderError(message) {
+function showInputStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
+  backReviewButton.classList.add("is-hidden");
+  outputEyebrow.textContent = "Review invariants";
+  outputTitle.textContent = "Check the claims";
+  setStage("input");
+}
+
+function showReviewStage() {
+  if (!currentInvariants.length) {
+    showInputStage();
+    return;
+  }
+  reviewPanel.classList.remove("is-hidden");
+  comparePanel.classList.add("is-hidden");
+  backReviewButton.classList.add("is-hidden");
+  outputEyebrow.textContent = "Review invariants";
+  outputTitle.textContent = "Check the claims";
+  setStage("review");
+  setStatus("review", "Check invariants");
+}
+
+function showCompareStage() {
+  if (!currentMarkdown) {
+    showReviewStage();
+    return;
+  }
+  reviewPanel.classList.add("is-hidden");
+  comparePanel.classList.remove("is-hidden");
+  backReviewButton.classList.remove("is-hidden");
+  outputEyebrow.textContent = "Markdown comparison";
+  outputTitle.textContent = "Before and after";
+  setStage("compare");
+  setStatus("ready", "MD ready");
+}
+
+function renderError(message, eyebrow = "GPT call failed", title = "Could not run the pipeline") {
+  reviewPanel.classList.remove("is-hidden");
+  comparePanel.classList.add("is-hidden");
+  backReviewButton.classList.add("is-hidden");
   reviewPanel.innerHTML = `
     <div class="review-copy">
-      <p class="eyebrow">GPT call failed</p>
-      <h3>Could not run the pipeline</h3>
+      <p class="eyebrow">${escapeHtml(eyebrow)}</p>
+      <h3>${escapeHtml(title)}</h3>
       <p>${escapeHtml(message)}</p>
     </div>
   `;
@@ -123,15 +169,11 @@ async function generateMarkdownFromReview() {
       tone: toneInput.value
     });
     currentMarkdown = data.markdown;
-    originalDoc.textContent = documentationInput.value.trim();
+    currentSource = documentationInput.value.trim();
+    originalDoc.textContent = currentSource;
     generatedDoc.textContent = currentMarkdown;
-    reviewPanel.classList.add("is-hidden");
-    comparePanel.classList.remove("is-hidden");
-    outputEyebrow.textContent = "Markdown comparison";
-    outputTitle.textContent = "Before and after";
     copyButton.disabled = false;
-    setStage("compare");
-    setStatus("ready", "MD ready");
+    showCompareStage();
   } catch (error) {
     renderError(error.message || "Documentation generation failed.");
   } finally {
@@ -148,6 +190,9 @@ examples.addEventListener("click", async (event) => {
     const response = await fetch(example.path);
     if (!response.ok) throw new Error("Could not load example source file.");
     documentationInput.value = await response.text();
+    currentSource = documentationInput.value;
+    currentMarkdown = "";
+    currentInvariants = [];
     apiNameInput.value = example.api;
     sourceObjectInput.value = "np.linspace";
     documentationInput.focus();
@@ -166,6 +211,9 @@ lookupButton.addEventListener("click", async () => {
   try {
     const data = await postJson("/api/source", { object_name: objectName });
     documentationInput.value = data.source_code;
+    currentSource = data.source_code;
+    currentMarkdown = "";
+    currentInvariants = [];
     apiNameInput.value = data.api_name;
     setStage("input");
     setStatus("draft", data.source_kind === "fallback" ? "Fallback loaded" : "Source loaded");
@@ -183,7 +231,11 @@ lookupButton.addEventListener("click", async () => {
       `;
     }
   } catch (error) {
-    renderError(`${error.message || "Could not load source."} If lookup fails, copy and paste the source code manually.`);
+    renderError(
+      `${error.message || "Could not load source."} If lookup fails, copy and paste the source code manually.`,
+      "Source lookup failed",
+      "Could not inspect that object"
+    );
   } finally {
     lookupButton.disabled = false;
     lookupButton.textContent = "Load source";
@@ -212,6 +264,8 @@ form.addEventListener("submit", async (event) => {
       api_name: apiName,
       source_code: docText
     });
+    currentSource = docText;
+    currentMarkdown = "";
     currentInvariants = data.invariants;
     renderInvariantReview(currentInvariants);
     setStatus("review", "Check invariants");
@@ -230,6 +284,20 @@ copyButton.addEventListener("click", async () => {
   setTimeout(() => {
     copyButton.textContent = "Copy MD";
   }, 1200);
+});
+
+backReviewButton.addEventListener("click", showReviewStage);
+
+stepTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    if (tab.dataset.step === "input") {
+      showInputStage();
+    } else if (tab.dataset.step === "review") {
+      showReviewStage();
+    } else if (tab.dataset.step === "compare") {
+      showCompareStage();
+    }
+  });
 });
 
 setStage("input");
