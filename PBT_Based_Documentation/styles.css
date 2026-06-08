@@ -18,6 +18,11 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   min-height: 100vh;
   margin: 0;
@@ -78,6 +83,7 @@ select {
 .workspace,
 .output-panel {
   position: relative;
+  min-width: 0;
   border-top: 1px solid rgba(38, 31, 26, 0.18);
   backdrop-filter: blur(8px);
 }
@@ -173,7 +179,7 @@ h3 {
 
 .step-tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -189,6 +195,8 @@ h3 {
   cursor: default;
   text-align: left;
   font-weight: 760;
+  overflow: hidden;
+  text-overflow: ellipsis;
   box-shadow: 0 10px 22px rgba(72, 56, 42, 0.06);
 }
 
@@ -276,9 +284,14 @@ select:focus {
 
 .controls {
   display: grid;
-  grid-template-columns: minmax(150px, 1fr) 150px minmax(180px, 1fr) auto auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   align-items: end;
+}
+
+.controls #run-button,
+.controls .toggle-field {
+  width: 100%;
 }
 
 .field {
@@ -370,6 +383,7 @@ button {
 }
 
 .output-panel {
+  min-width: 0;
   min-height: 680px;
   padding: clamp(22px, 3vw, 34px) 0;
   display: grid;
@@ -417,11 +431,14 @@ button {
 
 .paper {
   position: relative;
+  max-width: 100%;
+  min-width: 0;
   min-height: 0;
   border: 1px solid rgba(38, 31, 26, 0.11);
   border-radius: 8px;
   padding: clamp(22px, 4vw, 38px);
   overflow: auto;
+  overflow-wrap: anywhere;
   background:
     linear-gradient(90deg, rgba(182, 90, 55, 0.12) 0 1px, transparent 1px 100%) 42px 0 / 42px 100% no-repeat,
     #fffaf2;
@@ -452,6 +469,7 @@ button {
 
 .review-copy {
   margin-bottom: 18px;
+  min-width: 0;
 }
 
 .review-copy p:last-child {
@@ -480,6 +498,7 @@ button {
 
 .invariant-copy {
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .invariant-enter {
@@ -535,12 +554,14 @@ button {
 
 .compare-panel {
   min-height: 0;
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
 .tests-panel {
+  min-width: 0;
   display: grid;
   gap: 14px;
 }
@@ -551,6 +572,7 @@ button {
 }
 
 .test-item {
+  min-width: 0;
   border: 1px solid rgba(38, 31, 26, 0.1);
   border-radius: 8px;
   background: rgba(255, 252, 246, 0.74);
@@ -567,6 +589,11 @@ button {
   cursor: pointer;
   color: var(--ink);
   font-weight: 820;
+}
+
+.test-item summary span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .test-item summary span:last-child {
@@ -592,6 +619,7 @@ button {
 }
 
 .compare-paper {
+  min-width: 0;
   padding: 22px;
 }
 
@@ -601,8 +629,10 @@ button {
 
 pre {
   min-height: 0;
+  max-width: 100%;
   margin: 0;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   word-break: break-word;
   color: var(--ink);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
