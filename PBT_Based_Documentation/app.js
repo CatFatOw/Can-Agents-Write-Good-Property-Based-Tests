@@ -112,6 +112,44 @@ async function postTextStream(path, payload, onChunk) {
   return text;
 }
 
+function createTypewriter(element) {
+  let target = "";
+  let visible = "";
+  let done = false;
+  let frameId = 0;
+
+  function tick() {
+    if (visible.length < target.length) {
+      const nextLength = Math.min(target.length, visible.length + 8);
+      visible = target.slice(0, nextLength);
+      element.textContent = visible;
+      element.scrollTop = element.scrollHeight;
+    }
+    if (!done || visible.length < target.length) {
+      frameId = requestAnimationFrame(tick);
+    }
+  }
+
+  frameId = requestAnimationFrame(tick);
+
+  return {
+    push(fullText) {
+      target = fullText;
+    },
+    async finish(finalText) {
+      target = finalText;
+      done = true;
+      while (visible.length < target.length) {
+        await wait(16);
+      }
+      cancelAnimationFrame(frameId);
+      element.textContent = target;
+      element.scrollTop = element.scrollHeight;
+      return target;
+    }
+  };
+}
+
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -139,8 +177,8 @@ function showReviewStage() {
   setStatus("review", "Check invariants");
 }
 
-function showCompareStage() {
-  if (!currentMarkdown) {
+function showCompareStage(force = false) {
+  if (!force && !currentMarkdown) {
     showReviewStage();
     return;
   }
@@ -216,19 +254,20 @@ async function generateMarkdownFromReview() {
     originalDoc.textContent = currentSource;
     generatedDoc.textContent = "";
     copyButton.disabled = true;
-    showCompareStage();
+    showCompareStage(true);
     setStatus("review", "Streaming MD");
     generatedDoc.classList.add("is-streaming");
+    const writer = createTypewriter(generatedDoc);
 
-    currentMarkdown = await postTextStream("/api/documentation-stream", {
+    const streamedMarkdown = await postTextStream("/api/documentation-stream", {
       api_name: apiName,
       source_code: currentSource,
       invariants: accepted,
       tone: toneInput.value
     }, (_chunk, fullText) => {
-      generatedDoc.textContent = fullText;
-      generatedDoc.scrollTop = generatedDoc.scrollHeight;
+      writer.push(fullText);
     });
+    currentMarkdown = await writer.finish(streamedMarkdown);
     copyButton.disabled = false;
     generatedDoc.classList.remove("is-streaming");
     showCompareStage();
