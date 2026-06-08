@@ -57,6 +57,48 @@ def run_project_gpt(prompt: str, openai_key: str | None) -> str:
     return text
 
 
+def stream_project_gpt(prompt: str, openai_key: str | None):
+    if not openai_key and not os.environ.get("OPENAI_API_KEY"):
+        raise RuntimeError("Paste an OpenAI API key or set OPENAI_API_KEY before starting server.py.")
+    cache_key = (MODEL, prompt)
+    if cache_key in GPT_CACHE:
+        yield GPT_CACHE[cache_key]
+        return
+
+    try:
+        from openai import OpenAI
+    except ImportError as exc:
+        raise RuntimeError("Install the openai package with: python3 -m pip install openai") from exc
+
+    chunks: list[str] = []
+    with request_openai_key(openai_key):
+        client = OpenAI()
+        if hasattr(client, "responses"):
+            events = client.responses.create(model=MODEL, input=prompt, stream=True)
+            for event in events:
+                if getattr(event, "type", "") == "response.output_text.delta":
+                    chunks.append(event.delta)
+                    yield event.delta
+        else:
+            events = client.chat.completions.create(
+                model=MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a careful Python property-based testing and API documentation assistant.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                stream=True,
+            )
+            for event in events:
+                delta = event.choices[0].delta.content or ""
+                if delta:
+                    chunks.append(delta)
+                    yield delta
+    GPT_CACHE[cache_key] = "".join(chunks)
+
+
 def parse_json_array(text: str) -> list[str]:
     text = strip_fences(text)
     try:
@@ -246,6 +288,17 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def send_text_stream(self, generator) -> None:
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        for chunk in generator:
+            if not chunk:
+                continue
+            self.wfile.write(chunk.encode("utf-8"))
+            self.wfile.flush()
+
     def do_POST(self) -> None:
         try:
             if self.path == "/api/source":
@@ -280,6 +333,20 @@ class Handler(SimpleHTTPRequestHandler):
                     run_project_gpt(documentation_prompt(api_name, source_code, invariants, tone), openai_key)
                 )
                 self.send_json(200, {"markdown": markdown, "model": MODEL})
+                return
+
+            if self.path == "/api/documentation-stream":
+                payload = self.read_json()
+                api_name = str(payload.get("api_name") or "api.function")
+                source_code = str(payload.get("source_code") or payload.get("documentation") or "")
+                invariants = payload.get("invariants") or []
+                tone = str(payload.get("tone") or "contract")
+                openai_key = str(payload.get("openai_key") or "")
+                if not source_code.strip() or not isinstance(invariants, list):
+                    self.send_json(400, {"error": "Source code and invariants are required."})
+                    return
+                prompt = documentation_prompt(api_name, source_code, invariants, tone)
+                self.send_text_stream(stream_project_gpt(prompt, openai_key))
                 return
 
             self.send_json(404, {"error": "Unknown endpoint."})

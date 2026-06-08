@@ -456,6 +456,17 @@ button {
   line-height: 1.45;
 }
 
+.invariant-enter {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.invariant-enter.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .invariant-item input {
   width: 18px;
   height: 18px;
@@ -492,6 +503,18 @@ pre {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 0.88rem;
   line-height: 1.55;
+}
+
+pre.is-streaming::after {
+  content: "▌";
+  color: var(--clay);
+  animation: blink 900ms steps(2, start) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 .is-hidden {

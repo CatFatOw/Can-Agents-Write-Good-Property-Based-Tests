@@ -76,6 +76,46 @@ async function postJson(path, payload) {
   return data;
 }
 
+async function postTextStream(path, payload, onChunk) {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...payload,
+      openai_key: openaiKeyInput.value.trim()
+    })
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    try {
+      throw new Error(JSON.parse(text).error || "Request failed.");
+    } catch {
+      throw new Error(text || "Request failed.");
+    }
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let text = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value, { stream: true });
+    text += chunk;
+    onChunk(chunk, text);
+  }
+  const tail = decoder.decode();
+  if (tail) {
+    text += tail;
+    onChunk(tail, text);
+  }
+  return text;
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function showInputStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
@@ -130,24 +170,33 @@ function renderError(message, eyebrow = "GPT call failed", title = "Could not ru
 }
 
 function renderInvariantReview(invariants) {
-  const items = invariants.map((invariant, index) => `
-    <label class="invariant-item">
-      <input type="checkbox" checked data-index="${index}">
-      <span>${escapeHtml(invariant)}</span>
-    </label>
-  `).join("");
-
   reviewPanel.innerHTML = `
     <div class="review-copy">
       <p class="eyebrow">Human review required</p>
       <h3>Approve the invariants</h3>
       <p>Uncheck any claim that feels too strong, vague, or not supported by the source code.</p>
     </div>
-    <div class="invariant-list">${items}</div>
+    <div class="invariant-list" id="invariant-list"></div>
     <button type="button" class="approve-button" id="approve-button">Looks good, generate Markdown</button>
   `;
 
   document.querySelector("#approve-button").addEventListener("click", generateMarkdownFromReview);
+}
+
+async function renderInvariantReviewAnimated(invariants) {
+  renderInvariantReview([]);
+  const list = document.querySelector("#invariant-list");
+  for (const [index, invariant] of invariants.entries()) {
+    const wrapper = document.createElement("label");
+    wrapper.className = "invariant-item invariant-enter";
+    wrapper.innerHTML = `
+      <input type="checkbox" checked data-index="${index}">
+      <span>${escapeHtml(invariant)}</span>
+    `;
+    list.appendChild(wrapper);
+    await wait(140);
+    wrapper.classList.add("is-visible");
+  }
 }
 
 async function generateMarkdownFromReview() {
@@ -162,19 +211,29 @@ async function generateMarkdownFromReview() {
   setStatus("review", "Writing MD");
 
   try {
-    const data = await postJson("/api/documentation", {
+    currentSource = documentationInput.value.trim();
+    currentMarkdown = "";
+    originalDoc.textContent = currentSource;
+    generatedDoc.textContent = "";
+    copyButton.disabled = true;
+    showCompareStage();
+    setStatus("review", "Streaming MD");
+    generatedDoc.classList.add("is-streaming");
+
+    currentMarkdown = await postTextStream("/api/documentation-stream", {
       api_name: apiName,
-      source_code: documentationInput.value.trim(),
+      source_code: currentSource,
       invariants: accepted,
       tone: toneInput.value
+    }, (_chunk, fullText) => {
+      generatedDoc.textContent = fullText;
+      generatedDoc.scrollTop = generatedDoc.scrollHeight;
     });
-    currentMarkdown = data.markdown;
-    currentSource = documentationInput.value.trim();
-    originalDoc.textContent = currentSource;
-    generatedDoc.textContent = currentMarkdown;
     copyButton.disabled = false;
+    generatedDoc.classList.remove("is-streaming");
     showCompareStage();
   } catch (error) {
+    generatedDoc.classList.remove("is-streaming");
     renderError(error.message || "Documentation generation failed.");
   } finally {
     approveButton.disabled = false;
@@ -267,7 +326,7 @@ form.addEventListener("submit", async (event) => {
     currentSource = docText;
     currentMarkdown = "";
     currentInvariants = data.invariants;
-    renderInvariantReview(currentInvariants);
+    await renderInvariantReviewAnimated(currentInvariants);
     setStatus("review", "Check invariants");
   } catch (error) {
     renderError(error.message || "Invariant extraction failed.");
