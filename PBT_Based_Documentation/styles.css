@@ -276,7 +276,7 @@ select:focus {
 
 .controls {
   display: grid;
-  grid-template-columns: minmax(150px, 1fr) 150px minmax(180px, 1fr) auto;
+  grid-template-columns: minmax(150px, 1fr) 150px minmax(180px, 1fr) auto auto;
   gap: 12px;
   align-items: end;
 }
@@ -295,6 +295,28 @@ select {
   padding: 0 10px;
   background: #fffaf2;
   color: var(--ink);
+}
+
+.toggle-field {
+  min-height: 42px;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.78);
+  color: var(--ink);
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.toggle-field input {
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  accent-color: var(--clay);
 }
 
 button {
@@ -445,8 +467,8 @@ button {
 
 .invariant-item {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
   align-items: start;
   padding: 12px;
   border: 1px solid rgba(38, 31, 26, 0.1);
@@ -454,6 +476,10 @@ button {
   background: rgba(255, 252, 246, 0.72);
   color: var(--ink);
   line-height: 1.45;
+}
+
+.invariant-copy {
+  min-width: 0;
 }
 
 .invariant-enter {
@@ -474,6 +500,34 @@ button {
   accent-color: var(--clay);
 }
 
+.metric-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+  max-width: 220px;
+}
+
+.metric-pills span {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border: 1px solid rgba(49, 92, 104, 0.18);
+  border-radius: 999px;
+  background: rgba(222, 233, 232, 0.55);
+  color: var(--blue);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.metric-pills.is-loading span,
+.metric-pills .metric-warning {
+  border-color: rgba(181, 89, 55, 0.24);
+  background: rgba(246, 221, 207, 0.62);
+  color: var(--clay-dark);
+}
+
 .approve-button {
   width: 100%;
   margin-top: 18px;
@@ -484,6 +538,57 @@ button {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+.tests-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.test-list {
+  display: grid;
+  gap: 10px;
+}
+
+.test-item {
+  border: 1px solid rgba(38, 31, 26, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.74);
+  overflow: hidden;
+}
+
+.test-item summary {
+  min-height: 46px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 820;
+}
+
+.test-item summary span:last-child {
+  color: var(--blue);
+  font-size: 0.82rem;
+}
+
+.test-item p,
+.test-item pre {
+  margin: 0;
+  padding: 0 14px 14px;
+}
+
+.test-item pre {
+  padding-top: 12px;
+  border-top: 1px solid rgba(38, 31, 26, 0.08);
+  background: rgba(241, 234, 223, 0.45);
+}
+
+.metric-error {
+  color: var(--clay-dark);
+  font-weight: 760;
 }
 
 .compare-paper {
@@ -566,6 +671,16 @@ pre.is-streaming::after {
 
   .step-tabs {
     grid-template-columns: 1fr;
+  }
+
+  .invariant-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .metric-pills {
+    grid-column: 2;
+    justify-content: flex-start;
+    max-width: none;
   }
 
   .example-prompt {

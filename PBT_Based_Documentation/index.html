@@ -33,6 +33,10 @@
             <span aria-hidden="true">03</span>
             Compare
           </button>
+          <button type="button" class="step-tab" data-step="tests">
+            <span aria-hidden="true">04</span>
+            PBT tests
+          </button>
         </div>
 
         <form class="generator" id="documentation-form">
@@ -75,6 +79,11 @@
             <label class="field" for="openai-key">
               <span>OpenAI key</span>
               <input id="openai-key" name="openai_key" type="password" placeholder="sk-..." autocomplete="off">
+            </label>
+
+            <label class="toggle-field" for="assess-metrics">
+              <input id="assess-metrics" name="assess_metrics" type="checkbox">
+              <span>Assess metrics</span>
             </label>
 
             <button type="submit" id="run-button">
@@ -125,6 +134,12 @@
             <h3 id="generated-title">After</h3>
             <pre id="generated-doc"></pre>
           </article>
+        </div>
+
+        <div class="paper tests-panel is-hidden" id="tests-panel">
+          <p class="placeholder">
+            Toggle metrics and run the invariant pass to generate property-based tests.
+          </p>
         </div>
       </section>
     </main>

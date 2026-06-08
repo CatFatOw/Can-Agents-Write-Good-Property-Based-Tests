@@ -29,7 +29,7 @@ from typing import Any
 from metrics import test_metrics
 # Import hypothesis in case user wants to display how valid/sound it is 
 from hypothesis import given, settings, Verbosity, note
-from hypothesis.strategies import composite, integers, floats, lists, boolean, text
+from hypothesis.strategies import composite, integers, floats, lists, booleans, text
 from openai import OpenAI
 
 
@@ -494,7 +494,7 @@ def strip_markdown_fences(text: str) -> str:
     return match.group(1).strip() if match else text
 
 
-def generate_pbt_test(model, source_code, invariants, streaming=True):
+def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="api.function"):
     """Function feeds gpt the test_invariant (text) that is generated and creates an hypohtesis test via the fed text"""
 
     # Call the model each time /invariants
@@ -503,6 +503,9 @@ def generate_pbt_test(model, source_code, invariants, streaming=True):
     for test_invariant in invariants:
         prompt = f"""
             You are an expert in property-based testing using Hypothesis.
+
+            Function/API Name:
+            {api_name}
 
             Source Code:
             {source_code}
@@ -517,7 +520,7 @@ def generate_pbt_test(model, source_code, invariants, streaming=True):
             - Avoid expensive or slow strategies.
             - Limit generated collection sizes to keep runtime reasonable (especially crucial for a working app/tool).
             - Include edge cases naturally through Hypothesis.
-            - Assume the function under test already exists and do not redefine it.
+            - Assume the function under test already exists and call it as {api_name}.
             - Import all required Hypothesis modules.
             - The test should fail if a counterexample to the invariant exists.
             - Produce only executable Python code.
@@ -556,18 +559,47 @@ def generate_pbt_test(model, source_code, invariants, streaming=True):
         # Post process it to make it clean
         output = strip_markdown_fences(output)
 
-        # Execture the test_metrics function on the file
         namespace = {}
-        exec(source_code, namespace)
-        exec(output, namespace)
+        try:
+            import math
+            import numpy as np
 
-        test_function = next(
-            value for name, value in namespace.items()
-            if name.startswith("test_") and callable(value)
-        )
-        validity, soundness = test_metrics(test_function)
+            namespace.update({"math": math, "np": np, "numpy": np})
+            module_name, _, attr_name = api_name.rpartition(".")
+            if module_name and attr_name:
+                try:
+                    module = __import__(module_name, fromlist=[attr_name])
+                    namespace[attr_name] = getattr(module, attr_name)
+                except Exception:
+                    pass
+            try:
+                exec(source_code, namespace)
+            except Exception:
+                # Pasted library source can depend on hidden decorators/private globals.
+                # The imported API binding above still lets generated tests call the real function.
+                pass
+            exec(output, namespace)
+
+            test_function = next(
+                value for name, value in namespace.items()
+                if name.startswith("test_") and callable(value)
+            )
+            validity, soundness = test_metrics(test_function)
+            error = ""
+        except Exception as exc:
+            validity = 0
+            soundness = 0
+            error = str(exc)
+
         results.append(
-            ({"invariant": test_invariant, "test_code": output, "validity": validity, "soundness": soundness}))
+            {
+                "invariant": test_invariant,
+                "test_code": output,
+                "validity": validity,
+                "soundness": soundness,
+                "error": error,
+            }
+        )
         
     return {"results": results}
 

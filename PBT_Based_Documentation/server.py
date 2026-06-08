@@ -18,9 +18,12 @@ if str(ROOT) not in sys.path:
 
 from gpt_documentation_generator import response_text as project_response_text
 from gpt_documentation_generator import strip_markdown_fences
+from gpt_documentation_generator import generate_pbt_test
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
+METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.5-mini")
 GPT_CACHE: dict[tuple[str, str], str] = {}
+METRICS_CACHE: dict[tuple[str, str, str], dict[str, Any]] = {}
 SOURCE_CACHE: dict[str, dict[str, str]] = {}
 
 
@@ -317,6 +320,34 @@ class Handler(SimpleHTTPRequestHandler):
                     return
                 raw = run_project_gpt(invariant_prompt(api_name, source_code), openai_key)
                 self.send_json(200, {"invariants": parse_json_array(raw), "model": MODEL})
+                return
+
+            if self.path == "/api/metrics":
+                payload = self.read_json()
+                api_name = str(payload.get("api_name") or "api.function")
+                source_code = str(payload.get("source_code") or payload.get("documentation") or "")
+                invariants = payload.get("invariants") or []
+                openai_key = str(payload.get("openai_key") or "")
+                if not source_code.strip() or not isinstance(invariants, list):
+                    self.send_json(400, {"error": "Source code and invariants are required."})
+                    return
+                cache_key = (METRICS_MODEL, source_code, json.dumps(invariants, sort_keys=True))
+                if cache_key not in METRICS_CACHE:
+                    with request_openai_key(openai_key):
+                        METRICS_CACHE[cache_key] = generate_pbt_test(
+                            METRICS_MODEL,
+                            source_code,
+                            invariants,
+                            streaming=False,
+                            api_name=api_name,
+                        )
+                self.send_json(
+                    200,
+                    {
+                        "metrics": METRICS_CACHE[cache_key]["results"],
+                        "model": METRICS_MODEL,
+                    },
+                )
                 return
 
             if self.path == "/api/documentation":

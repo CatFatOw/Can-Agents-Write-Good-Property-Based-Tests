@@ -5,8 +5,10 @@ const sourceObjectInput = document.querySelector("#source-object");
 const lookupButton = document.querySelector("#lookup-button");
 const toneInput = document.querySelector("#tone");
 const openaiKeyInput = document.querySelector("#openai-key");
+const assessMetricsInput = document.querySelector("#assess-metrics");
 const reviewPanel = document.querySelector("#review-panel");
 const comparePanel = document.querySelector("#compare-panel");
+const testsPanel = document.querySelector("#tests-panel");
 const originalDoc = document.querySelector("#original-doc");
 const generatedDoc = document.querySelector("#generated-doc");
 const outputTitle = document.querySelector("#output-title");
@@ -20,6 +22,7 @@ const examples = document.querySelector("#prompt-examples");
 
 let currentMarkdown = "";
 let currentInvariants = [];
+let currentMetrics = [];
 let currentSource = "";
 const requestCache = new Map();
 
@@ -41,7 +44,7 @@ function escapeHtml(value) {
 }
 
 function setStage(stage) {
-  document.body.classList.remove("stage-input", "stage-review", "stage-compare");
+  document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests");
   document.body.classList.add(`stage-${stage}`);
   stepTabs.forEach((tab) => {
     const active = tab.dataset.step === stage;
@@ -157,6 +160,7 @@ function wait(ms) {
 function showInputStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
+  testsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
@@ -170,6 +174,7 @@ function showReviewStage() {
   }
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
+  testsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
@@ -184,6 +189,7 @@ function showCompareStage(force = false) {
   }
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.remove("is-hidden");
+  testsPanel.classList.add("is-hidden");
   backReviewButton.classList.remove("is-hidden");
   outputEyebrow.textContent = "Markdown comparison";
   outputTitle.textContent = "Before and after";
@@ -191,9 +197,25 @@ function showCompareStage(force = false) {
   setStatus("ready", "MD ready");
 }
 
+function showTestsStage() {
+  if (!currentMetrics.length) {
+    showReviewStage();
+    return;
+  }
+  reviewPanel.classList.add("is-hidden");
+  comparePanel.classList.add("is-hidden");
+  testsPanel.classList.remove("is-hidden");
+  backReviewButton.classList.remove("is-hidden");
+  outputEyebrow.textContent = "Generated PBT";
+  outputTitle.textContent = "Property tests";
+  setStage("tests");
+  setStatus("ready", "Tests ready");
+}
+
 function renderError(message, eyebrow = "GPT call failed", title = "Could not run the pipeline") {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
+  testsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   reviewPanel.innerHTML = `
     <div class="review-copy">
@@ -205,6 +227,28 @@ function renderError(message, eyebrow = "GPT call failed", title = "Could not ru
   outputEyebrow.textContent = "Needs attention";
   outputTitle.textContent = "Backend error";
   setStatus("draft", "Check key");
+}
+
+function formatScore(value) {
+  if (typeof value !== "number") return "0%";
+  return `${Math.round(value * 100)}%`;
+}
+
+function metricForInvariant(invariant) {
+  return currentMetrics.find((metric) => metric.invariant === invariant);
+}
+
+function metricMarkup(metric) {
+  if (!metric) {
+    return "";
+  }
+  return `
+    <span class="metric-pills">
+      <span>Validity ${formatScore(metric.validity)}</span>
+      <span>Soundness ${formatScore(metric.soundness)}</span>
+      ${metric.error ? '<span class="metric-warning">Check test</span>' : ""}
+    </span>
+  `;
 }
 
 function renderInvariantReview(invariants) {
@@ -225,16 +269,92 @@ async function renderInvariantReviewAnimated(invariants) {
   renderInvariantReview([]);
   const list = document.querySelector("#invariant-list");
   for (const [index, invariant] of invariants.entries()) {
+    const metric = metricForInvariant(invariant);
     const wrapper = document.createElement("label");
     wrapper.className = "invariant-item invariant-enter";
     wrapper.innerHTML = `
       <input type="checkbox" checked data-index="${index}">
-      <span>${escapeHtml(invariant)}</span>
+      <span class="invariant-copy">${escapeHtml(invariant)}</span>
+      ${metricMarkup(metric)}
     `;
     list.appendChild(wrapper);
     await wait(140);
     wrapper.classList.add("is-visible");
   }
+}
+
+function renderInvariantReviewWithMetrics(invariants, loading = false) {
+  renderInvariantReview([]);
+  const list = document.querySelector("#invariant-list");
+  list.innerHTML = invariants.map((invariant, index) => {
+    const metric = metricForInvariant(invariant);
+    return `
+      <label class="invariant-item">
+        <input type="checkbox" checked data-index="${index}">
+        <span class="invariant-copy">${escapeHtml(invariant)}</span>
+        ${metricMarkup(metric)}
+        ${loading && !metric ? `
+          <span class="metric-pills is-loading">
+            <span>Assessing...</span>
+          </span>
+        ` : ""}
+      </label>
+    `;
+  }).join("");
+}
+
+function renderTestsPanel() {
+  if (!currentMetrics.length) {
+    testsPanel.innerHTML = `
+      <p class="placeholder">
+        Toggle metrics and run the invariant pass to generate property-based tests.
+      </p>
+    `;
+    return;
+  }
+
+  testsPanel.innerHTML = `
+    <div class="review-copy">
+      <p class="eyebrow">Generated property-based tests</p>
+      <h3>Inspect the tests</h3>
+      <p>Each test was generated from one invariant. Scores appear beside the invariants; the Hypothesis code lives here.</p>
+    </div>
+    <div class="test-list">
+      ${currentMetrics.map((metric, index) => `
+        <details class="test-item" ${index === 0 ? "open" : ""}>
+          <summary>
+            <span>Invariant ${index + 1}</span>
+            <span>${formatScore(metric.validity)} valid / ${formatScore(metric.soundness)} sound</span>
+          </summary>
+          <p>${escapeHtml(metric.invariant || "")}</p>
+          ${metric.error ? `<p class="metric-error">${escapeHtml(metric.error)}</p>` : ""}
+          <pre>${escapeHtml(metric.test_code || "")}</pre>
+        </details>
+      `).join("")}
+    </div>
+  `;
+}
+
+async function assessMetricsForReview() {
+  if (!assessMetricsInput.checked || !currentInvariants.length) {
+    currentMetrics = [];
+    renderTestsPanel();
+    return;
+  }
+
+  renderInvariantReviewWithMetrics(currentInvariants, true);
+  renderTestsPanel();
+  setStatus("review", "Assessing metrics");
+
+  const data = await postJson("/api/metrics", {
+    api_name: apiNameInput.value.trim() || "api.function",
+    source_code: currentSource,
+    invariants: currentInvariants
+  });
+  currentMetrics = data.metrics || [];
+  renderInvariantReviewWithMetrics(currentInvariants);
+  renderTestsPanel();
+  setStatus("review", "Metrics ready");
 }
 
 async function generateMarkdownFromReview() {
@@ -291,6 +411,7 @@ examples.addEventListener("click", async (event) => {
     currentSource = documentationInput.value;
     currentMarkdown = "";
     currentInvariants = [];
+    currentMetrics = [];
     apiNameInput.value = example.api;
     sourceObjectInput.value = "np.linspace";
     documentationInput.focus();
@@ -312,6 +433,7 @@ lookupButton.addEventListener("click", async () => {
     currentSource = data.source_code;
     currentMarkdown = "";
     currentInvariants = [];
+    currentMetrics = [];
     apiNameInput.value = data.api_name;
     setStage("input");
     setStatus("draft", data.source_kind === "fallback" ? "Fallback loaded" : "Source loaded");
@@ -349,6 +471,7 @@ form.addEventListener("submit", async (event) => {
   runButton.disabled = true;
   runButton.textContent = "Calling GPT...";
   comparePanel.classList.add("is-hidden");
+  testsPanel.classList.add("is-hidden");
   reviewPanel.classList.remove("is-hidden");
   reviewPanel.innerHTML = '<p class="placeholder">Calling the project GPT pipeline for candidate invariants...</p>';
   outputEyebrow.textContent = "Review invariants";
@@ -365,7 +488,9 @@ form.addEventListener("submit", async (event) => {
     currentSource = docText;
     currentMarkdown = "";
     currentInvariants = data.invariants;
+    currentMetrics = [];
     await renderInvariantReviewAnimated(currentInvariants);
+    await assessMetricsForReview();
     setStatus("review", "Check invariants");
   } catch (error) {
     renderError(error.message || "Invariant extraction failed.");
@@ -386,6 +511,17 @@ copyButton.addEventListener("click", async () => {
 
 backReviewButton.addEventListener("click", showReviewStage);
 
+assessMetricsInput.addEventListener("change", async () => {
+  if (!currentInvariants.length) {
+    return;
+  }
+  try {
+    await assessMetricsForReview();
+  } catch (error) {
+    renderError(error.message || "Metric assessment failed.", "Metric assessment failed", "Could not assess tests");
+  }
+});
+
 stepTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     if (tab.dataset.step === "input") {
@@ -394,6 +530,8 @@ stepTabs.forEach((tab) => {
       showReviewStage();
     } else if (tab.dataset.step === "compare") {
       showCompareStage();
+    } else if (tab.dataset.step === "tests") {
+      showTestsStage();
     }
   });
 });
