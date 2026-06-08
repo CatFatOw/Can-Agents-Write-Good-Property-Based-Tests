@@ -494,6 +494,50 @@ def strip_markdown_fences(text: str) -> str:
     return match.group(1).strip() if match else text
 
 
+def evaluate_pbt_test(source_code, invariant, test_code, api_name="api.function"):
+    """Run one property-based test and calculate validity/soundness metrics."""
+    output = strip_markdown_fences(test_code)
+    namespace = {}
+    try:
+        import math
+        import numpy as np
+
+        namespace.update({"math": math, "np": np, "numpy": np})
+        module_name, _, attr_name = api_name.rpartition(".")
+        if module_name and attr_name:
+            try:
+                module = __import__(module_name, fromlist=[attr_name])
+                namespace[attr_name] = getattr(module, attr_name)
+            except Exception:
+                pass
+        try:
+            exec(source_code, namespace)
+        except Exception:
+            # Pasted library source can depend on hidden decorators/private globals.
+            # The imported API binding above still lets generated tests call the real function.
+            pass
+        exec(output, namespace)
+
+        test_function = next(
+            value for name, value in namespace.items()
+            if name.startswith("test_") and callable(value)
+        )
+        validity, soundness = test_metrics(test_function)
+        error = ""
+    except Exception as exc:
+        validity = 0
+        soundness = 0
+        error = str(exc)
+
+    return {
+        "invariant": invariant,
+        "test_code": output,
+        "validity": validity,
+        "soundness": soundness,
+        "error": error,
+    }
+
+
 def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="api.function"):
     """Function feeds gpt the test_invariant (text) that is generated and creates an hypohtesis test via the fed text"""
 
@@ -558,48 +602,7 @@ def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="
             output = "".join(chunks)
         # Post process it to make it clean
         output = strip_markdown_fences(output)
-
-        namespace = {}
-        try:
-            import math
-            import numpy as np
-
-            namespace.update({"math": math, "np": np, "numpy": np})
-            module_name, _, attr_name = api_name.rpartition(".")
-            if module_name and attr_name:
-                try:
-                    module = __import__(module_name, fromlist=[attr_name])
-                    namespace[attr_name] = getattr(module, attr_name)
-                except Exception:
-                    pass
-            try:
-                exec(source_code, namespace)
-            except Exception:
-                # Pasted library source can depend on hidden decorators/private globals.
-                # The imported API binding above still lets generated tests call the real function.
-                pass
-            exec(output, namespace)
-
-            test_function = next(
-                value for name, value in namespace.items()
-                if name.startswith("test_") and callable(value)
-            )
-            validity, soundness = test_metrics(test_function)
-            error = ""
-        except Exception as exc:
-            validity = 0
-            soundness = 0
-            error = str(exc)
-
-        results.append(
-            {
-                "invariant": test_invariant,
-                "test_code": output,
-                "validity": validity,
-                "soundness": soundness,
-                "error": error,
-            }
-        )
+        results.append(evaluate_pbt_test(source_code, test_invariant, output, api_name=api_name))
         
     return {"results": results}
 

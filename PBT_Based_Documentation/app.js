@@ -59,9 +59,10 @@ function setStatus(mode, label) {
   flowStatus.querySelector("span:last-child").textContent = label;
 }
 
-async function postJson(path, payload) {
+async function postJson(path, payload, options = {}) {
+  const useCache = options.cache !== false;
   const cacheKey = `${path}:${JSON.stringify(payload)}`;
-  if (requestCache.has(cacheKey)) {
+  if (useCache && requestCache.has(cacheKey)) {
     return requestCache.get(cacheKey);
   }
   const response = await fetch(path, {
@@ -76,7 +77,9 @@ async function postJson(path, payload) {
   if (!response.ok) {
     throw new Error(data.error || "Request failed.");
   }
-  requestCache.set(cacheKey, data);
+  if (useCache) {
+    requestCache.set(cacheKey, data);
+  }
   return data;
 }
 
@@ -332,11 +335,45 @@ function renderTestsPanel() {
           </summary>
           <p>${escapeHtml(metric.invariant || "")}</p>
           ${metric.error ? `<p class="metric-error">${escapeHtml(metric.error)}</p>` : ""}
-          <pre>${escapeHtml(metric.test_code || "")}</pre>
+          <label class="test-editor">
+            <span>Edit or paste a property-based test</span>
+            <textarea data-test-editor="${index}" rows="11">${escapeHtml(metric.test_code || "")}</textarea>
+          </label>
+          <button type="button" class="secondary-button rerun-test-button" data-rerun-index="${index}">Rerun this invariant</button>
         </details>
       `).join("")}
     </div>
   `;
+}
+
+async function rerunEditedTest(index, button) {
+  const metric = currentMetrics[index];
+  const editor = testsPanel.querySelector(`[data-test-editor="${index}"]`);
+  if (!metric || !editor) return;
+
+  button.disabled = true;
+  button.textContent = "Rerunning...";
+  setStatus("review", "Rerunning test");
+
+  try {
+    const data = await postJson("/api/rerun-test", {
+      api_name: apiNameInput.value.trim() || "api.function",
+      source_code: currentSource,
+      invariant: metric.invariant,
+      test_code: editor.value
+    }, { cache: false });
+
+    currentMetrics[index] = data.metric;
+    selectedTestIndex = index;
+    renderInvariantReviewWithMetrics(currentInvariants);
+    renderTestsPanel();
+    setStatus("ready", "Test rerun");
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = "Rerun this invariant";
+    setStatus("draft", "Rerun failed");
+    throw error;
+  }
 }
 
 async function assessMetricsForReview() {
@@ -524,6 +561,16 @@ reviewPanel.addEventListener("click", (event) => {
   event.preventDefault();
   event.stopPropagation();
   showTestsStage(Number(button.dataset.testIndex || 0));
+});
+
+testsPanel.addEventListener("click", async (event) => {
+  const button = event.target.closest(".rerun-test-button");
+  if (!button) return;
+  try {
+    await rerunEditedTest(Number(button.dataset.rerunIndex || 0), button);
+  } catch (error) {
+    renderError(error.message || "Could not rerun the edited test.", "Test rerun failed", "Could not assess this test");
+  }
 });
 
 assessMetricsInput.addEventListener("change", async () => {

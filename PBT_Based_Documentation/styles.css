@@ -618,6 +618,30 @@ button {
   padding: 0 14px 14px;
 }
 
+.test-editor {
+  display: grid;
+  gap: 8px;
+  padding: 0 14px 14px;
+}
+
+.test-editor span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 760;
+}
+
+.test-editor textarea {
+  min-height: 210px;
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.rerun-test-button {
+  margin: 0 14px 14px;
+}
+
 .test-item pre {
   padding-top: 12px;
   border-top: 1px solid rgba(38, 31, 26, 0.08);

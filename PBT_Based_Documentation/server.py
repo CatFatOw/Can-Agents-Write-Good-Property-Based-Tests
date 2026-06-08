@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
 from gpt_documentation_generator import response_text as project_response_text
 from gpt_documentation_generator import strip_markdown_fences
 from gpt_documentation_generator import generate_pbt_test
+from gpt_documentation_generator import evaluate_pbt_test
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
 METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.4-mini")
@@ -348,6 +349,19 @@ class Handler(SimpleHTTPRequestHandler):
                         "model": METRICS_MODEL,
                     },
                 )
+                return
+
+            if self.path == "/api/rerun-test":
+                payload = self.read_json()
+                api_name = str(payload.get("api_name") or "api.function")
+                source_code = str(payload.get("source_code") or payload.get("documentation") or "")
+                invariant = str(payload.get("invariant") or "")
+                test_code = str(payload.get("test_code") or "")
+                if not source_code.strip() or not invariant.strip() or not test_code.strip():
+                    self.send_json(400, {"error": "Source code, invariant, and test code are required."})
+                    return
+                result = evaluate_pbt_test(source_code, invariant, test_code, api_name=api_name)
+                self.send_json(200, {"metric": result})
                 return
 
             if self.path == "/api/documentation":
