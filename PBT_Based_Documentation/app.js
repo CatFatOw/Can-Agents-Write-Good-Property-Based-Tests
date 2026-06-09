@@ -759,18 +759,11 @@ function hideSourceHoverCard() {
 }
 
 function highlightSourceRange(range) {
-  let firstHighlighted = null;
   reviewPanel.querySelectorAll(".source-line").forEach((line) => {
     const lineNumber = Number(line.dataset.line);
     const highlighted = Boolean(range && lineNumber >= range.start && lineNumber <= range.end);
     line.classList.toggle("is-highlighted", highlighted);
-    if (highlighted && !firstHighlighted) {
-      firstHighlighted = line;
-    }
   });
-  if (firstHighlighted) {
-    firstHighlighted.scrollIntoView({ block: "center", behavior: "smooth" });
-  }
 }
 
 function attachInvariantHoverHandlers() {
