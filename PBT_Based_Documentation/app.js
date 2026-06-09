@@ -359,8 +359,11 @@ function renderTestsPanel() {
       ${currentMetrics.map((metric, index) => `
         <details class="test-item" ${index === selectedTestIndex ? "open" : ""}>
           <summary>
-            <span>Invariant ${index + 1}</span>
-            <span>${confidenceLabel(metric)} ${formatScore(metricScore(metric))} | ${formatScore(metric.validity)} valid | ${formatScore(metric.soundness)} sound</span>
+            <span class="test-summary-title">Invariant ${index + 1}</span>
+            <span class="test-summary-metrics">
+              <span class="confidence-pill confidence-${confidenceLabel(metric).toLowerCase()}">${confidenceLabel(metric)} ${formatScore(metricScore(metric))}</span>
+              <span>${formatScore(metric.validity)} valid / ${formatScore(metric.soundness)} sound</span>
+            </span>
           </summary>
           <p>${escapeHtml(metric.invariant || "")}</p>
           ${metric.explanation ? `<p class="metric-explanation">${escapeHtml(metric.explanation)}</p>` : ""}

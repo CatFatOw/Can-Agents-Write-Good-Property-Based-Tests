@@ -551,19 +551,22 @@ button {
   color: var(--clay-dark);
 }
 
-.metric-pills .confidence-high {
+.metric-pills .confidence-high,
+.test-summary-metrics .confidence-high {
   border-color: rgba(89, 111, 95, 0.26);
   background: rgba(214, 232, 218, 0.75);
   color: #355f3d;
 }
 
-.metric-pills .confidence-medium {
+.metric-pills .confidence-medium,
+.test-summary-metrics .confidence-medium {
   border-color: rgba(201, 152, 67, 0.32);
   background: rgba(249, 232, 190, 0.82);
   color: #7a5520;
 }
 
-.metric-pills .confidence-low {
+.metric-pills .confidence-low,
+.test-summary-metrics .confidence-low {
   border-color: rgba(182, 90, 55, 0.3);
   background: rgba(248, 215, 203, 0.82);
   color: var(--clay-dark);
@@ -625,9 +628,23 @@ button {
   overflow-wrap: anywhere;
 }
 
-.test-item summary span:last-child {
+.test-summary-metrics {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
   color: var(--blue);
   font-size: 0.82rem;
+}
+
+.test-summary-metrics .confidence-pill {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-weight: 800;
 }
 
 .test-item p,
