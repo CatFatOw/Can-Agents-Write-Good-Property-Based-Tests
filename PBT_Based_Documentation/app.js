@@ -10,9 +10,10 @@ const reviewPanel = document.querySelector("#review-panel");
 const comparePanel = document.querySelector("#compare-panel");
 const testsPanel = document.querySelector("#tests-panel");
 const docsExamplePanel = document.querySelector("#docs-example-panel");
-const originalPadDocs = document.querySelector("#original-pad-docs");
-const invariantPadDocs = document.querySelector("#invariant-pad-docs");
-const originalDoc = document.querySelector("#original-doc");
+const originalExampleDocs = document.querySelector("#original-example-docs");
+const invariantExampleDocs = document.querySelector("#invariant-example-docs");
+const publicExampleTitle = document.querySelector("#public-example-title");
+const invariantExampleTitle = document.querySelector("#invariant-example-title");
 const generatedDoc = document.querySelector("#generated-doc");
 const outputTitle = document.querySelector("#output-title");
 const outputEyebrow = document.querySelector("#output-eyebrow");
@@ -39,6 +40,19 @@ const exampleDocs = {
   "numpy-pad": {
     api: "numpy.pad",
     lookup: "np.pad"
+  }
+};
+
+const docsExamples = {
+  "numpy-pad": {
+    label: "np.pad",
+    originalPath: "examples/numpy_pad_original_docs.md",
+    invariantPath: "examples/numpy_pad_invariant_docs.md"
+  },
+  "numpy-linspace": {
+    label: "np.linspace",
+    originalPath: "examples/numpy_linspace_original_docs.md",
+    invariantPath: "examples/numpy_linspace_invariant_docs.md"
   }
 };
 
@@ -286,8 +300,8 @@ function showCompareStage(force = false) {
   testsPanel.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   backReviewButton.classList.remove("is-hidden");
-  outputEyebrow.textContent = "Markdown comparison";
-  outputTitle.textContent = "Before and after";
+  outputEyebrow.textContent = "Generated Markdown";
+  outputTitle.textContent = "Invariant-based documentation";
   setStage("compare");
   setStatus("ready", "MD ready");
 }
@@ -310,33 +324,45 @@ function showTestsStage(testIndex = selectedTestIndex) {
   setStatus("ready", "Tests ready");
 }
 
-async function showDocsExampleStage() {
+async function loadDocsExample(exampleId = "numpy-pad") {
+  const example = docsExamples[exampleId] || docsExamples["numpy-pad"];
+  outputTitle.textContent = `${example.label} comparison`;
+  publicExampleTitle.textContent = `Original ${example.label}`;
+  invariantExampleTitle.textContent = `Contract-style ${example.label}`;
+  docsExamplePanel.querySelectorAll(".docs-example-choice").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.docExample === exampleId);
+  });
+
+  originalExampleDocs.innerHTML = '<p class="placeholder">Loading public documentation comparison...</p>';
+  invariantExampleDocs.innerHTML = '<p class="placeholder">Loading invariant-based documentation...</p>';
+  const [originalResponse, invariantResponse] = await Promise.all([
+    fetch(example.originalPath),
+    fetch(example.invariantPath)
+  ]);
+  if (!originalResponse.ok || !invariantResponse.ok) {
+    throw new Error(`Could not load the ${example.label} documentation example.`);
+  }
+  originalExampleDocs.innerHTML = renderMarkdown(await originalResponse.text());
+  invariantExampleDocs.innerHTML = renderMarkdown(await invariantResponse.text());
+  docsExamplePanel.dataset.activeExample = exampleId;
+}
+
+async function showDocsExampleStage(exampleId = docsExamplePanel.dataset.activeExample || "numpy-pad") {
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
   docsExamplePanel.classList.remove("is-hidden");
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Example invariant docs";
-  outputTitle.textContent = "np.pad comparison";
   setStage("docs-example");
   setStatus("ready", "Example docs");
 
-  if (originalPadDocs.dataset.loaded === "true") {
+  if (docsExamplePanel.dataset.activeExample === exampleId && originalExampleDocs.dataset.loaded === "true") {
     return;
   }
 
-  originalPadDocs.innerHTML = '<p class="placeholder">Loading public documentation comparison...</p>';
-  invariantPadDocs.innerHTML = '<p class="placeholder">Loading invariant-based documentation...</p>';
-  const [originalResponse, invariantResponse] = await Promise.all([
-    fetch("examples/numpy_pad_original_docs.md"),
-    fetch("examples/numpy_pad_invariant_docs.md")
-  ]);
-  if (!originalResponse.ok || !invariantResponse.ok) {
-    throw new Error("Could not load the np.pad documentation example.");
-  }
-  originalPadDocs.innerHTML = renderMarkdown(await originalResponse.text());
-  invariantPadDocs.innerHTML = renderMarkdown(await invariantResponse.text());
-  originalPadDocs.dataset.loaded = "true";
+  await loadDocsExample(exampleId);
+  originalExampleDocs.dataset.loaded = "true";
 }
 
 function renderError(message, eyebrow = "GPT call failed", title = "Could not run the pipeline") {
@@ -573,7 +599,6 @@ async function generateMarkdownFromReview() {
   try {
     currentSource = documentationInput.value.trim();
     currentMarkdown = "";
-    originalDoc.textContent = currentSource;
     generatedDoc.textContent = "";
     copyButton.disabled = true;
     showCompareStage(true);
@@ -590,8 +615,9 @@ async function generateMarkdownFromReview() {
       writer.push(fullText);
     });
     currentMarkdown = await writer.finish(streamedMarkdown);
-    copyButton.disabled = false;
     generatedDoc.classList.remove("is-streaming");
+    generatedDoc.innerHTML = renderMarkdown(currentMarkdown);
+    copyButton.disabled = false;
     showCompareStage();
   } catch (error) {
     generatedDoc.classList.remove("is-streaming");
@@ -738,6 +764,14 @@ testsPanel.addEventListener("click", async (event) => {
   } catch (error) {
     renderError(error.message || "Could not rerun the edited test.", "Test rerun failed", "Could not assess this test");
   }
+});
+
+docsExamplePanel.addEventListener("click", (event) => {
+  const button = event.target.closest(".docs-example-choice");
+  if (!button) return;
+  loadDocsExample(button.dataset.docExample).catch((error) => {
+    renderError(error.message || "Could not load the example documentation.", "Example docs failed", "Could not load example");
+  });
 });
 
 assessMetricsInput.addEventListener("change", async () => {

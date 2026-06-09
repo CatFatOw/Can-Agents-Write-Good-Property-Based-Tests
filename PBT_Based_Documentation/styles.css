@@ -593,6 +593,10 @@ button {
   gap: 14px;
 }
 
+.compare-panel {
+  grid-template-columns: 1fr;
+}
+
 .tests-panel {
   min-width: 0;
   display: grid;
@@ -700,9 +704,48 @@ button {
   padding: 22px;
 }
 
+.generated-markdown-paper {
+  padding: clamp(28px, 3.5vw, 48px);
+}
+
+.generated-doc-rendered {
+  max-width: 920px;
+}
+
 .docs-example-paper {
   min-width: 0;
   padding: 22px;
+}
+
+.docs-example-switch {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(38, 31, 26, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.86);
+  box-shadow: 0 12px 26px rgba(72, 56, 42, 0.08);
+}
+
+.docs-example-choice {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.docs-example-choice:hover,
+.docs-example-choice.is-active {
+  border-color: rgba(49, 92, 104, 0.22);
+  background: #fffaf2;
+  color: var(--blue);
 }
 
 .compare-paper h3,

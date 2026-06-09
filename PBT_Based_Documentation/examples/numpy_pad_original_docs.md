@@ -14,7 +14,7 @@ Pad an array.
 
 The public reference documentation describes the accepted parameters, built-in modes, callable mode behavior, return value, notes, and examples for padding one-dimensional and multidimensional arrays.
 
-## Parameters
+## Parameters From Public Docs
 
 ### `array`
 
@@ -22,9 +22,14 @@ Array-like input of rank N. This is the array to pad.
 
 ### `pad_width`
 
-Number of values padded to the edges of each axis.
+Number of values padded to the edges of each axis. The public docs describe sequence, array-like, int, and dict forms.
 
-Accepted forms include a single integer, one pair applied to all axes, or one `(before, after)` pair per axis.
+Accepted forms include:
+
+- `((before_1, after_1), ... (before_N, after_N))`: unique pad widths for each axis.
+- `(before, after)` or `((before, after),)`: same before and after padding for each axis.
+- `(pad,)` or `int`: shortcut for `before = after = pad` on every axis.
+- `dict`: each key is an axis and each value is an int or `(before, after)` pair for that axis.
 
 ### `mode`
 
@@ -44,7 +49,7 @@ String mode or user-supplied function.
 | `wrap` | Pads by wrapping values from the opposite edge. |
 | `empty` | Pads with undefined values. |
 
-## Keyword Parameters
+## Mode-Specific Keyword Parameters
 
 - `stat_length` applies to `maximum`, `mean`, `median`, and `minimum`.
 - `constant_values` applies to `constant`.
@@ -63,18 +68,108 @@ For rank greater than one, padding of later axes may be calculated from padding 
 padding_func(vector, iaxis_pad_width, iaxis, kwargs)
 ```
 
-## Example
+## Examples
 
 ```python
 import numpy as np
 
 a = [1, 2, 3, 4, 5]
-np.pad(a, (2, 3), mode='reflect')
+np.pad(a, (2, 3), 'constant', constant_values=(4, 6))
 ```
 
-Result:
+```python
+array([4, 4, 1, ..., 6, 6, 6])
+```
+
+```python
+np.pad(a, (2, 3), 'edge')
+```
+
+```python
+array([1, 1, 1, ..., 5, 5, 5])
+```
+
+```python
+np.pad(a, (2, 3), 'linear_ramp', end_values=(5, -4))
+```
+
+```python
+array([ 5,  3,  1,  2,  3,  4,  5,  2, -1, -4])
+```
+
+```python
+np.pad(a, (2,), 'maximum')
+```
+
+```python
+array([5, 5, 1, 2, 3, 4, 5, 5, 5])
+```
+
+```python
+np.pad(a, (2,), 'mean')
+```
+
+```python
+array([3, 3, 1, 2, 3, 4, 5, 3, 3])
+```
+
+```python
+a = [[1, 2], [3, 4]]
+np.pad(a, ((3, 2), (2, 3)), 'minimum')
+```
+
+```python
+array([[1, 1, 1, 2, 1, 1, 1],
+       [1, 1, 1, 2, 1, 1, 1],
+       [1, 1, 1, 2, 1, 1, 1],
+       [1, 1, 1, 2, 1, 1, 1],
+       [3, 3, 3, 4, 3, 3, 3],
+       [1, 1, 1, 2, 1, 1, 1],
+       [1, 1, 1, 2, 1, 1, 1]])
+```
+
+```python
+a = [1, 2, 3, 4, 5]
+np.pad(a, (2, 3), 'reflect')
+```
 
 ```python
 array([3, 2, 1, 2, 3, 4, 5, 4, 3, 2])
 ```
 
+```python
+np.pad(a, (2, 3), 'reflect', reflect_type='odd')
+```
+
+```python
+array([-1,  0,  1,  2,  3,  4,  5,  6,  7,  8])
+```
+
+```python
+np.pad(a, (2, 3), 'wrap')
+```
+
+```python
+array([4, 5, 1, 2, 3, 4, 5, 1, 2, 3])
+```
+
+Dictionary padding examples from the public docs:
+
+```python
+a = np.arange(1, 7).reshape(2, 3)
+np.pad(a, {1: (1, 2)})
+```
+
+```python
+array([[0, 1, 2, 3, 0, 0],
+       [0, 4, 5, 6, 0, 0]])
+```
+
+```python
+np.pad(a, {-1: 2})
+```
+
+```python
+array([[0, 0, 1, 2, 3, 0, 0],
+       [0, 0, 4, 5, 6, 0, 0]])
+```

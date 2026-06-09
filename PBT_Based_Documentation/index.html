@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invariant-Based Documentation generator</title>
-    <link rel="stylesheet" href="styles.css?v=docs-example-1">
+    <link rel="stylesheet" href="styles.css?v=docs-example-3">
   </head>
   <body class="stage-review">
     <main class="app-shell">
@@ -129,15 +129,10 @@
         </div>
 
         <div class="compare-panel is-hidden" id="compare-panel">
-          <article class="paper compare-paper" aria-labelledby="original-title">
-            <p class="eyebrow">Original source code</p>
-            <h3 id="original-title">Before</h3>
-            <pre id="original-doc"></pre>
-          </article>
-          <article class="paper compare-paper" aria-labelledby="generated-title">
+          <article class="paper compare-paper generated-markdown-paper" aria-labelledby="generated-title">
             <p class="eyebrow">Invariant-based Markdown</p>
-            <h3 id="generated-title">After</h3>
-            <pre id="generated-doc"></pre>
+            <h3 id="generated-title">Generated documentation</h3>
+            <div class="markdown-rendered generated-doc-rendered" id="generated-doc"></div>
           </article>
         </div>
 
@@ -148,15 +143,19 @@
         </div>
 
         <div class="docs-example-panel is-hidden" id="docs-example-panel">
-          <article class="paper docs-example-paper" aria-labelledby="public-pad-title">
+          <div class="docs-example-switch" aria-label="Documentation examples">
+            <button type="button" class="docs-example-choice is-active" data-doc-example="numpy-pad">np.pad</button>
+            <button type="button" class="docs-example-choice" data-doc-example="numpy-linspace">np.linspace</button>
+          </div>
+          <article class="paper docs-example-paper" aria-labelledby="public-example-title">
             <p class="eyebrow">Public NumPy docs</p>
-            <h3 id="public-pad-title">Original np.pad</h3>
-            <div class="markdown-rendered" id="original-pad-docs"></div>
+            <h3 id="public-example-title">Original np.pad</h3>
+            <div class="markdown-rendered" id="original-example-docs"></div>
           </article>
-          <article class="paper docs-example-paper" aria-labelledby="invariant-pad-title">
+          <article class="paper docs-example-paper" aria-labelledby="invariant-example-title">
             <p class="eyebrow">Invariant-based version</p>
-            <h3 id="invariant-pad-title">Contract-style np.pad</h3>
-            <div class="markdown-rendered" id="invariant-pad-docs"></div>
+            <h3 id="invariant-example-title">Contract-style np.pad</h3>
+            <div class="markdown-rendered" id="invariant-example-docs"></div>
           </article>
         </div>
       </section>
@@ -167,6 +166,6 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=docs-example-1"></script>
+    <script src="app.js?v=docs-example-3"></script>
   </body>
 </html>
