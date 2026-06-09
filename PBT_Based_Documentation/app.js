@@ -19,6 +19,7 @@ const outputTitle = document.querySelector("#output-title");
 const outputEyebrow = document.querySelector("#output-eyebrow");
 const flowStatus = document.querySelector("#flow-status");
 const copyButton = document.querySelector("#copy-button");
+const downloadButton = document.querySelector("#download-button");
 const backReviewButton = document.querySelector("#back-review-button");
 const runButton = document.querySelector("#run-button");
 const stepTabs = Array.from(document.querySelectorAll(".step-tab"));
@@ -29,6 +30,8 @@ let currentInvariants = [];
 let currentMetrics = [];
 let selectedTestIndex = 0;
 let currentSource = "";
+let currentExampleMarkdown = "";
+let currentExampleFilename = "invariant-documentation.md";
 const requestCache = new Map();
 
 const exampleDocs = {
@@ -161,6 +164,56 @@ function setStatus(mode, label) {
   flowStatus.querySelector("span:last-child").textContent = label;
 }
 
+function getActiveMarkdownPayload() {
+  if (document.body.classList.contains("stage-docs-example")) {
+    return {
+      text: currentExampleMarkdown,
+      filename: currentExampleFilename
+    };
+  }
+  return {
+    text: currentMarkdown,
+    filename: `${(apiNameInput.value.trim() || "invariant-documentation").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "invariant-documentation"}.md`
+  };
+}
+
+function syncMarkdownActions() {
+  const { text } = getActiveMarkdownPayload();
+  const enabled = Boolean(text);
+  copyButton.disabled = !enabled;
+  downloadButton.disabled = !enabled;
+}
+
+async function writeClipboardText(text) {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  if (typeof document.execCommand === "function") {
+    document.execCommand("copy");
+  }
+  textarea.remove();
+}
+
+function downloadMarkdown(text, filename) {
+  const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 async function postJson(path, payload, options = {}) {
   const useCache = options.cache !== false;
   const cacheKey = `${path}:${JSON.stringify(payload)}`;
@@ -272,6 +325,7 @@ function showInputStage() {
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
   setStage("input");
+  syncMarkdownActions();
 }
 
 function showReviewStage() {
@@ -288,6 +342,7 @@ function showReviewStage() {
   outputTitle.textContent = "Check the claims";
   setStage("review");
   setStatus("review", "Check invariants");
+  syncMarkdownActions();
 }
 
 function showCompareStage(force = false) {
@@ -304,6 +359,7 @@ function showCompareStage(force = false) {
   outputTitle.textContent = "Invariant-based documentation";
   setStage("compare");
   setStatus("ready", "MD ready");
+  syncMarkdownActions();
 }
 
 function showTestsStage(testIndex = selectedTestIndex) {
@@ -322,6 +378,7 @@ function showTestsStage(testIndex = selectedTestIndex) {
   outputTitle.textContent = "Property tests";
   setStage("tests");
   setStatus("ready", "Tests ready");
+  syncMarkdownActions();
 }
 
 async function loadDocsExample(exampleId = "numpy-pad") {
@@ -343,8 +400,12 @@ async function loadDocsExample(exampleId = "numpy-pad") {
     throw new Error(`Could not load the ${example.label} documentation example.`);
   }
   originalExampleDocs.innerHTML = renderMarkdown(await originalResponse.text());
-  invariantExampleDocs.innerHTML = renderMarkdown(await invariantResponse.text());
+  const invariantText = await invariantResponse.text();
+  invariantExampleDocs.innerHTML = renderMarkdown(invariantText);
+  currentExampleMarkdown = invariantText;
+  currentExampleFilename = `${example.label.replace(/[^a-z0-9_-]+/gi, "-").replace(/^-|-$/g, "").toLowerCase()}-invariant-documentation.md`;
   docsExamplePanel.dataset.activeExample = exampleId;
+  syncMarkdownActions();
 }
 
 async function showDocsExampleStage(exampleId = docsExamplePanel.dataset.activeExample || "numpy-pad") {
@@ -356,6 +417,7 @@ async function showDocsExampleStage(exampleId = docsExamplePanel.dataset.activeE
   outputEyebrow.textContent = "Example invariant docs";
   setStage("docs-example");
   setStatus("ready", "Example docs");
+  syncMarkdownActions();
 
   if (docsExamplePanel.dataset.activeExample === exampleId && originalExampleDocs.dataset.loaded === "true") {
     return;
@@ -381,6 +443,7 @@ function renderError(message, eyebrow = "GPT call failed", title = "Could not ru
   outputEyebrow.textContent = "Needs attention";
   outputTitle.textContent = "Backend error";
   setStatus("draft", "Check key");
+  syncMarkdownActions();
 }
 
 function formatScore(value) {
@@ -600,7 +663,7 @@ async function generateMarkdownFromReview() {
     currentSource = documentationInput.value.trim();
     currentMarkdown = "";
     generatedDoc.textContent = "";
-    copyButton.disabled = true;
+    syncMarkdownActions();
     showCompareStage(true);
     setStatus("review", "Streaming MD");
     generatedDoc.classList.add("is-streaming");
@@ -617,7 +680,7 @@ async function generateMarkdownFromReview() {
     currentMarkdown = await writer.finish(streamedMarkdown);
     generatedDoc.classList.remove("is-streaming");
     generatedDoc.innerHTML = renderMarkdown(currentMarkdown);
-    copyButton.disabled = false;
+    syncMarkdownActions();
     showCompareStage();
   } catch (error) {
     generatedDoc.classList.remove("is-streaming");
@@ -713,6 +776,7 @@ form.addEventListener("submit", async (event) => {
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
   copyButton.disabled = true;
+  downloadButton.disabled = true;
   setStage("review");
   setStatus("review", "Calling GPT");
 
@@ -738,11 +802,27 @@ form.addEventListener("submit", async (event) => {
 });
 
 copyButton.addEventListener("click", async () => {
-  if (!currentMarkdown) return;
-  await navigator.clipboard.writeText(currentMarkdown);
-  copyButton.textContent = "Copied";
+  const { text, filename } = getActiveMarkdownPayload();
+  if (!text) return;
+  try {
+    await writeClipboardText(text);
+    copyButton.textContent = "Copied";
+  } catch {
+    downloadMarkdown(text, filename);
+    copyButton.textContent = "Downloaded MD";
+  }
   setTimeout(() => {
     copyButton.textContent = "Copy MD";
+  }, 1200);
+});
+
+downloadButton.addEventListener("click", () => {
+  const { text, filename } = getActiveMarkdownPayload();
+  if (!text) return;
+  downloadMarkdown(text, filename);
+  downloadButton.textContent = "Downloaded";
+  setTimeout(() => {
+    downloadButton.textContent = "Download MD";
   }, 1200);
 });
 

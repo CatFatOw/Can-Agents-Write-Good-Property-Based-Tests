@@ -404,6 +404,7 @@ button {
 }
 
 .copy-button,
+.download-button,
 .secondary-button {
   padding: 0 14px;
   border: 1px solid var(--line);
@@ -424,7 +425,8 @@ button {
   color: var(--clay-dark);
 }
 
-.copy-button:disabled {
+.copy-button:disabled,
+.download-button:disabled {
   cursor: not-allowed;
   color: #a39b91;
 }
