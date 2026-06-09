@@ -562,114 +562,115 @@ def confidence_from_scores(validity, soundness):
         confidence = "LOW"
     return confidence, score
 
+# Redunant function call due to merged calls in metrics.py under the name invariant_metric_test
 
-def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="api.function"):
-    """Function feeds gpt the test_invariant (text) that is generated and creates an hypohtesis test via the fed text"""
+# def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="api.function"):
+#     """Function feeds gpt the test_invariant (text) that is generated and creates an hypohtesis test via the fed text"""
 
-    # Call the model each time /invariants
-    results = []
+#     # Call the model each time /invariants
+#     results = []
 
-    for test_invariant in invariants:
-        prompt = f"""
-            You are an expert in property-based testing, program analysis, and invariant inference.
+#     for test_invariant in invariants:
+#         prompt = f"""
+#             You are an expert in property-based testing, program analysis, and invariant inference.
 
-            Function/API Name:
-            {api_name}
+#             Function/API Name:
+#             {api_name}
 
-            Source Code:
-            {source_code}
+#             Source Code:
+#             {source_code}
 
-            Invariant Candidate:
-            {test_invariant}
+#             Invariant Candidate:
+#             {test_invariant}
 
-            Tasks:
-            1. Assess this invariant with a confidence label and numeric score.
-            2. Generate a small Hypothesis property-based test that attempts to falsify the invariant.
+#             Tasks:
+#             1. Assess this invariant with a confidence label and numeric score.
+#             2. Generate a small Hypothesis property-based test that attempts to falsify the invariant.
 
-            Confidence Levels:
-            HIGH:
-            - Directly supported by the source code.
-            - Likely true for all valid executions.
-            - Precise and useful.
+#             Confidence Levels:
+#             HIGH:
+#             - Directly supported by the source code.
+#             - Likely true for all valid executions.
+#             - Precise and useful.
 
-            MEDIUM:
-            - Plausible but may depend on assumptions.
-            - Potential edge cases exist.
+#             MEDIUM:
+#             - Plausible but may depend on assumptions.
+#             - Potential edge cases exist.
 
-            LOW:
-            - Contradicted by the implementation.
-            - Overly broad, trivial, or likely incorrect.
+#             LOW:
+#             - Contradicted by the implementation.
+#             - Overly broad, trivial, or likely incorrect.
 
-            Requirements:
-            - Use Hypothesis strategies appropriate for the function inputs.
-            - Avoid expensive or slow strategies.
-            - Limit generated collection sizes to keep runtime reasonable (especially crucial for a working app/tool).
-            - Include edge cases naturally through Hypothesis.
-            - Assume the function under test already exists and call it as {api_name}.
-            - Import all required Hypothesis modules.
-            - The test should fail if a counterexample to the invariant exists.
-            - Produce only executable Python code.
-            - Do not include markdown fences.
-            - Do not include explanations or comments.
-            - Do not include extra clutter, markdown, etc that interferes with code running.
-            - generate ONE FUNCTION.
+#             Requirements:
+#             - Use Hypothesis strategies appropriate for the function inputs.
+#             - Avoid expensive or slow strategies.
+#             - Limit generated collection sizes to keep runtime reasonable (especially crucial for a working app/tool).
+#             - Include edge cases naturally through Hypothesis.
+#             - Assume the function under test already exists and call it as {api_name}.
+#             - Import all required Hypothesis modules.
+#             - The test should fail if a counterexample to the invariant exists.
+#             - Produce only executable Python code.
+#             - Do not include markdown fences.
+#             - Do not include explanations or comments.
+#             - Do not include extra clutter, markdown, etc that interferes with code running.
+#             - generate ONE FUNCTION.
 
-            Respond ONLY with valid JSON:
-            {{
-                "confidence": "HIGH",
-                "score": 0.95,
-                "explanation": "Brief explanation.",
-                "test_code": "complete python code here"
-            }}
-            """
+#             Respond ONLY with valid JSON:
+#             {{
+#                 "confidence": "HIGH",
+#                 "score": 0.95,
+#                 "explanation": "Brief explanation.",
+#                 "test_code": "complete python code here"
+#             }}
+#             """
         
-        client = OpenAI()
-        # If not streaming, just display the generated gpt text all at once
-        if not streaming:
-            response = client.responses.create(
-                model=model,
-                input=prompt,
-                stream=False,
-            )
-            output = response.output_text
-        # if streaming, we display the text as it is getting generated
-        else:
-            chunks = []
-            events = client.responses.create(
-                model=model,
-                input=prompt,
-                stream=True,
-            )
+#         client = OpenAI()
+#         # If not streaming, just display the generated gpt text all at once
+#         if not streaming:
+#             response = client.responses.create(
+#                 model=model,
+#                 input=prompt,
+#                 stream=False,
+#             )
+#             output = response.output_text
+#         # if streaming, we display the text as it is getting generated
+#         else:
+#             chunks = []
+#             events = client.responses.create(
+#                 model=model,
+#                 input=prompt,
+#                 stream=True,
+#             )
             
-            for event in events:
-                if event.type == "response.output_text.delta":
-                    # Flush=True makes it show everything at once 
-                    print(event.delta, end="", flush=True)
-                    chunks.append(event.delta)
-                print()
+#             for event in events:
+#                 if event.type == "response.output_text.delta":
+#                     # Flush=True makes it show everything at once 
+#                     print(event.delta, end="", flush=True)
+#                     chunks.append(event.delta)
+#                 print()
 
-            output = "".join(chunks)
-        try:
-            data = parse_json_object(output)
-            test_code = str(data.get("test_code") or "")
-            confidence = str(data.get("confidence") or "").upper()
-            score = float(data.get("score") or 0)
-            explanation = str(data.get("explanation") or "")
-        except Exception:
-            test_code = strip_markdown_fences(output)
-            confidence = ""
-            score = 0
-            explanation = ""
+#             output = "".join(chunks)
+#         try:
+#             data = parse_json_object(output)
+#             test_code = str(data.get("test_code") or "")
+#             confidence = str(data.get("confidence") or "").upper()
+#             score = float(data.get("score") or 0)
+#             explanation = str(data.get("explanation") or "")
+#         except Exception:
+#             test_code = strip_markdown_fences(output)
+#             confidence = ""
+#             score = 0
+#             explanation = ""
 
-        result = evaluate_pbt_test(source_code, test_invariant, test_code, api_name=api_name)
-        if confidence not in {"HIGH", "MEDIUM", "LOW"}:
-            confidence, score = confidence_from_scores(result["validity"], result["soundness"])
-        result["confidence"] = confidence
-        result["score"] = max(0, min(1, score))
-        result["explanation"] = explanation
-        results.append(result)
+#         result = evaluate_pbt_test(source_code, test_invariant, test_code, api_name=api_name)
+#         if confidence not in {"HIGH", "MEDIUM", "LOW"}:
+#             confidence, score = confidence_from_scores(result["validity"], result["soundness"])
+#         result["confidence"] = confidence
+#         result["score"] = max(0, min(1, score))
+#         result["explanation"] = explanation
+#         results.append(result)
         
-    return {"results": results}
+#     return {"results": results}
 
     
 
