@@ -18,8 +18,8 @@ if str(ROOT) not in sys.path:
 
 from gpt_documentation_generator import response_text as project_response_text
 from gpt_documentation_generator import strip_markdown_fences
-from gpt_documentation_generator import generate_pbt_test
-from gpt_documentation_generator import evaluate_pbt_test
+from metrics import evaluate_pbt_test
+from metrics import invariant_metrics_test
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
 METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.4-mini")
@@ -335,10 +335,10 @@ class Handler(SimpleHTTPRequestHandler):
                 cache_key = (METRICS_MODEL, source_code, json.dumps(invariants, sort_keys=True))
                 if cache_key not in METRICS_CACHE:
                     with request_openai_key(openai_key):
-                        METRICS_CACHE[cache_key] = generate_pbt_test(
-                            METRICS_MODEL,
-                            source_code,
-                            invariants,
+                        METRICS_CACHE[cache_key] = invariant_metrics_test(
+                            source_code=source_code,
+                            invariants=invariants,
+                            model=METRICS_MODEL,
                             streaming=False,
                             api_name=api_name,
                         )
