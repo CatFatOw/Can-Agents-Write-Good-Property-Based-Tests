@@ -26,11 +26,12 @@ import importlib.util
 import tempfile 
 from typing import Any
 # Adding test_validity
-from metrics import test_metrics
+from metrics import test_metrics, invariant_metrics_test
 # Import hypothesis in case user wants to display how valid/sound it is 
 from hypothesis import given, settings, Verbosity, note
 from hypothesis.strategies import composite, integers, floats, lists, booleans, text
 from openai import OpenAI
+
 
 
 ROOT = Path(__file__).resolve().parent
@@ -486,7 +487,6 @@ def build_common_values(context: ApiContext) -> dict[str, str]:
     }
 
 
-import re
 
 def strip_markdown_fences(text: str) -> str:
     text = text.strip()
@@ -718,8 +718,7 @@ def run_pipeline(
         # Display the soundness and validity metrics + the invariant test by the proposted invariants 
         if display_metrics:
             # Use a cheaper model for faster generation
-            results = generate_pbt_test(source_code=context.source_code, invariants=candidates, model="gpt-5.4-mini")
-
+            results = invariant_metrics_test(source_code=context.source_code, invariants=candidates, model="gpt-5.4-mini")
         if not auto_approve:
             log_stop(
                 f"Stopped for human review. Edit {out_dir / 'human_review.md'} and rerun the same command."
