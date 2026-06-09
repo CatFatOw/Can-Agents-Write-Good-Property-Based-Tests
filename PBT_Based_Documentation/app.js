@@ -31,6 +31,11 @@ const examples = document.querySelector("#prompt-examples");
 const docsOpenButton = document.querySelector("#docs-open-button");
 const generatedDocsButton = document.querySelector("#generated-docs-button");
 
+const sourceHoverCard = document.createElement("aside");
+sourceHoverCard.className = "source-hover-card";
+sourceHoverCard.setAttribute("aria-hidden", "true");
+document.body.appendChild(sourceHoverCard);
+
 let currentMarkdown = "";
 let currentInvariants = [];
 let currentMetrics = [];
@@ -211,6 +216,7 @@ function renderMarkdown(markdown) {
 }
 
 function setStage(stage) {
+  hideSourceHoverCard();
   document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests", "stage-docs-example", "stage-generated-docs");
   document.body.classList.add(`stage-${stage}`);
   stepTabs.forEach((tab) => {
@@ -479,6 +485,15 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function loadingDots(label) {
+  return `
+    <span class="loading-label">${escapeHtml(label)}</span>
+    <span class="loading-dots" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </span>
+  `;
+}
+
 function showInputStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
@@ -698,6 +713,51 @@ function renderSourcePreview(source) {
   `;
 }
 
+function sourceRangeExcerpt(range, padding = 2) {
+  if (!range || !currentSource.trim()) return "";
+  const lines = currentSource.split(/\r?\n/);
+  const start = Math.max(1, range.start - padding);
+  const end = Math.min(lines.length, range.end + padding);
+  return lines.slice(start - 1, end).map((line, offset) => {
+    const lineNumber = start + offset;
+    const highlighted = lineNumber >= range.start && lineNumber <= range.end;
+    return `
+      <span class="source-line ${highlighted ? "is-highlighted" : ""}" data-line="${lineNumber}">
+        <span class="source-line-number">${lineNumber}</span><code>${escapeHtml(line || " ")}</code>
+      </span>
+    `;
+  }).join("");
+}
+
+function showSourceHoverCard(item, range) {
+  if (!range) {
+    hideSourceHoverCard();
+    return;
+  }
+  sourceHoverCard.innerHTML = `
+    <p class="eyebrow">Source evidence</p>
+    <pre>${sourceRangeExcerpt(range)}</pre>
+  `;
+  const rect = item.getBoundingClientRect();
+  const cardWidth = Math.min(460, Math.max(320, window.innerWidth * 0.34));
+  const leftSpace = rect.left;
+  const rightSpace = window.innerWidth - rect.right;
+  const left = rightSpace >= cardWidth + 18
+    ? rect.right + 14
+    : Math.max(12, rect.left - cardWidth - 14);
+  const top = Math.min(Math.max(12, rect.top), window.innerHeight - 320);
+  sourceHoverCard.style.width = `${cardWidth}px`;
+  sourceHoverCard.style.left = `${Math.min(left, window.innerWidth - cardWidth - 12)}px`;
+  sourceHoverCard.style.top = `${top}px`;
+  sourceHoverCard.classList.add("is-visible");
+  sourceHoverCard.setAttribute("aria-hidden", "false");
+}
+
+function hideSourceHoverCard() {
+  sourceHoverCard.classList.remove("is-visible");
+  sourceHoverCard.setAttribute("aria-hidden", "true");
+}
+
 function highlightSourceRange(range) {
   let firstHighlighted = null;
   reviewPanel.querySelectorAll(".source-line").forEach((line) => {
@@ -720,11 +780,21 @@ function attachInvariantHoverHandlers() {
       const range = invariantRange(currentInvariants[index]);
       item.classList.toggle("has-active-range", Boolean(range));
       highlightSourceRange(range);
+      showSourceHoverCard(item, range);
     };
     item.addEventListener("mouseenter", showRange);
     item.addEventListener("focusin", showRange);
-    item.addEventListener("mouseleave", () => highlightSourceRange(null));
-    item.addEventListener("focusout", () => highlightSourceRange(null));
+    item.addEventListener("mousemove", showRange);
+    item.addEventListener("mouseleave", () => {
+      item.classList.remove("has-active-range");
+      highlightSourceRange(null);
+      hideSourceHoverCard();
+    });
+    item.addEventListener("focusout", () => {
+      item.classList.remove("has-active-range");
+      highlightSourceRange(null);
+      hideSourceHoverCard();
+    });
   });
 }
 
@@ -991,13 +1061,19 @@ form.addEventListener("submit", async (event) => {
   if (!docText) return;
 
   runButton.disabled = true;
-  runButton.textContent = "Calling GPT...";
+  runButton.innerHTML = loadingDots("Generating");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
   reviewPanel.classList.remove("is-hidden");
-  reviewPanel.innerHTML = '<p class="placeholder">Calling the project GPT pipeline for candidate invariants...</p>';
+  reviewPanel.innerHTML = `
+    <div class="loading-card">
+      <p class="eyebrow">Generating invariants</p>
+      <h3>${loadingDots("Calling GPT")}</h3>
+      <p>Extracting candidate invariants from the source code and looking for line-level evidence.</p>
+    </div>
+  `;
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
   copyButton.disabled = true;
