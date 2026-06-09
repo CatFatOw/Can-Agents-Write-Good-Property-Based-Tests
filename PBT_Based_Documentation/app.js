@@ -9,6 +9,9 @@ const assessMetricsInput = document.querySelector("#assess-metrics");
 const reviewPanel = document.querySelector("#review-panel");
 const comparePanel = document.querySelector("#compare-panel");
 const testsPanel = document.querySelector("#tests-panel");
+const docsExamplePanel = document.querySelector("#docs-example-panel");
+const originalPadDocs = document.querySelector("#original-pad-docs");
+const invariantPadDocs = document.querySelector("#invariant-pad-docs");
 const originalDoc = document.querySelector("#original-doc");
 const generatedDoc = document.querySelector("#generated-doc");
 const outputTitle = document.querySelector("#output-title");
@@ -30,7 +33,12 @@ const requestCache = new Map();
 const exampleDocs = {
   "numpy-linspace": {
     api: "numpy.linspace",
+    lookup: "np.linspace",
     path: "examples/numpy_linspace_source.py"
+  },
+  "numpy-pad": {
+    api: "numpy.pad",
+    lookup: "np.pad"
   }
 };
 
@@ -44,8 +52,88 @@ function escapeHtml(value) {
   }[char]));
 }
 
+function renderInlineMarkdown(value) {
+  return escapeHtml(value)
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+}
+
+function renderMarkdown(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const html = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index];
+    if (!line.trim()) {
+      index += 1;
+      continue;
+    }
+
+    if (line.startsWith("```")) {
+      const language = line.slice(3).trim();
+      index += 1;
+      const codeLines = [];
+      while (index < lines.length && !lines[index].startsWith("```")) {
+        codeLines.push(lines[index]);
+        index += 1;
+      }
+      index += 1;
+      html.push(`<pre class="md-code"><code class="language-${escapeHtml(language)}">${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+      continue;
+    }
+
+    if (/^\|.+\|$/.test(line.trim())) {
+      const rows = [];
+      while (index < lines.length && /^\|.+\|$/.test(lines[index].trim())) {
+        if (!/^\|\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(lines[index].trim())) {
+          rows.push(lines[index].trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim()));
+        }
+        index += 1;
+      }
+      const [head = [], ...body] = rows;
+      html.push(`
+        <table>
+          <thead><tr>${head.map((cell) => `<th>${renderInlineMarkdown(cell)}</th>`).join("")}</tr></thead>
+          <tbody>${body.map((row) => `<tr>${row.map((cell) => `<td>${renderInlineMarkdown(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
+        </table>
+      `);
+      continue;
+    }
+
+    if (/^- /.test(line.trim())) {
+      const items = [];
+      while (index < lines.length && /^- /.test(lines[index].trim())) {
+        items.push(lines[index].trim().slice(2));
+        index += 1;
+      }
+      html.push(`<ul>${items.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join("")}</ul>`);
+      continue;
+    }
+
+    const heading = /^(#{1,4})\s+(.+)$/.exec(line);
+    if (heading) {
+      const level = heading[1].length;
+      html.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+      index += 1;
+      continue;
+    }
+
+    const paragraph = [line.trim()];
+    index += 1;
+    while (index < lines.length && lines[index].trim() && !/^(#{1,4})\s+/.test(lines[index]) && !lines[index].startsWith("```") && !/^- /.test(lines[index].trim()) && !/^\|.+\|$/.test(lines[index].trim())) {
+      paragraph.push(lines[index].trim());
+      index += 1;
+    }
+    html.push(`<p>${renderInlineMarkdown(paragraph.join(" "))}</p>`);
+  }
+
+  return html.join("");
+}
+
 function setStage(stage) {
-  document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests");
+  document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests", "stage-docs-example");
   document.body.classList.add(`stage-${stage}`);
   stepTabs.forEach((tab) => {
     const active = tab.dataset.step === stage;
@@ -165,6 +253,7 @@ function showInputStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  docsExamplePanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
@@ -179,6 +268,7 @@ function showReviewStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  docsExamplePanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
@@ -194,6 +284,7 @@ function showCompareStage(force = false) {
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.remove("is-hidden");
   testsPanel.classList.add("is-hidden");
+  docsExamplePanel.classList.add("is-hidden");
   backReviewButton.classList.remove("is-hidden");
   outputEyebrow.textContent = "Markdown comparison";
   outputTitle.textContent = "Before and after";
@@ -211,6 +302,7 @@ function showTestsStage(testIndex = selectedTestIndex) {
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.remove("is-hidden");
+  docsExamplePanel.classList.add("is-hidden");
   backReviewButton.classList.remove("is-hidden");
   outputEyebrow.textContent = "Generated PBT";
   outputTitle.textContent = "Property tests";
@@ -218,10 +310,40 @@ function showTestsStage(testIndex = selectedTestIndex) {
   setStatus("ready", "Tests ready");
 }
 
+async function showDocsExampleStage() {
+  reviewPanel.classList.add("is-hidden");
+  comparePanel.classList.add("is-hidden");
+  testsPanel.classList.add("is-hidden");
+  docsExamplePanel.classList.remove("is-hidden");
+  backReviewButton.classList.add("is-hidden");
+  outputEyebrow.textContent = "Example invariant docs";
+  outputTitle.textContent = "np.pad comparison";
+  setStage("docs-example");
+  setStatus("ready", "Example docs");
+
+  if (originalPadDocs.dataset.loaded === "true") {
+    return;
+  }
+
+  originalPadDocs.innerHTML = '<p class="placeholder">Loading public documentation comparison...</p>';
+  invariantPadDocs.innerHTML = '<p class="placeholder">Loading invariant-based documentation...</p>';
+  const [originalResponse, invariantResponse] = await Promise.all([
+    fetch("examples/numpy_pad_original_docs.md"),
+    fetch("examples/numpy_pad_invariant_docs.md")
+  ]);
+  if (!originalResponse.ok || !invariantResponse.ok) {
+    throw new Error("Could not load the np.pad documentation example.");
+  }
+  originalPadDocs.innerHTML = renderMarkdown(await originalResponse.text());
+  invariantPadDocs.innerHTML = renderMarkdown(await invariantResponse.text());
+  originalPadDocs.dataset.loaded = "true";
+}
+
 function renderError(message, eyebrow = "GPT call failed", title = "Could not run the pipeline") {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  docsExamplePanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   reviewPanel.innerHTML = `
     <div class="review-copy">
@@ -485,16 +607,21 @@ examples.addEventListener("click", async (event) => {
   if (!button) return;
   const example = exampleDocs[button.dataset.example];
   try {
-    const response = await fetch(example.path);
-    if (!response.ok) throw new Error("Could not load example source file.");
-    documentationInput.value = await response.text();
+    if (example.path) {
+      const response = await fetch(example.path);
+      if (!response.ok) throw new Error("Could not load example source file.");
+      documentationInput.value = await response.text();
+    } else {
+      const data = await postJson("/api/source", { object_name: example.lookup }, { cache: false });
+      documentationInput.value = data.source_code;
+    }
     currentSource = documentationInput.value;
     currentMarkdown = "";
     currentInvariants = [];
     currentMetrics = [];
     selectedTestIndex = 0;
     apiNameInput.value = example.api;
-    sourceObjectInput.value = "np.linspace";
+    sourceObjectInput.value = example.lookup;
     documentationInput.focus();
     setStage("input");
     setStatus("draft", "Example loaded");
@@ -554,6 +681,7 @@ form.addEventListener("submit", async (event) => {
   runButton.textContent = "Calling GPT...";
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  docsExamplePanel.classList.add("is-hidden");
   reviewPanel.classList.remove("is-hidden");
   reviewPanel.innerHTML = '<p class="placeholder">Calling the project GPT pipeline for candidate invariants...</p>';
   outputEyebrow.textContent = "Review invariants";
@@ -633,6 +761,10 @@ stepTabs.forEach((tab) => {
       showCompareStage();
     } else if (tab.dataset.step === "tests") {
       showTestsStage();
+    } else if (tab.dataset.step === "docs-example") {
+      showDocsExampleStage().catch((error) => {
+        renderError(error.message || "Could not load the example documentation.", "Example docs failed", "Could not load example");
+      });
     }
   });
 });

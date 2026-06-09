@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invariant Documentation Studio</title>
-    <link rel="stylesheet" href="styles.css?v=confidence-2">
+    <title>Invariant-Based Documentation generator</title>
+    <link rel="stylesheet" href="styles.css?v=docs-example-1">
   </head>
   <body class="stage-review">
     <main class="app-shell">
@@ -12,7 +12,7 @@
         <div class="masthead">
           <div>
             <p class="eyebrow">PBT documentation lab</p>
-            <h1 id="page-title">Invariant Documentation Studio</h1>
+            <h1 id="page-title">Invariant-Based Documentation generator</h1>
           </div>
           <div class="status" id="flow-status" data-mode="draft">
             <span class="status-dot" aria-hidden="true"></span>
@@ -37,6 +37,10 @@
             <span aria-hidden="true">04</span>
             PBT tests
           </button>
+          <button type="button" class="step-tab" data-step="docs-example">
+            <span aria-hidden="true">05</span>
+            Example docs
+          </button>
         </div>
 
         <form class="generator" id="documentation-form">
@@ -59,6 +63,7 @@
 
           <div class="prompt-examples" id="prompt-examples" aria-label="Example source code">
             <button type="button" class="example-prompt" data-example="numpy-linspace">Example: numpy.linspace</button>
+            <button type="button" class="example-prompt" data-example="numpy-pad">Example: numpy.pad</button>
           </div>
 
           <div class="controls" aria-label="Generation controls">
@@ -141,6 +146,19 @@
             Toggle metrics and run the invariant pass to generate property-based tests.
           </p>
         </div>
+
+        <div class="docs-example-panel is-hidden" id="docs-example-panel">
+          <article class="paper docs-example-paper" aria-labelledby="public-pad-title">
+            <p class="eyebrow">Public NumPy docs</p>
+            <h3 id="public-pad-title">Original np.pad</h3>
+            <div class="markdown-rendered" id="original-pad-docs"></div>
+          </article>
+          <article class="paper docs-example-paper" aria-labelledby="invariant-pad-title">
+            <p class="eyebrow">Invariant-based version</p>
+            <h3 id="invariant-pad-title">Contract-style np.pad</h3>
+            <div class="markdown-rendered" id="invariant-pad-docs"></div>
+          </article>
+        </div>
       </section>
     </main>
 
@@ -149,6 +167,6 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=confidence-2"></script>
+    <script src="app.js?v=docs-example-1"></script>
   </body>
 </html>

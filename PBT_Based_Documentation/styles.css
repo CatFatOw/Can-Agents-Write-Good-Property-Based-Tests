@@ -179,7 +179,7 @@ h3 {
 
 .step-tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
   gap: 10px;
 }
 
@@ -584,7 +584,8 @@ button {
   margin-top: 18px;
 }
 
-.compare-panel {
+.compare-panel,
+.docs-example-panel {
   min-height: 0;
   min-width: 0;
   display: grid;
@@ -699,8 +700,115 @@ button {
   padding: 22px;
 }
 
-.compare-paper h3 {
+.docs-example-paper {
+  min-width: 0;
+  padding: 22px;
+}
+
+.compare-paper h3,
+.docs-example-paper h3 {
   margin-bottom: 14px;
+}
+
+.markdown-rendered {
+  display: grid;
+  gap: 12px;
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.58;
+}
+
+.markdown-rendered h1,
+.markdown-rendered h2,
+.markdown-rendered h3,
+.markdown-rendered h4 {
+  margin: 8px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.1;
+}
+
+.markdown-rendered h1 {
+  font-size: 2rem;
+}
+
+.markdown-rendered h2 {
+  padding-top: 10px;
+  border-top: 1px solid rgba(38, 31, 26, 0.1);
+  font-size: 1.35rem;
+}
+
+.markdown-rendered h3 {
+  font-size: 1.08rem;
+}
+
+.markdown-rendered p,
+.markdown-rendered ul {
+  margin: 0;
+}
+
+.markdown-rendered ul {
+  padding-left: 20px;
+}
+
+.markdown-rendered li + li {
+  margin-top: 6px;
+}
+
+.markdown-rendered code {
+  padding: 0.08rem 0.28rem;
+  border: 1px solid rgba(38, 31, 26, 0.1);
+  border-radius: 5px;
+  background: rgba(241, 234, 223, 0.72);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.88em;
+}
+
+.markdown-rendered .md-code {
+  min-height: 0;
+  padding: 12px;
+  border: 1px solid rgba(38, 31, 26, 0.1);
+  border-radius: 8px;
+  background: rgba(241, 234, 223, 0.58);
+  overflow: auto;
+}
+
+.markdown-rendered .md-code code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 0.86rem;
+}
+
+.markdown-rendered table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid rgba(38, 31, 26, 0.12);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.markdown-rendered th,
+.markdown-rendered td {
+  padding: 8px 9px;
+  border-bottom: 1px solid rgba(38, 31, 26, 0.1);
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdown-rendered th {
+  background: rgba(182, 90, 55, 0.1);
+  color: var(--clay-dark);
+  font-weight: 800;
+}
+
+.markdown-rendered tr:last-child td {
+  border-bottom: 0;
+}
+
+.markdown-rendered a {
+  color: var(--blue);
+  font-weight: 760;
 }
 
 pre {
@@ -742,6 +850,68 @@ pre.is-streaming::after {
   font-size: 0.86rem;
 }
 
+body.stage-docs-example .app-shell {
+  width: min(1680px, calc(100% - 32px));
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+body.stage-docs-example .workspace {
+  padding: 30px 0 4px;
+  gap: 20px;
+}
+
+body.stage-docs-example .generator,
+body.stage-docs-example .model-card {
+  display: none;
+}
+
+body.stage-docs-example .masthead {
+  align-items: flex-end;
+}
+
+body.stage-docs-example h1 {
+  max-width: none;
+  font-size: clamp(2.6rem, 4.6vw, 5.4rem);
+  line-height: 0.94;
+}
+
+body.stage-docs-example .output-panel {
+  min-height: calc(100vh - 260px);
+  padding-top: 24px;
+}
+
+body.stage-docs-example .docs-example-panel {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+body.stage-docs-example .docs-example-paper {
+  padding: clamp(28px, 3vw, 46px);
+}
+
+body.stage-docs-example .markdown-rendered {
+  gap: 15px;
+  font-size: 1.02rem;
+  line-height: 1.68;
+}
+
+body.stage-docs-example .markdown-rendered h1 {
+  font-size: 2.35rem;
+}
+
+body.stage-docs-example .markdown-rendered h2 {
+  font-size: 1.55rem;
+}
+
+body.stage-docs-example .markdown-rendered h3 {
+  font-size: 1.2rem;
+}
+
+body.stage-docs-example .markdown-rendered .md-code {
+  padding: 16px;
+}
+
 @media (max-width: 960px) {
   .app-shell {
     min-height: auto;
@@ -755,7 +925,9 @@ pre.is-streaming::after {
   }
 
   .controls,
-  .compare-panel {
+  .compare-panel,
+  .docs-example-panel,
+  body.stage-docs-example .docs-example-panel {
     grid-template-columns: 1fr;
   }
 
