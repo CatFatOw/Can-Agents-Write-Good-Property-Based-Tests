@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invariant-Based Documentation generator</title>
-    <link rel="stylesheet" href="styles.css?v=docs-example-5">
+    <link rel="stylesheet" href="styles.css?v=generated-docs-1">
   </head>
   <body class="stage-review">
     <main class="app-shell">
@@ -61,6 +61,7 @@
             <button type="button" class="example-prompt" data-example="numpy-linspace">Example: numpy.linspace</button>
             <button type="button" class="example-prompt" data-example="numpy-pad">Example: numpy.pad</button>
             <button type="button" class="example-prompt docs-open-button" id="docs-open-button">View example docs</button>
+            <button type="button" class="example-prompt generated-docs-button" id="generated-docs-button" disabled>Generated docs (0)</button>
           </div>
 
           <div class="controls" aria-label="Generation controls">
@@ -156,6 +157,16 @@
             <div class="markdown-rendered" id="invariant-example-docs"></div>
           </article>
         </div>
+
+        <div class="generated-docs-panel is-hidden" id="generated-docs-panel">
+          <div class="generated-docs-tabs" id="generated-docs-tabs" aria-label="Generated documentation files"></div>
+          <article class="paper generated-docs-paper" aria-labelledby="generated-docs-title">
+            <p class="eyebrow">Temporary generated documentation</p>
+            <h3 id="generated-docs-title">Generated docs</h3>
+            <p class="generated-docs-note">Stored only in this page session. Refreshing or 10 minutes of inactivity clears this list.</p>
+            <div class="markdown-rendered generated-docs-rendered" id="generated-docs-rendered"></div>
+          </article>
+        </div>
       </section>
     </main>
 
@@ -164,6 +175,6 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=docs-example-6"></script>
+    <script src="app.js?v=generated-docs-1"></script>
   </body>
 </html>

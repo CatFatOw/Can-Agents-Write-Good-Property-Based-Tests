@@ -10,6 +10,10 @@ const reviewPanel = document.querySelector("#review-panel");
 const comparePanel = document.querySelector("#compare-panel");
 const testsPanel = document.querySelector("#tests-panel");
 const docsExamplePanel = document.querySelector("#docs-example-panel");
+const generatedDocsPanel = document.querySelector("#generated-docs-panel");
+const generatedDocsTabs = document.querySelector("#generated-docs-tabs");
+const generatedDocsRendered = document.querySelector("#generated-docs-rendered");
+const generatedDocsTitle = document.querySelector("#generated-docs-title");
 const originalExampleDocs = document.querySelector("#original-example-docs");
 const invariantExampleDocs = document.querySelector("#invariant-example-docs");
 const publicExampleTitle = document.querySelector("#public-example-title");
@@ -25,6 +29,7 @@ const runButton = document.querySelector("#run-button");
 const stepTabs = Array.from(document.querySelectorAll(".step-tab"));
 const examples = document.querySelector("#prompt-examples");
 const docsOpenButton = document.querySelector("#docs-open-button");
+const generatedDocsButton = document.querySelector("#generated-docs-button");
 
 let currentMarkdown = "";
 let currentInvariants = [];
@@ -33,7 +38,11 @@ let selectedTestIndex = 0;
 let currentSource = "";
 let currentExampleMarkdown = "";
 let currentExampleFilename = "invariant-documentation.md";
+let generatedDocs = [];
+let activeGeneratedDocId = "";
+let inactivityTimer = 0;
 const requestCache = new Map();
+const GENERATED_DOCS_TTL_MS = 10 * 60 * 1000;
 
 const exampleDocs = {
   "numpy-linspace": {
@@ -61,13 +70,33 @@ const docsExamples = {
 };
 
 function escapeHtml(value) {
-  return value.replace(/[&<>"']/g, (char) => ({
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#039;"
   }[char]));
+}
+
+function invariantText(invariant) {
+  if (typeof invariant === "string") return invariant;
+  return invariant?.invariant || invariant?.text || invariant?.claim || "";
+}
+
+function invariantRange(invariant) {
+  if (!invariant || typeof invariant === "string") return null;
+  const start = Number(invariant.lineno ?? invariant.line ?? invariant.start_line);
+  const end = Number(invariant.end_lineno ?? invariant.end_line ?? invariant.lineno ?? invariant.line ?? invariant.start_line);
+  if (!Number.isFinite(start) || start <= 0) return null;
+  return {
+    start: Math.max(1, Math.floor(start)),
+    end: Math.max(Math.floor(start), Math.floor(Number.isFinite(end) ? end : start))
+  };
+}
+
+function invariantTexts(invariants) {
+  return invariants.map(invariantText).filter(Boolean);
 }
 
 function renderInlineMarkdown(value) {
@@ -151,7 +180,7 @@ function renderMarkdown(markdown) {
 }
 
 function setStage(stage) {
-  document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests", "stage-docs-example");
+  document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests", "stage-docs-example", "stage-generated-docs");
   document.body.classList.add(`stage-${stage}`);
   stepTabs.forEach((tab) => {
     const active = tab.dataset.step === stage;
@@ -165,7 +194,21 @@ function setStatus(mode, label) {
   flowStatus.querySelector("span:last-child").textContent = label;
 }
 
+function slugify(value, fallback = "generated-documentation") {
+  return (value || fallback)
+    .replace(/[^a-z0-9_-]+/gi, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase() || fallback;
+}
+
 function getActiveMarkdownPayload() {
+  if (document.body.classList.contains("stage-generated-docs")) {
+    const doc = generatedDocs.find((item) => item.id === activeGeneratedDocId);
+    return {
+      text: doc?.markdown || "",
+      filename: doc?.filename || "generated-documentation.md"
+    };
+  }
   if (document.body.classList.contains("stage-docs-example")) {
     return {
       text: currentExampleMarkdown,
@@ -174,7 +217,7 @@ function getActiveMarkdownPayload() {
   }
   return {
     text: currentMarkdown,
-    filename: `${(apiNameInput.value.trim() || "invariant-documentation").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "invariant-documentation"}.md`
+    filename: `${slugify(apiNameInput.value.trim() || "invariant-documentation")}.md`
   };
 }
 
@@ -183,6 +226,94 @@ function syncMarkdownActions() {
   const enabled = Boolean(text);
   copyButton.disabled = !enabled;
   downloadButton.disabled = !enabled;
+}
+
+function resetGeneratedDocsInactivityTimer() {
+  window.clearTimeout(inactivityTimer);
+  inactivityTimer = window.setTimeout(() => {
+    generatedDocs = [];
+    activeGeneratedDocId = "";
+    renderGeneratedDocsLibrary();
+    if (document.body.classList.contains("stage-generated-docs")) {
+      showInputStage();
+      setStatus("draft", "Docs cleared");
+    }
+  }, GENERATED_DOCS_TTL_MS);
+}
+
+function addGeneratedDoc(markdown, invariants) {
+  const apiName = apiNameInput.value.trim() || "api.function";
+  const createdAt = new Date();
+  const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const doc = {
+    id,
+    apiName,
+    title: apiName,
+    markdown,
+    invariants: [...invariants],
+    createdAt,
+    filename: `${slugify(apiName)}-${createdAt.toISOString().slice(0, 19).replace(/[:T]/g, "-")}.md`
+  };
+  generatedDocs = [doc, ...generatedDocs].slice(0, 12);
+  activeGeneratedDocId = id;
+  renderGeneratedDocsLibrary();
+  resetGeneratedDocsInactivityTimer();
+}
+
+function renderGeneratedDocsLibrary() {
+  generatedDocsButton.disabled = generatedDocs.length === 0;
+  generatedDocsButton.textContent = `Generated docs (${generatedDocs.length})`;
+
+  if (!generatedDocs.length) {
+    generatedDocsTabs.innerHTML = "";
+    generatedDocsTitle.textContent = "Generated docs";
+    generatedDocsRendered.innerHTML = '<p class="placeholder">Generated documentation from this page session will appear here.</p>';
+    syncMarkdownActions();
+    return;
+  }
+
+  if (!generatedDocs.some((doc) => doc.id === activeGeneratedDocId)) {
+    activeGeneratedDocId = generatedDocs[0].id;
+  }
+
+  generatedDocsTabs.innerHTML = generatedDocs.map((doc, index) => `
+    <button type="button" class="generated-doc-tab ${doc.id === activeGeneratedDocId ? "is-active" : ""}" data-doc-id="${doc.id}">
+      <span>${escapeHtml(doc.title)}</span>
+      <small>${index === 0 ? "latest" : doc.createdAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</small>
+    </button>
+  `).join("");
+}
+
+function showGeneratedDoc(docId = activeGeneratedDocId || generatedDocs[0]?.id || "") {
+  const doc = generatedDocs.find((item) => item.id === docId);
+  reviewPanel.classList.add("is-hidden");
+  comparePanel.classList.add("is-hidden");
+  testsPanel.classList.add("is-hidden");
+  docsExamplePanel.classList.add("is-hidden");
+  generatedDocsPanel.classList.remove("is-hidden");
+  backReviewButton.classList.add("is-hidden");
+  outputEyebrow.textContent = "Session library";
+  outputTitle.textContent = "Generated documentation";
+  setStage("generated-docs");
+  setStatus("ready", "Session docs");
+
+  if (!doc) {
+    renderGeneratedDocsLibrary();
+    syncMarkdownActions();
+    return;
+  }
+
+  activeGeneratedDocId = doc.id;
+  renderGeneratedDocsLibrary();
+  generatedDocsTitle.textContent = doc.title;
+  generatedDocsRendered.innerHTML = `
+    <section class="saved-invariants">
+      <p class="eyebrow">Invariants used</p>
+      <ul>${doc.invariants.map((invariant) => `<li>${escapeHtml(invariant)}</li>`).join("")}</ul>
+    </section>
+    ${renderMarkdown(doc.markdown)}
+  `;
+  syncMarkdownActions();
 }
 
 async function writeClipboardText(text) {
@@ -322,6 +453,7 @@ function showInputStage() {
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
+  generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
@@ -338,6 +470,7 @@ function showReviewStage() {
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
+  generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
@@ -355,6 +488,7 @@ function showCompareStage(force = false) {
   comparePanel.classList.remove("is-hidden");
   testsPanel.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
+  generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.remove("is-hidden");
   outputEyebrow.textContent = "Generated Markdown";
   outputTitle.textContent = "Invariant-based documentation";
@@ -374,6 +508,7 @@ function showTestsStage(testIndex = selectedTestIndex) {
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.remove("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
+  generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.remove("is-hidden");
   outputEyebrow.textContent = "Generated PBT";
   outputTitle.textContent = "Property tests";
@@ -414,6 +549,7 @@ async function showDocsExampleStage(exampleId = docsExamplePanel.dataset.activeE
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
   docsExamplePanel.classList.remove("is-hidden");
+  generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Example invariant docs";
   setStage("docs-example");
@@ -433,6 +569,7 @@ function renderError(message, eyebrow = "GPT call failed", title = "Could not ru
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
+  generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   reviewPanel.innerHTML = `
     <div class="review-copy">
@@ -480,7 +617,8 @@ function confidenceLabel(metric) {
 }
 
 function metricForInvariant(invariant) {
-  return currentMetrics.find((metric) => metric.invariant === invariant);
+  const text = invariantText(invariant);
+  return currentMetrics.find((metric) => metric.invariant === text);
 }
 
 function metricMarkup(metric) {
@@ -506,11 +644,44 @@ function renderInvariantReview(invariants) {
       <h3>Approve the invariants</h3>
       <p>Uncheck any claim that feels too strong, vague, or not supported by the source code.</p>
     </div>
+    <div class="source-preview" id="source-preview" aria-label="Source code line preview">
+      ${renderSourcePreview(currentSource)}
+    </div>
     <div class="invariant-list" id="invariant-list"></div>
     <button type="button" class="approve-button" id="approve-button">Looks good, generate Markdown</button>
   `;
 
   document.querySelector("#approve-button").addEventListener("click", generateMarkdownFromReview);
+}
+
+function renderSourcePreview(source) {
+  const lines = (source || "").split(/\r?\n/);
+  if (!lines.length || !source.trim()) {
+    return '<p class="source-preview-empty">Source line highlighting appears here after extraction.</p>';
+  }
+  return `
+    <p class="eyebrow">Source evidence</p>
+    <pre>${lines.map((line, index) => `
+      <span class="source-line" data-line="${index + 1}"><span class="source-line-number">${index + 1}</span><code>${escapeHtml(line || " ")}</code></span>
+    `).join("")}</pre>
+  `;
+}
+
+function highlightSourceRange(range) {
+  reviewPanel.querySelectorAll(".source-line").forEach((line) => {
+    const lineNumber = Number(line.dataset.line);
+    line.classList.toggle("is-highlighted", Boolean(range && lineNumber >= range.start && lineNumber <= range.end));
+  });
+}
+
+function attachInvariantHoverHandlers() {
+  reviewPanel.querySelectorAll(".invariant-item").forEach((item) => {
+    const index = Number(item.dataset.index);
+    item.addEventListener("mouseenter", () => highlightSourceRange(invariantRange(currentInvariants[index])));
+    item.addEventListener("focusin", () => highlightSourceRange(invariantRange(currentInvariants[index])));
+    item.addEventListener("mouseleave", () => highlightSourceRange(null));
+    item.addEventListener("focusout", () => highlightSourceRange(null));
+  });
 }
 
 async function renderInvariantReviewAnimated(invariants) {
@@ -520,15 +691,19 @@ async function renderInvariantReviewAnimated(invariants) {
     const metric = metricForInvariant(invariant);
     const wrapper = document.createElement("label");
     wrapper.className = "invariant-item invariant-enter";
+    wrapper.dataset.index = String(index);
+    const range = invariantRange(invariant);
     wrapper.innerHTML = `
       <input type="checkbox" checked data-index="${index}">
-      <span class="invariant-copy">${escapeHtml(invariant)}</span>
+      <span class="invariant-copy">${escapeHtml(invariantText(invariant))}</span>
+      ${range ? `<span class="line-chip">Lines ${range.start}${range.end !== range.start ? `-${range.end}` : ""}</span>` : ""}
       ${metricMarkup(metric)}
     `;
     list.appendChild(wrapper);
     await wait(140);
     wrapper.classList.add("is-visible");
   }
+  attachInvariantHoverHandlers();
 }
 
 function renderInvariantReviewWithMetrics(invariants, loading = false) {
@@ -536,10 +711,12 @@ function renderInvariantReviewWithMetrics(invariants, loading = false) {
   const list = document.querySelector("#invariant-list");
   list.innerHTML = invariants.map((invariant, index) => {
     const metric = metricForInvariant(invariant);
+    const range = invariantRange(invariant);
     return `
-      <label class="invariant-item">
+      <label class="invariant-item" data-index="${index}">
         <input type="checkbox" checked data-index="${index}">
-        <span class="invariant-copy">${escapeHtml(invariant)}</span>
+        <span class="invariant-copy">${escapeHtml(invariantText(invariant))}</span>
+        ${range ? `<span class="line-chip">Lines ${range.start}${range.end !== range.start ? `-${range.end}` : ""}</span>` : ""}
         ${metricMarkup(metric)}
         ${loading && !metric ? `
           <span class="metric-pills is-loading">
@@ -549,6 +726,7 @@ function renderInvariantReviewWithMetrics(invariants, loading = false) {
       </label>
     `;
   }).join("");
+  attachInvariantHoverHandlers();
 }
 
 function renderTestsPanel() {
@@ -641,7 +819,7 @@ async function assessMetricsForReview() {
   const data = await postJson("/api/metrics", {
     api_name: apiNameInput.value.trim() || "api.function",
     source_code: currentSource,
-    invariants: currentInvariants
+    invariants: invariantTexts(currentInvariants)
   });
   currentMetrics = data.metrics || [];
   renderInvariantReviewWithMetrics(currentInvariants);
@@ -653,7 +831,7 @@ async function generateMarkdownFromReview() {
   const apiName = apiNameInput.value.trim() || "api.function";
   const accepted = Array.from(reviewPanel.querySelectorAll("input[type='checkbox']"))
     .filter((input) => input.checked)
-    .map((input) => currentInvariants[Number(input.dataset.index)]);
+    .map((input) => invariantText(currentInvariants[Number(input.dataset.index)]));
 
   const approveButton = document.querySelector("#approve-button");
   approveButton.disabled = true;
@@ -681,6 +859,7 @@ async function generateMarkdownFromReview() {
     currentMarkdown = await writer.finish(streamedMarkdown);
     generatedDoc.classList.remove("is-streaming");
     generatedDoc.innerHTML = renderMarkdown(currentMarkdown);
+    addGeneratedDoc(currentMarkdown, accepted);
     syncMarkdownActions();
     showCompareStage();
   } catch (error) {
@@ -772,6 +951,7 @@ form.addEventListener("submit", async (event) => {
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
+  generatedDocsPanel.classList.add("is-hidden");
   reviewPanel.classList.remove("is-hidden");
   reviewPanel.innerHTML = '<p class="placeholder">Calling the project GPT pipeline for candidate invariants...</p>';
   outputEyebrow.textContent = "Review invariants";
@@ -853,6 +1033,16 @@ docsOpenButton.addEventListener("click", () => {
   });
 });
 
+generatedDocsButton.addEventListener("click", () => {
+  showGeneratedDoc();
+});
+
+generatedDocsPanel.addEventListener("click", (event) => {
+  const button = event.target.closest(".generated-doc-tab");
+  if (!button) return;
+  showGeneratedDoc(button.dataset.docId);
+});
+
 docsExamplePanel.addEventListener("click", (event) => {
   const button = event.target.closest(".docs-example-choice");
   if (!button) return;
@@ -872,6 +1062,14 @@ assessMetricsInput.addEventListener("change", async () => {
   }
 });
 
+["click", "keydown", "input", "mousemove", "touchstart"].forEach((eventName) => {
+  window.addEventListener(eventName, () => {
+    if (generatedDocs.length) {
+      resetGeneratedDocsInactivityTimer();
+    }
+  }, { passive: true });
+});
+
 stepTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     if (tab.dataset.step === "input") {
@@ -886,4 +1084,5 @@ stepTabs.forEach((tab) => {
   });
 });
 
+renderGeneratedDocsLibrary();
 setStage("input");

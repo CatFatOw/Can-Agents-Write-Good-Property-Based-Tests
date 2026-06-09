@@ -103,7 +103,7 @@ def stream_project_gpt(prompt: str, openai_key: str | None):
     GPT_CACHE[cache_key] = "".join(chunks)
 
 
-def parse_json_array(text: str) -> list[str]:
+def parse_json_array(text: str) -> list[Any]:
     text = strip_fences(text)
     try:
         data = json.loads(text)
@@ -112,8 +112,8 @@ def parse_json_array(text: str) -> list[str]:
         if not match:
             raise
         data = json.loads(match.group(0))
-    if not isinstance(data, list) or not all(isinstance(item, str) for item in data):
-        raise ValueError("Expected a JSON array of strings.")
+    if not isinstance(data, list):
+        raise ValueError("Expected a JSON array.")
     return data
 
 
@@ -230,8 +230,12 @@ Requirements:
 - Include edge cases suggested by branches, exceptions, dtype, shape, axis handling, return values, or version notes.
 - Do not invent behavior not supported by the source code.
 - Do not write tests.
+- Include 1-based source line metadata when possible.
 
-Return ONLY a JSON array of strings. No markdown, no commentary."""
+Return ONLY a JSON array. Each item should be:
+{{"invariant": "...", "lineno": 10, "end_lineno": 14}}
+
+Use the smallest line range that supports the invariant. If no specific line supports it, use null for lineno and end_lineno. No markdown, no commentary."""
 
 
 def documentation_prompt(api_name: str, source_code: str, invariants: list[str], tone: str) -> str:

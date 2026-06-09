@@ -485,9 +485,61 @@ button {
   gap: 10px;
 }
 
+.source-preview {
+  max-height: 280px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid rgba(38, 31, 26, 0.1);
+  border-radius: 8px;
+  overflow: auto;
+  background: rgba(255, 252, 246, 0.62);
+}
+
+.source-preview pre {
+  display: grid;
+  gap: 1px;
+  font-size: 0.78rem;
+}
+
+.source-line {
+  display: grid;
+  grid-template-columns: 3.2ch minmax(0, 1fr);
+  gap: 10px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  transition: background 150ms ease, box-shadow 150ms ease;
+}
+
+.source-line-number {
+  color: #9b8f82;
+  user-select: none;
+  text-align: right;
+}
+
+.source-line code {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.source-line.is-highlighted {
+  background: rgba(110, 151, 120, 0.2);
+  box-shadow: inset 3px 0 0 rgba(89, 111, 95, 0.75);
+}
+
+.source-preview-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
 .invariant-item {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   gap: 12px;
   align-items: start;
   padding: 12px;
@@ -496,6 +548,20 @@ button {
   background: rgba(255, 252, 246, 0.72);
   color: var(--ink);
   line-height: 1.45;
+}
+
+.line-chip {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0 9px;
+  border: 1px solid rgba(89, 111, 95, 0.22);
+  border-radius: 999px;
+  background: rgba(214, 232, 218, 0.7);
+  color: #355f3d;
+  font-size: 0.78rem;
+  font-weight: 820;
 }
 
 .invariant-copy {
@@ -587,7 +653,8 @@ button {
 }
 
 .compare-panel,
-.docs-example-panel {
+.docs-example-panel,
+.generated-docs-panel {
   min-height: 0;
   min-width: 0;
   display: grid;
@@ -717,6 +784,81 @@ button {
 .docs-example-paper {
   min-width: 0;
   padding: 22px;
+}
+
+.generated-docs-panel {
+  grid-template-columns: minmax(190px, 0.34fr) minmax(0, 1fr);
+}
+
+.generated-docs-tabs {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.generated-doc-tab {
+  min-height: 58px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(38, 31, 26, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.72);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 10px 22px rgba(72, 56, 42, 0.06);
+}
+
+.generated-doc-tab span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 820;
+}
+
+.generated-doc-tab small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.generated-doc-tab:hover,
+.generated-doc-tab.is-active {
+  border-color: rgba(49, 92, 104, 0.28);
+  background: #fffaf2;
+  color: var(--blue);
+}
+
+.generated-docs-paper {
+  min-width: 0;
+  padding: clamp(28px, 3.5vw, 48px);
+}
+
+.generated-docs-note {
+  margin: -4px 0 18px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.saved-invariants {
+  padding: 16px;
+  border: 1px solid rgba(49, 92, 104, 0.16);
+  border-radius: 8px;
+  background: rgba(222, 233, 232, 0.46);
+}
+
+.saved-invariants ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.saved-invariants li + li {
+  margin-top: 7px;
 }
 
 .docs-example-switch {
@@ -901,6 +1043,27 @@ body.stage-docs-example .app-shell {
   gap: 18px;
 }
 
+body.stage-generated-docs .app-shell {
+  width: min(1500px, calc(100% - 32px));
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+body.stage-generated-docs .workspace {
+  padding: 30px 0 4px;
+  gap: 20px;
+}
+
+body.stage-generated-docs .generator,
+body.stage-generated-docs .model-card {
+  display: none;
+}
+
+body.stage-generated-docs .output-panel {
+  min-height: calc(100vh - 260px);
+  padding-top: 24px;
+}
+
 body.stage-docs-example .workspace {
   padding: 30px 0 4px;
   gap: 20px;
@@ -972,6 +1135,7 @@ body.stage-docs-example .markdown-rendered .md-code {
   .controls,
   .compare-panel,
   .docs-example-panel,
+  .generated-docs-panel,
   body.stage-docs-example .docs-example-panel {
     grid-template-columns: 1fr;
   }
@@ -1000,6 +1164,7 @@ body.stage-docs-example .markdown-rendered .md-code {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
+  .line-chip,
   .metric-pills {
     grid-column: 2;
     justify-content: flex-start;
