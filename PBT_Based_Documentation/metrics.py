@@ -128,6 +128,7 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
         Tasks:
 
         1. Evaluate the invariant.
+        2. Find the line numbers in the source code where the invariant applies
 
         Confidence Levels:
 
@@ -164,7 +165,8 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             "confidence": "HIGH",
             "score": 0.95,
             "explanation": "Brief explanation.",
-            "test_code": "complete python code here"
+            "test_code": "complete python code here",
+            "lineno": "line number in the source code where the invariant applies"
         }}
         """
 
@@ -201,6 +203,7 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             score = float(data.get("score", 0))
             explanation = str(data.get("explanation", ""))
             test_code = str(data.get("test_code", ""))
+            lineno = list(data.get("lineno", []))
 
             # {"invariant": invariant,"test_code": output, "validity": validity, "soundness": soundness, "error": error,}
             result = evaluate_pbt_test(
@@ -216,6 +219,8 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             result["confidence"] = confidence
             result["score"] = max(0, min(1, score))
             result["explanation"] = explanation
+            # Adding lineno where the update pertains
+            #result["lineno"] = lineno
 
             results.append(result)
 
