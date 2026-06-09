@@ -236,8 +236,22 @@ function renderError(message, eyebrow = "GPT call failed", title = "Could not ru
 }
 
 function formatScore(value) {
-  if (typeof value !== "number") return "0%";
-  return `${Math.round(value * 100)}%`;
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "0%";
+  return `${Math.round(numeric * 100)}%`;
+}
+
+function metricScore(metric) {
+  const score = Number(metric?.score);
+  if (Number.isFinite(score)) {
+    return score;
+  }
+  const validity = Number(metric?.validity);
+  const soundness = Number(metric?.soundness);
+  if (Number.isFinite(validity) && Number.isFinite(soundness)) {
+    return (validity + soundness) / 2;
+  }
+  return 0;
 }
 
 function confidenceLabel(metric) {
@@ -265,7 +279,7 @@ function metricMarkup(metric) {
   const confidence = confidenceLabel(metric);
   return `
     <span class="metric-pills">
-      <span class="confidence-pill confidence-${confidence.toLowerCase()}">${confidence} ${formatScore(metric.score)}</span>
+      <span class="confidence-pill confidence-${confidence.toLowerCase()}">${confidence} ${formatScore(metricScore(metric))}</span>
       <span>Validity ${formatScore(metric.validity)}</span>
       <span>Soundness ${formatScore(metric.soundness)}</span>
       <button type="button" class="metric-test-button ${metric.error ? "metric-warning" : ""}" data-test-index="${index}">Check test</button>
@@ -346,7 +360,7 @@ function renderTestsPanel() {
         <details class="test-item" ${index === selectedTestIndex ? "open" : ""}>
           <summary>
             <span>Invariant ${index + 1}</span>
-            <span>${confidenceLabel(metric)} ${formatScore(metric.score)} | ${formatScore(metric.validity)} valid | ${formatScore(metric.soundness)} sound</span>
+            <span>${confidenceLabel(metric)} ${formatScore(metricScore(metric))} | ${formatScore(metric.validity)} valid | ${formatScore(metric.soundness)} sound</span>
           </summary>
           <p>${escapeHtml(metric.invariant || "")}</p>
           ${metric.explanation ? `<p class="metric-explanation">${escapeHtml(metric.explanation)}</p>` : ""}

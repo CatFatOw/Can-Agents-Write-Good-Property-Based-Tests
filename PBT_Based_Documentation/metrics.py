@@ -31,6 +31,31 @@ def strip_markdown_fences(text: str) -> str:
     return match.group(1).strip() if match else text
 
 
+def parse_json_object(text: str):
+    text = strip_markdown_fences(text)
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\{[\s\S]*\}", text)
+        if not match:
+            raise
+        data = json.loads(match.group(0))
+    if not isinstance(data, dict):
+        raise ValueError("Expected a JSON object.")
+    return data
+
+
+def confidence_from_scores(validity, soundness):
+    score = round((validity + soundness) / 2, 2)
+    if score >= 0.85:
+        confidence = "HIGH"
+    elif score >= 0.55:
+        confidence = "MEDIUM"
+    else:
+        confidence = "LOW"
+    return confidence, score
+
+
 def evaluate_pbt_test(source_code, invariant, test_code, api_name="api.function"):
     """Run one property-based test and calculate validity/soundness metrics."""
     output = strip_markdown_fences(test_code)
@@ -169,15 +194,13 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                 print()
                 output = "".join(chunks)
 
-            output = strip_markdown_fences(output)
+            # Turn the output into a json object, even if the model wrapped it in a fence.
+            data = parse_json_object(output)
 
-            # Turn the output into a json file
-            data = json.loads(output)
-
-            confidence = data["confidence"]
-            score = data["score"]
-            explanation = data["explanation"]
-            test_code = data["test_code"]
+            confidence = str(data.get("confidence", "")).upper()
+            score = float(data.get("score", 0))
+            explanation = str(data.get("explanation", ""))
+            test_code = str(data.get("test_code", ""))
 
             # {"invariant": invariant,"test_code": output, "validity": validity, "soundness": soundness, "error": error,}
             result = evaluate_pbt_test(
@@ -187,8 +210,11 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                 api_name=api_name
             )
 
+            if confidence not in {"HIGH", "MEDIUM", "LOW"}:
+                confidence, score = confidence_from_scores(result["validity"], result["soundness"])
+
             result["confidence"] = confidence
-            result["score"] = score
+            result["score"] = max(0, min(1, score))
             result["explanation"] = explanation
 
             results.append(result)
@@ -196,6 +222,12 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
         except Exception as e:
             results.append({
                 "invariant": test_invariant,
+                "test_code": "",
+                "validity": 0,
+                "soundness": 0,
+                "confidence": "LOW",
+                "score": 0,
+                "explanation": "Could not generate or evaluate a metric for this invariant.",
                 "error": str(e)
             })
 
