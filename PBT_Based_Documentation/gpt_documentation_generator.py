@@ -494,6 +494,20 @@ def strip_markdown_fences(text: str) -> str:
     return match.group(1).strip() if match else text
 
 
+def parse_json_object(text: str) -> dict[str, Any]:
+    text = strip_markdown_fences(text)
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\{[\s\S]*\}", text)
+        if not match:
+            raise
+        data = json.loads(match.group(0))
+    if not isinstance(data, dict):
+        raise ValueError("Expected a JSON object.")
+    return data
+
+
 def evaluate_pbt_test(source_code, invariant, test_code, api_name="api.function"):
     """Run one property-based test and calculate validity/soundness metrics."""
     output = strip_markdown_fences(test_code)
@@ -538,6 +552,17 @@ def evaluate_pbt_test(source_code, invariant, test_code, api_name="api.function"
     }
 
 
+def confidence_from_scores(validity, soundness):
+    score = round((validity + soundness) / 2, 2)
+    if score >= 0.85:
+        confidence = "HIGH"
+    elif score >= 0.55:
+        confidence = "MEDIUM"
+    else:
+        confidence = "LOW"
+    return confidence, score
+
+
 def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="api.function"):
     """Function feeds gpt the test_invariant (text) that is generated and creates an hypohtesis test via the fed text"""
 
@@ -546,7 +571,7 @@ def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="
 
     for test_invariant in invariants:
         prompt = f"""
-            You are an expert in property-based testing using Hypothesis.
+            You are an expert in property-based testing, program analysis, and invariant inference.
 
             Function/API Name:
             {api_name}
@@ -557,7 +582,23 @@ def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="
             Invariant Candidate:
             {test_invariant}
 
-            Generate a Small Hypothesis property-based test that attempts test invariant above while also being quick/fast.
+            Tasks:
+            1. Assess this invariant with a confidence label and numeric score.
+            2. Generate a small Hypothesis property-based test that attempts to falsify the invariant.
+
+            Confidence Levels:
+            HIGH:
+            - Directly supported by the source code.
+            - Likely true for all valid executions.
+            - Precise and useful.
+
+            MEDIUM:
+            - Plausible but may depend on assumptions.
+            - Potential edge cases exist.
+
+            LOW:
+            - Contradicted by the implementation.
+            - Overly broad, trivial, or likely incorrect.
 
             Requirements:
             - Use Hypothesis strategies appropriate for the function inputs.
@@ -572,6 +613,14 @@ def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="
             - Do not include explanations or comments.
             - Do not include extra clutter, markdown, etc that interferes with code running.
             - generate ONE FUNCTION.
+
+            Respond ONLY with valid JSON:
+            {{
+                "confidence": "HIGH",
+                "score": 0.95,
+                "explanation": "Brief explanation.",
+                "test_code": "complete python code here"
+            }}
             """
         
         client = OpenAI()
@@ -600,9 +649,25 @@ def generate_pbt_test(model, source_code, invariants, streaming=True, api_name="
                 print()
 
             output = "".join(chunks)
-        # Post process it to make it clean
-        output = strip_markdown_fences(output)
-        results.append(evaluate_pbt_test(source_code, test_invariant, output, api_name=api_name))
+        try:
+            data = parse_json_object(output)
+            test_code = str(data.get("test_code") or "")
+            confidence = str(data.get("confidence") or "").upper()
+            score = float(data.get("score") or 0)
+            explanation = str(data.get("explanation") or "")
+        except Exception:
+            test_code = strip_markdown_fences(output)
+            confidence = ""
+            score = 0
+            explanation = ""
+
+        result = evaluate_pbt_test(source_code, test_invariant, test_code, api_name=api_name)
+        if confidence not in {"HIGH", "MEDIUM", "LOW"}:
+            confidence, score = confidence_from_scores(result["validity"], result["soundness"])
+        result["confidence"] = confidence
+        result["score"] = max(0, min(1, score))
+        result["explanation"] = explanation
+        results.append(result)
         
     return {"results": results}
 

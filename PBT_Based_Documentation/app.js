@@ -240,6 +240,19 @@ function formatScore(value) {
   return `${Math.round(value * 100)}%`;
 }
 
+function confidenceLabel(metric) {
+  const label = String(metric?.confidence || "").toUpperCase();
+  if (["HIGH", "MEDIUM", "LOW"].includes(label)) {
+    return label;
+  }
+  const validity = typeof metric?.validity === "number" ? metric.validity : 0;
+  const soundness = typeof metric?.soundness === "number" ? metric.soundness : 0;
+  const average = (validity + soundness) / 2;
+  if (average >= 0.85) return "HIGH";
+  if (average >= 0.55) return "MEDIUM";
+  return "LOW";
+}
+
 function metricForInvariant(invariant) {
   return currentMetrics.find((metric) => metric.invariant === invariant);
 }
@@ -249,8 +262,10 @@ function metricMarkup(metric) {
     return "";
   }
   const index = currentMetrics.indexOf(metric);
+  const confidence = confidenceLabel(metric);
   return `
     <span class="metric-pills">
+      <span class="confidence-pill confidence-${confidence.toLowerCase()}">${confidence} ${formatScore(metric.score)}</span>
       <span>Validity ${formatScore(metric.validity)}</span>
       <span>Soundness ${formatScore(metric.soundness)}</span>
       <button type="button" class="metric-test-button ${metric.error ? "metric-warning" : ""}" data-test-index="${index}">Check test</button>
@@ -331,9 +346,10 @@ function renderTestsPanel() {
         <details class="test-item" ${index === selectedTestIndex ? "open" : ""}>
           <summary>
             <span>Invariant ${index + 1}</span>
-            <span>${formatScore(metric.validity)} valid / ${formatScore(metric.soundness)} sound</span>
+            <span>${confidenceLabel(metric)} ${formatScore(metric.score)} | ${formatScore(metric.validity)} valid | ${formatScore(metric.soundness)} sound</span>
           </summary>
           <p>${escapeHtml(metric.invariant || "")}</p>
+          ${metric.explanation ? `<p class="metric-explanation">${escapeHtml(metric.explanation)}</p>` : ""}
           ${metric.error ? `<p class="metric-error">${escapeHtml(metric.error)}</p>` : ""}
           <label class="test-editor">
             <span>Edit or paste a property-based test</span>
@@ -363,7 +379,13 @@ async function rerunEditedTest(index, button) {
       test_code: editor.value
     }, { cache: false });
 
-    currentMetrics[index] = data.metric;
+    currentMetrics[index] = {
+      ...metric,
+      ...data.metric,
+      confidence: metric.confidence,
+      score: metric.score,
+      explanation: metric.explanation
+    };
     selectedTestIndex = index;
     renderInvariantReviewWithMetrics(currentInvariants);
     renderTestsPanel();

@@ -551,6 +551,24 @@ button {
   color: var(--clay-dark);
 }
 
+.metric-pills .confidence-high {
+  border-color: rgba(89, 111, 95, 0.26);
+  background: rgba(214, 232, 218, 0.75);
+  color: #355f3d;
+}
+
+.metric-pills .confidence-medium {
+  border-color: rgba(201, 152, 67, 0.32);
+  background: rgba(249, 232, 190, 0.82);
+  color: #7a5520;
+}
+
+.metric-pills .confidence-low {
+  border-color: rgba(182, 90, 55, 0.3);
+  background: rgba(248, 215, 203, 0.82);
+  color: var(--clay-dark);
+}
+
 .metric-pills.is-loading span,
 .metric-pills .metric-warning {
   border-color: rgba(181, 89, 55, 0.24);
@@ -651,6 +669,12 @@ button {
 .metric-error {
   color: var(--clay-dark);
   font-weight: 760;
+}
+
+.metric-explanation {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .compare-paper {
