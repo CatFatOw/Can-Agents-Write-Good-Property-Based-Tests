@@ -81,17 +81,48 @@ function escapeHtml(value) {
 
 function invariantText(invariant) {
   if (typeof invariant === "string") return invariant;
-  return invariant?.invariant || invariant?.text || invariant?.claim || "";
+  return invariant?.invariant || invariant?.text || invariant?.claim || invariant?.description || "";
+}
+
+function numberFromUnknown(value) {
+  if (Array.isArray(value)) {
+    return numberFromUnknown(value[0]);
+  }
+  if (value && typeof value === "object") {
+    return numberFromUnknown(value.lineno ?? value.line ?? value.start ?? value.start_line);
+  }
+  const match = String(value ?? "").match(/\d+/);
+  return match ? Number(match[0]) : Number.NaN;
+}
+
+function rangeFromUnknown(value) {
+  if (!value) return null;
+  if (Array.isArray(value)) {
+    const start = numberFromUnknown(value[0]);
+    const end = numberFromUnknown(value[value.length > 1 ? value.length - 1 : 0]);
+    return { start, end };
+  }
+  if (typeof value === "object") {
+    const start = numberFromUnknown(value.start ?? value.lineno ?? value.line ?? value.start_line);
+    const end = numberFromUnknown(value.end ?? value.end_lineno ?? value.end_line ?? value.stop ?? value.lineno ?? value.line ?? value.start_line);
+    return { start, end };
+  }
+  return null;
 }
 
 function invariantRange(invariant) {
   if (!invariant || typeof invariant === "string") return null;
-  const start = Number(invariant.lineno ?? invariant.line ?? invariant.start_line);
-  const end = Number(invariant.end_lineno ?? invariant.end_line ?? invariant.lineno ?? invariant.line ?? invariant.start_line);
+  const explicitRange = rangeFromUnknown(
+    invariant.lines ?? invariant.source_lines ?? invariant.line_numbers ?? invariant.line_range ?? invariant.range ?? invariant.evidence_lines
+  );
+  const start = explicitRange ? explicitRange.start : numberFromUnknown(invariant.lineno ?? invariant.line ?? invariant.start_line);
+  const end = explicitRange ? explicitRange.end : numberFromUnknown(invariant.end_lineno ?? invariant.end_line ?? invariant.lineno ?? invariant.line ?? invariant.start_line);
   if (!Number.isFinite(start) || start <= 0) return null;
+  const normalizedStart = Math.max(1, Math.floor(start));
+  const normalizedEnd = Number.isFinite(end) && end > 0 ? Math.floor(end) : normalizedStart;
   return {
-    start: Math.max(1, Math.floor(start)),
-    end: Math.max(Math.floor(start), Math.floor(Number.isFinite(end) ? end : start))
+    start: Math.min(normalizedStart, normalizedEnd),
+    end: Math.max(normalizedStart, normalizedEnd)
   };
 }
 
@@ -668,17 +699,30 @@ function renderSourcePreview(source) {
 }
 
 function highlightSourceRange(range) {
+  let firstHighlighted = null;
   reviewPanel.querySelectorAll(".source-line").forEach((line) => {
     const lineNumber = Number(line.dataset.line);
-    line.classList.toggle("is-highlighted", Boolean(range && lineNumber >= range.start && lineNumber <= range.end));
+    const highlighted = Boolean(range && lineNumber >= range.start && lineNumber <= range.end);
+    line.classList.toggle("is-highlighted", highlighted);
+    if (highlighted && !firstHighlighted) {
+      firstHighlighted = line;
+    }
   });
+  if (firstHighlighted) {
+    firstHighlighted.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
 }
 
 function attachInvariantHoverHandlers() {
   reviewPanel.querySelectorAll(".invariant-item").forEach((item) => {
     const index = Number(item.dataset.index);
-    item.addEventListener("mouseenter", () => highlightSourceRange(invariantRange(currentInvariants[index])));
-    item.addEventListener("focusin", () => highlightSourceRange(invariantRange(currentInvariants[index])));
+    const showRange = () => {
+      const range = invariantRange(currentInvariants[index]);
+      item.classList.toggle("has-active-range", Boolean(range));
+      highlightSourceRange(range);
+    };
+    item.addEventListener("mouseenter", showRange);
+    item.addEventListener("focusin", showRange);
     item.addEventListener("mouseleave", () => highlightSourceRange(null));
     item.addEventListener("focusout", () => highlightSourceRange(null));
   });
@@ -696,7 +740,7 @@ async function renderInvariantReviewAnimated(invariants) {
     wrapper.innerHTML = `
       <input type="checkbox" checked data-index="${index}">
       <span class="invariant-copy">${escapeHtml(invariantText(invariant))}</span>
-      ${range ? `<span class="line-chip">Lines ${range.start}${range.end !== range.start ? `-${range.end}` : ""}</span>` : ""}
+      ${range ? `<span class="line-chip">Lines ${range.start}${range.end !== range.start ? `-${range.end}` : ""}</span>` : '<span class="line-chip line-chip-muted" title="No line metadata returned for this invariant">No lines</span>'}
       ${metricMarkup(metric)}
     `;
     list.appendChild(wrapper);
@@ -716,7 +760,7 @@ function renderInvariantReviewWithMetrics(invariants, loading = false) {
       <label class="invariant-item" data-index="${index}">
         <input type="checkbox" checked data-index="${index}">
         <span class="invariant-copy">${escapeHtml(invariantText(invariant))}</span>
-        ${range ? `<span class="line-chip">Lines ${range.start}${range.end !== range.start ? `-${range.end}` : ""}</span>` : ""}
+        ${range ? `<span class="line-chip">Lines ${range.start}${range.end !== range.start ? `-${range.end}` : ""}</span>` : '<span class="line-chip line-chip-muted" title="No line metadata returned for this invariant">No lines</span>'}
         ${metricMarkup(metric)}
         ${loading && !metric ? `
           <span class="metric-pills is-loading">
