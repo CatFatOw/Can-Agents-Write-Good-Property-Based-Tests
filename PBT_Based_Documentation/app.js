@@ -24,6 +24,7 @@ const backReviewButton = document.querySelector("#back-review-button");
 const runButton = document.querySelector("#run-button");
 const stepTabs = Array.from(document.querySelectorAll(".step-tab"));
 const examples = document.querySelector("#prompt-examples");
+const docsOpenButton = document.querySelector("#docs-open-button");
 
 let currentMarkdown = "";
 let currentInvariants = [];
@@ -846,6 +847,12 @@ testsPanel.addEventListener("click", async (event) => {
   }
 });
 
+docsOpenButton.addEventListener("click", () => {
+  showDocsExampleStage().catch((error) => {
+    renderError(error.message || "Could not load the example documentation.", "Example docs failed", "Could not load example");
+  });
+});
+
 docsExamplePanel.addEventListener("click", (event) => {
   const button = event.target.closest(".docs-example-choice");
   if (!button) return;
@@ -875,10 +882,6 @@ stepTabs.forEach((tab) => {
       showCompareStage();
     } else if (tab.dataset.step === "tests") {
       showTestsStage();
-    } else if (tab.dataset.step === "docs-example") {
-      showDocsExampleStage().catch((error) => {
-        renderError(error.message || "Could not load the example documentation.", "Example docs failed", "Could not load example");
-      });
     }
   });
 });
