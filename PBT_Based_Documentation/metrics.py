@@ -220,7 +220,7 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             result["score"] = max(0, min(1, score))
             result["explanation"] = explanation
             # Adding lineno where the update pertains
-            #result["lineno"] = lineno
+            result["lineno"] = lineno
 
             results.append(result)
 
