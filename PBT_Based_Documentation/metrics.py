@@ -2,6 +2,12 @@ from openai import OpenAI
 import ast 
 import json
 from typing import List
+import pytest 
+import mutmut 
+import subprocess
+import os
+import tempfile, shutil
+from pathlib import Path
 
 def test_metrics(test_func, n=50):
     """Function used to calculate the soundness and validity metrics for display on the website"""
@@ -100,7 +106,145 @@ def evaluate_pbt_test(source_code, invariant, test_code, api_name="api.function"
     }
 
 
-def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4-mini", streaming=True, api_name="api.function"):
+
+def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True):
+    """Function runs a deep analysis on all survived mutants, and then uses GPT to provided a in-depth summary
+    high, medium, low on the criticality of the mutants killed/not killed
+    """
+    survived_mutants = subprocess.run(
+        ["mutmut","results"],
+        cwd=working_dir,
+        capture_output=True,
+        text=True,
+    )
+    output = []
+    client = OpenAI()
+            
+
+    # List of all mutants that have survived :D
+    all_survived_mutants = survived_mutants.stdout.splitlines()
+    for survived in all_survived_mutants:
+        mutant_id = survived.split(":")[0].strip()
+        if not mutant_id:
+            continue
+        # show why the mutant was not killed 
+        analysis = subprocess.run(
+            ["mutmut", "show", mutant_id],
+            cwd=working_dir,
+            capture_output=True,
+            text=True,
+        )
+        output.append(
+            f"Mutant ID: {mutant_id}\n"
+            f"STDOUT:\n{analysis.stdout}\n"
+            f"STDERR:\n{analysis.stderr}\n"
+            "END OF ANALYSIS"
+        )
+
+    mutant_details = "\n\n".join(output) if output else "No surviving mutants were reported."
+
+    # PROMPT GPT, and ask it to create a comprehensive prompt 
+    PROMPT = f"""
+        You are an expert Python software engineer specializing in mutation testing, property-based testing, invariants, and test quality assessment.
+
+        Your task is to analyze the surviving mutants produced by mutmut.
+
+        A surviving mutant indicates that the current test suite did not detect a behavioral change. However, not all surviving mutants are equally important. Some represent serious gaps in testing, while others are equivalent mutations or changes with little practical impact.
+
+        SURVIVING MUTANTS:
+        {mutant_details}
+
+        For EACH surviving mutant:
+
+        1. Identify:
+        - Mutant ID
+        - File name
+        - Function name (if available)
+        - Line number(s)
+        - Original code
+        - Mutated code
+
+        2. Determine the severity of the survivor:
+
+        SEVERE:
+        - The mutation changes observable behavior.
+        - A strong invariant or property-based test should likely have detected it.
+        - Indicates a significant gap in test coverage or invariant quality.
+
+        MEDIUM:
+        - The mutation may affect behavior, but its impact is unclear.
+        - Additional context or domain knowledge is required.
+        - It is uncertain whether the invariant should have caught it.
+
+        LOW:
+        - The mutation is likely equivalent, cosmetic, unreachable, redundant, or has minimal behavioral impact.
+        - Its survival does not strongly indicate a weakness in the test suite.
+
+        3. Assign:
+        - Severity: SEVERE / MEDIUM / LOW
+        - Confidence Percentage (0-100)
+        - Brief justification for the confidence score
+
+        4. Explain:
+        - Why the mutant survived
+        - What behavior changed
+        - Whether an invariant-based test should reasonably have detected it
+        - What additional invariant or Hypothesis test could kill this mutant
+
+        5. If the mutation appears equivalent or unkillable, explicitly state that.
+
+        Generate a comprehensive markdown report.
+
+        Use the following format for each mutant:
+
+        # Mutant: <ID>
+
+        ## Summary
+        - Severity:
+        - Confidence:
+        - File:
+        - Function:
+        - Line Number:
+
+        ## Mutation
+        ```diff
+        <mutation diff>
+    """
+
+    
+    if not streaming:
+        # Display the text all at once
+        response = client.responses.create(
+            model=model,
+            input=PROMPT
+        )
+    
+        output = response.output_text
+    else:
+        # display the text gradually
+        events = client.responses.create(
+            model=model,
+            input=PROMPT,
+            stream=streaming,
+        )
+
+        chunks = []
+        for event in events:
+            if event.type == "response.output_text.delta":
+                print(event.delta, end="", flush=True)
+                chunks.append(event.delta)
+        print()
+        output = "".join(chunks)
+    return output
+
+    
+
+    
+
+
+
+
+def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4-mini", streaming=True, api_name="api.function", show_mutation_tests = True):
     """Function calls ChatGPT, and via the model, assess a confidence level on how good the invariant is
     where high, high level of confidence the invariant is robust, medium, where the model is unsure, and low where the model thinks the
     invariant may be incorrect"""
@@ -204,6 +348,81 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             explanation = str(data.get("explanation", ""))
             test_code = str(data.get("test_code", ""))
             lineno = list(data.get("lineno", []))
+            covered_mutants_score = None
+            mutation_analysis = ""
+
+            # If the user selected to do mutmut mutation testing
+            if show_mutation_tests:
+                # Create a directory for workflow
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    temp_dir = Path(temp_dir)
+
+                    # Save the user provided source code. This will be crucial for the setup.cfg later
+                    source_path = temp_dir / "source.py"
+                    # Writes the source code to source path
+                    source_path.write_text(source_code, encoding="utf-8")
+
+                    # Save/write the generated hypothesis invariant
+                    test_path = temp_dir / "test_invariant.py"
+                    test_path.write_text(test_code, encoding="utf-8")
+
+
+                    # 3. Create mutmut config setup.cfg
+                    setup_path = temp_dir / "setup.cfg"
+                    setup_path.write_text(
+                        """
+                        [mutmut]
+                        paths_to_mutate=source.py
+                        mutate_only_covered_lines=true
+                        pytest_add_cli_args_test_selection=.
+                        """.strip(), encoding="utf-8",
+                        
+                    )
+
+                    # Run the terminal commands :D 
+                    mutmut_output = subprocess.run(
+                        ["mutmut", "run"],
+                        cwd=temp_dir,
+                        capture_output=True,
+                        text=True
+
+                    )
+
+                    output = mutmut_output.stdout 
+                    # Match the output to closer format :D
+
+
+                    matches = re.findall(
+    r"🎉\s+(\d+)\s+🫥\s+(\d+)\s+⏰\s+(\d+)\s+🤔\s+(\d+)\s+🙁\s+(\d+)\s+🔇\s+(\d+)\s+🧙\s+(\d+)",
+    output
+)
+
+                    if matches:
+                        killed, no_tests, timeout, suspicious, survived, skipped, wizard = map(int, matches[-1])
+
+                        metrics = {
+                            "killed": killed,
+                            "no_tests": no_tests,
+                            "timeout": timeout,
+                            "suspicious": suspicious,
+                            "survived": survived,
+                            "skipped": skipped,
+                            "wizard": wizard,
+                        }
+                        metrics["total_mutants"] = (
+                            metrics["killed"]
+                            + metrics["no_tests"]
+                            + metrics["timeout"]
+                            + metrics["suspicious"]
+                            + metrics["survived"]
+                            + metrics["skipped"]
+                            + metrics["wizard"]
+                        )
+
+                        # Calculate the mutation score
+                        if metrics["total_mutants"]:
+                            covered_mutants_score = metrics["killed"] / metrics["total_mutants"]
+
 
             # {"invariant": invariant,"test_code": output, "validity": validity, "soundness": soundness, "error": error,}
             result = evaluate_pbt_test(
@@ -221,6 +440,8 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             result["explanation"] = explanation
             # Adding lineno where the update pertains
             result["lineno"] = lineno
+            if show_mutation_tests:
+                result["mutation_score"] = covered_mutants_score
 
             results.append(result)
 
@@ -237,3 +458,33 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             })
 
     return {"results": results}
+
+
+def mutation_analysis_for_test(source_code, test_code, model="gpt-5.4-mini"):
+    """Create a temporary mutmut project and generate an analysis report for surviving mutants."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_dir = Path(temp_dir)
+
+        source_path = temp_dir / "source.py"
+        source_path.write_text(source_code, encoding="utf-8")
+
+        test_path = temp_dir / "test_invariant.py"
+        test_path.write_text(test_code, encoding="utf-8")
+
+        setup_path = temp_dir / "setup.cfg"
+        setup_path.write_text(
+            """
+            [mutmut]
+            paths_to_mutate=source.py
+            mutate_only_covered_lines=true
+            pytest_add_cli_args_test_selection=.
+            """.strip(), encoding="utf-8",
+        )
+
+        subprocess.run(
+            ["mutmut", "run"],
+            cwd=temp_dir,
+            capture_output=True,
+            text=True,
+        )
+        return analyze_mutants(temp_dir, model=model, streaming=False)

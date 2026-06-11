@@ -6,6 +6,7 @@ const lookupButton = document.querySelector("#lookup-button");
 const toneInput = document.querySelector("#tone");
 const openaiKeyInput = document.querySelector("#openai-key");
 const assessMetricsInput = document.querySelector("#assess-metrics");
+const showMutationTestingInput = document.querySelector("#show-mutation-testing");
 const reviewPanel = document.querySelector("#review-panel");
 const comparePanel = document.querySelector("#compare-panel");
 const testsPanel = document.querySelector("#tests-panel");
@@ -649,6 +650,29 @@ function metricScore(metric) {
   return 0;
 }
 
+function mutationScoreClass(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "mutation-low";
+  if (numeric >= 0.8) return "mutation-high";
+  if (numeric >= 0.5) return "mutation-medium";
+  return "mutation-low";
+}
+
+function mutationScoreMarkup(metric, index) {
+  if (!showMutationTestingInput.checked || !metric) {
+    return "";
+  }
+  const score = Number(metric.mutation_score);
+  if (!Number.isFinite(score)) {
+    return `<span class="mutation-pill mutation-low">Mutation unavailable</span>`;
+  }
+  return `
+    <button type="button" class="mutation-pill ${mutationScoreClass(score)} mutation-analysis-button" data-mutation-index="${index}">
+      Mutation ${formatScore(score)}
+    </button>
+  `;
+}
+
 function confidenceLabel(metric) {
   const label = String(metric?.confidence || "").toUpperCase();
   if (["HIGH", "MEDIUM", "LOW"].includes(label)) {
@@ -678,6 +702,7 @@ function metricMarkup(metric) {
       <span class="confidence-pill confidence-${confidence.toLowerCase()}">${confidence} ${formatScore(metricScore(metric))}</span>
       <span>Validity ${formatScore(metric.validity)}</span>
       <span>Soundness ${formatScore(metric.soundness)}</span>
+      ${mutationScoreMarkup(metric, index)}
       <button type="button" class="metric-test-button ${metric.error ? "metric-warning" : ""}" data-test-index="${index}">Check test</button>
     </span>
   `;
@@ -860,11 +885,17 @@ function renderTestsPanel() {
             <span class="test-summary-metrics">
               <span class="confidence-pill confidence-${confidenceLabel(metric).toLowerCase()}">${confidenceLabel(metric)} ${formatScore(metricScore(metric))}</span>
               <span>${formatScore(metric.validity)} valid / ${formatScore(metric.soundness)} sound</span>
+              ${mutationScoreMarkup(metric, index)}
             </span>
           </summary>
           <p>${escapeHtml(metric.invariant || "")}</p>
           ${metric.explanation ? `<p class="metric-explanation">${escapeHtml(metric.explanation)}</p>` : ""}
           ${metric.error ? `<p class="metric-error">${escapeHtml(metric.error)}</p>` : ""}
+          ${metric.mutation_analysis ? `
+            <div class="mutation-report">
+              ${renderMarkdown(metric.mutation_analysis)}
+            </div>
+          ` : ""}
           <label class="test-editor">
             <span>Edit or paste a property-based test</span>
             <textarea data-test-editor="${index}" rows="11">${escapeHtml(metric.test_code || "")}</textarea>
@@ -912,6 +943,37 @@ async function rerunEditedTest(index, button) {
   }
 }
 
+async function runMutationAnalysis(index, button) {
+  const metric = currentMetrics[index];
+  if (!metric || !metric.test_code) return;
+
+  button.disabled = true;
+  button.textContent = "Analyzing...";
+  setStatus("review", "Analyzing mutants");
+
+  try {
+    const data = await postJson("/api/mutation-analysis", {
+      source_code: currentSource,
+      test_code: metric.test_code
+    }, { cache: false });
+
+    currentMetrics[index] = {
+      ...metric,
+      mutation_analysis: data.analysis || ""
+    };
+    selectedTestIndex = index;
+    renderInvariantReviewWithMetrics(currentInvariants);
+    renderTestsPanel();
+    showTestsStage(index);
+    setStatus("ready", "Mutation report ready");
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = `Mutation ${formatScore(metric.mutation_score)}`;
+    setStatus("draft", "Mutation analysis failed");
+    throw error;
+  }
+}
+
 async function assessMetricsForReview() {
   if (!assessMetricsInput.checked || !currentInvariants.length) {
     currentMetrics = [];
@@ -926,7 +988,8 @@ async function assessMetricsForReview() {
   const data = await postJson("/api/metrics", {
     api_name: apiNameInput.value.trim() || "api.function",
     source_code: currentSource,
-    invariants: invariantTexts(currentInvariants)
+    invariants: invariantTexts(currentInvariants),
+    show_mutation_tests: showMutationTestingInput.checked
   });
   currentMetrics = data.metrics || [];
   renderInvariantReviewWithMetrics(currentInvariants);
@@ -1123,6 +1186,16 @@ downloadButton.addEventListener("click", () => {
 backReviewButton.addEventListener("click", showReviewStage);
 
 reviewPanel.addEventListener("click", (event) => {
+  const mutationButton = event.target.closest(".mutation-analysis-button");
+  if (mutationButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    runMutationAnalysis(Number(mutationButton.dataset.mutationIndex || 0), mutationButton).catch((error) => {
+      renderError(error.message || "Could not analyze the mutation report.", "Mutation analysis failed", "Could not analyze mutants");
+    });
+    return;
+  }
+
   const button = event.target.closest(".metric-test-button");
   if (!button) return;
   event.preventDefault();
@@ -1131,6 +1204,17 @@ reviewPanel.addEventListener("click", (event) => {
 });
 
 testsPanel.addEventListener("click", async (event) => {
+  const mutationButton = event.target.closest(".mutation-analysis-button");
+  if (mutationButton) {
+    event.preventDefault();
+    try {
+      await runMutationAnalysis(Number(mutationButton.dataset.mutationIndex || 0), mutationButton);
+    } catch (error) {
+      renderError(error.message || "Could not analyze the mutation report.", "Mutation analysis failed", "Could not analyze mutants");
+    }
+    return;
+  }
+
   const button = event.target.closest(".rerun-test-button");
   if (!button) return;
   try {
@@ -1172,6 +1256,22 @@ assessMetricsInput.addEventListener("change", async () => {
     await assessMetricsForReview();
   } catch (error) {
     renderError(error.message || "Metric assessment failed.", "Metric assessment failed", "Could not assess tests");
+  }
+});
+
+showMutationTestingInput.addEventListener("change", async () => {
+  if (!currentInvariants.length) {
+    return;
+  }
+  if (!assessMetricsInput.checked) {
+    renderInvariantReviewWithMetrics(currentInvariants);
+    renderTestsPanel();
+    return;
+  }
+  try {
+    await assessMetricsForReview();
+  } catch (error) {
+    renderError(error.message || "Mutation metric assessment failed.", "Mutation metrics failed", "Could not assess mutation");
   }
 });
 

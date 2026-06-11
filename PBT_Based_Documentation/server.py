@@ -20,11 +20,12 @@ from gpt_documentation_generator import response_text as project_response_text
 from gpt_documentation_generator import strip_markdown_fences
 from metrics import evaluate_pbt_test
 from metrics import invariant_metrics_test
+from metrics import mutation_analysis_for_test
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
 METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.4-mini")
 GPT_CACHE: dict[tuple[str, str], str] = {}
-METRICS_CACHE: dict[tuple[str, str, str], dict[str, Any]] = {}
+METRICS_CACHE: dict[tuple[str, str, str, bool], dict[str, Any]] = {}
 SOURCE_CACHE: dict[str, dict[str, str]] = {}
 
 
@@ -333,10 +334,11 @@ class Handler(SimpleHTTPRequestHandler):
                 source_code = str(payload.get("source_code") or payload.get("documentation") or "")
                 invariants = payload.get("invariants") or []
                 openai_key = str(payload.get("openai_key") or "")
+                show_mutation_tests = bool(payload.get("show_mutation_tests"))
                 if not source_code.strip() or not isinstance(invariants, list):
                     self.send_json(400, {"error": "Source code and invariants are required."})
                     return
-                cache_key = (METRICS_MODEL, source_code, json.dumps(invariants, sort_keys=True))
+                cache_key = (METRICS_MODEL, source_code, json.dumps(invariants, sort_keys=True), show_mutation_tests)
                 if cache_key not in METRICS_CACHE:
                     with request_openai_key(openai_key):
                         METRICS_CACHE[cache_key] = invariant_metrics_test(
@@ -345,6 +347,7 @@ class Handler(SimpleHTTPRequestHandler):
                             model=METRICS_MODEL,
                             streaming=False,
                             api_name=api_name,
+                            show_mutation_tests=show_mutation_tests,
                         )
                 self.send_json(
                     200,
@@ -353,6 +356,23 @@ class Handler(SimpleHTTPRequestHandler):
                         "model": METRICS_MODEL,
                     },
                 )
+                return
+
+            if self.path == "/api/mutation-analysis":
+                payload = self.read_json()
+                source_code = str(payload.get("source_code") or payload.get("documentation") or "")
+                test_code = str(payload.get("test_code") or "")
+                openai_key = str(payload.get("openai_key") or "")
+                if not source_code.strip() or not test_code.strip():
+                    self.send_json(400, {"error": "Source code and test code are required."})
+                    return
+                with request_openai_key(openai_key):
+                    analysis = mutation_analysis_for_test(
+                        source_code=source_code,
+                        test_code=test_code,
+                        model=METRICS_MODEL,
+                    )
+                self.send_json(200, {"analysis": analysis})
                 return
 
             if self.path == "/api/rerun-test":
