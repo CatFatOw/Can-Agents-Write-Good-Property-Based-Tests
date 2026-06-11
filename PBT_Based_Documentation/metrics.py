@@ -792,7 +792,6 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
                 "mutants": [],
             }
 
-<<<<<<< HEAD
         try:
             mutmut_run = subprocess.run(
                 ["mutmut", "run"],
@@ -817,13 +816,3 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
             "mutation_counts": summary,
             "mutation_score": mutation_score_from_summary(summary),
         }
-=======
-        subprocess.run(
-            ["mutmut", "run"],
-            cwd=temp_dir,
-            capture_output=True,
-            text=True,
-            env=mutation_env,
-        )
-        return analyze_mutants(temp_dir, model=model, streaming=False, seed=seed)
->>>>>>> parent of e7245ad (fix: mutation testing)
