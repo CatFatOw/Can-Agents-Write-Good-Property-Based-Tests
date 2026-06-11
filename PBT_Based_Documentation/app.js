@@ -5,8 +5,11 @@ const sourceObjectInput = document.querySelector("#source-object");
 const lookupButton = document.querySelector("#lookup-button");
 const toneInput = document.querySelector("#tone");
 const openaiKeyInput = document.querySelector("#openai-key");
+const openaiSeedInput = document.querySelector("#openai-seed");
 const assessMetricsInput = document.querySelector("#assess-metrics");
 const showMutationTestingInput = document.querySelector("#show-mutation-testing");
+const mutationPackagesInput = document.querySelector("#mutation-packages");
+const mutationAutoInstallInput = document.querySelector("#mutation-auto-install");
 const reviewPanel = document.querySelector("#review-panel");
 const comparePanel = document.querySelector("#compare-panel");
 const testsPanel = document.querySelector("#tests-panel");
@@ -395,7 +398,8 @@ async function postJson(path, payload, options = {}) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       ...payload,
-      openai_key: openaiKeyInput.value.trim()
+      openai_key: openaiKeyInput.value.trim(),
+      openai_seed: Number(openaiSeedInput.value || 42)
     })
   });
   const data = await response.json();
@@ -414,7 +418,8 @@ async function postTextStream(path, payload, onChunk) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       ...payload,
-      openai_key: openaiKeyInput.value.trim()
+      openai_key: openaiKeyInput.value.trim(),
+      openai_seed: Number(openaiSeedInput.value || 42)
     })
   });
   if (!response.ok) {
@@ -651,6 +656,7 @@ function metricScore(metric) {
 }
 
 function mutationScoreClass(value) {
+  if (value === null || value === undefined || value === "") return "mutation-low";
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return "mutation-low";
   if (numeric >= 0.8) return "mutation-high";
@@ -662,9 +668,13 @@ function mutationScoreMarkup(metric, index) {
   if (!showMutationTestingInput.checked || !metric) {
     return "";
   }
+  const mutationError = metric.mutation_error ? ` title="${escapeHtml(metric.mutation_error)}"` : "";
+  if (metric.mutation_score === null || metric.mutation_score === undefined || metric.mutation_score === "") {
+    return `<span class="mutation-pill mutation-low"${mutationError}>Mutation unavailable</span>`;
+  }
   const score = Number(metric.mutation_score);
   if (!Number.isFinite(score)) {
-    return `<span class="mutation-pill mutation-low">Mutation unavailable</span>`;
+    return `<span class="mutation-pill mutation-low"${mutationError}>Mutation unavailable</span>`;
   }
   return `
     <button type="button" class="mutation-pill ${mutationScoreClass(score)} mutation-analysis-button" data-mutation-index="${index}">
@@ -827,7 +837,7 @@ async function renderInvariantReviewAnimated(invariants) {
     const range = invariantRange(invariant);
     wrapper.innerHTML = `
       <input type="checkbox" checked data-index="${index}">
-      <span class="invariant-copy">${escapeHtml(invariantText(invariant))}</span>
+      <div class="invariant-copy">${renderMarkdown(invariantText(invariant))}</div>
       ${range ? `<span class="line-chip">Lines ${range.start}${range.end !== range.start ? `-${range.end}` : ""}</span>` : '<span class="line-chip line-chip-muted" title="No line metadata returned for this invariant">No lines</span>'}
       ${metricMarkup(metric)}
     `;
@@ -847,7 +857,7 @@ function renderInvariantReviewWithMetrics(invariants, loading = false) {
     return `
       <label class="invariant-item" data-index="${index}">
         <input type="checkbox" checked data-index="${index}">
-        <span class="invariant-copy">${escapeHtml(invariantText(invariant))}</span>
+        <div class="invariant-copy">${renderMarkdown(invariantText(invariant))}</div>
         ${range ? `<span class="line-chip">Lines ${range.start}${range.end !== range.start ? `-${range.end}` : ""}</span>` : '<span class="line-chip line-chip-muted" title="No line metadata returned for this invariant">No lines</span>'}
         ${metricMarkup(metric)}
         ${loading && !metric ? `
@@ -888,7 +898,7 @@ function renderTestsPanel() {
               ${mutationScoreMarkup(metric, index)}
             </span>
           </summary>
-          <p>${escapeHtml(metric.invariant || "")}</p>
+          <div class="test-invariant-copy">${renderMarkdown(metric.invariant || "")}</div>
           ${metric.explanation ? `<p class="metric-explanation">${escapeHtml(metric.explanation)}</p>` : ""}
           ${metric.error ? `<p class="metric-error">${escapeHtml(metric.error)}</p>` : ""}
           ${metric.mutation_analysis ? `
@@ -953,8 +963,11 @@ async function runMutationAnalysis(index, button) {
 
   try {
     const data = await postJson("/api/mutation-analysis", {
+      api_name: apiNameInput.value.trim() || "api.function",
       source_code: currentSource,
-      test_code: metric.test_code
+      test_code: metric.test_code,
+      mutation_packages: mutationPackagesInput.value.trim(),
+      mutation_auto_install: mutationAutoInstallInput.checked
     }, { cache: false });
 
     currentMetrics[index] = {
@@ -989,7 +1002,9 @@ async function assessMetricsForReview() {
     api_name: apiNameInput.value.trim() || "api.function",
     source_code: currentSource,
     invariants: invariantTexts(currentInvariants),
-    show_mutation_tests: showMutationTestingInput.checked
+    show_mutation_tests: showMutationTestingInput.checked,
+    mutation_packages: mutationPackagesInput.value.trim(),
+    mutation_auto_install: mutationAutoInstallInput.checked
   });
   currentMetrics = data.metrics || [];
   renderInvariantReviewWithMetrics(currentInvariants);

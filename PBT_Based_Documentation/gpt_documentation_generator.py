@@ -39,6 +39,7 @@ ROOT = Path(__file__).resolve().parent
 DEFAULT_PROMPT_DIR = ROOT / "invariant_extraction_prompts"
 # - Terminal color enable/disable settings
 DEFAULT_MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.4-mini")
+OPENAI_SEED = 42
 # - Root directory and prompt locations
 COLOR_ENABLED = os.environ.get("NO_COLOR") is None
 # ANSI colors for displaying status updates
@@ -142,7 +143,7 @@ def extract_signature(source_code: str, node: ast.FunctionDef | ast.AsyncFunctio
     return " ".join(part.rstrip(":") for part in signature_lines).strip()
 
 
-def response_text(model: str, prompt: str, stream: bool = True) -> str:
+def response_text(model: str, prompt: str, stream: bool = True, seed: int = OPENAI_SEED) -> str:
     """Function is an OpenAI Wrapper that calls the model"""
     # Check if user provided an API key via os.environ
     if not os.environ.get("OPENAI_API_KEY"):
@@ -151,25 +152,25 @@ def response_text(model: str, prompt: str, stream: bool = True) -> str:
     try:
         from openai import OpenAI
     except ImportError:
-        return response_text_with_legacy_openai(model, prompt, stream=stream)
+        return response_text_with_legacy_openai(model, prompt, stream=stream, seed=seed)
     # We create the openAI client
     client = OpenAI()
     # Checks if contains responses attribute
     if hasattr(client, "responses"):
         try:
-            return response_text_with_responses(client, model, prompt, stream=stream)
+            return response_text_with_responses(client, model, prompt, stream=stream, seed=seed)
         except AttributeError:
             pass
     # If has attribute chat and completition
     if hasattr(client, "chat") and hasattr(client.chat, "completions"):
-        return response_text_with_chat_completions(client, model, prompt, stream=stream)
+        return response_text_with_chat_completions(client, model, prompt, stream=stream, seed=seed)
     raise SystemExit(
         "This openai package exposes neither client.responses nor client.chat.completions. "
         "Upgrade it with: python3 -m pip install --upgrade openai"
     )
 
 
-def response_text_with_responses(client: Any, model: str, prompt: str, stream: bool = True) -> str:
+def response_text_with_responses(client: Any, model: str, prompt: str, stream: bool = True, seed: int = OPENAI_SEED) -> str:
     # If stream = false, then we just output the data immediately
     if not stream:
         response = client.responses.create(model=model, input=prompt)
@@ -187,7 +188,7 @@ def response_text_with_responses(client: Any, model: str, prompt: str, stream: b
     return "".join(chunks)
 
 
-def response_text_with_legacy_openai(model: str, prompt: str, stream: bool = True) -> str:
+def response_text_with_legacy_openai(model: str, prompt: str, stream: bool = True, seed: int = OPENAI_SEED) -> str:
     try:
         import openai
     except ImportError as exc:
@@ -207,11 +208,11 @@ def response_text_with_legacy_openai(model: str, prompt: str, stream: bool = Tru
         {"role": "user", "content": prompt},
     ]
     if not stream:
-        response = openai.ChatCompletion.create(model=model, messages=messages)
+        response = openai.ChatCompletion.create(model=model, messages=messages, seed=seed)
         return response["choices"][0]["message"]["content"] or ""
 
     chunks: list[str] = []
-    events = openai.ChatCompletion.create(model=model, messages=messages, stream=True)
+    events = openai.ChatCompletion.create(model=model, messages=messages, stream=True, seed=seed)
     for event in events:
         delta = event["choices"][0].get("delta", {}).get("content", "")
         if delta:
@@ -221,7 +222,7 @@ def response_text_with_legacy_openai(model: str, prompt: str, stream: bool = Tru
     return "".join(chunks)
 
 
-def response_text_with_chat_completions(client: Any, model: str, prompt: str, stream: bool = True) -> str:
+def response_text_with_chat_completions(client: Any, model: str, prompt: str, stream: bool = True, seed: int = OPENAI_SEED) -> str:
     """Older version in case OpenAI version is old"""
     messages = [
         {
@@ -231,11 +232,11 @@ def response_text_with_chat_completions(client: Any, model: str, prompt: str, st
         {"role": "user", "content": prompt},
     ]
     if not stream:
-        response = client.chat.completions.create(model=model, messages=messages)
+        response = client.chat.completions.create(model=model, messages=messages, seed=seed)
         return response.choices[0].message.content or ""
 
     chunks: list[str] = []
-    events = client.chat.completions.create(model=model, messages=messages, stream=True)
+    events = client.chat.completions.create(model=model, messages=messages, stream=True, seed=seed)
     for event in events:
         delta = event.choices[0].delta.content or ""
         if delta:

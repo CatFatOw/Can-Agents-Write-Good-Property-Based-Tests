@@ -6,8 +6,25 @@ import pytest
 import mutmut 
 import subprocess
 import os
+import sys
+import importlib.util
 import tempfile, shutil
 from pathlib import Path
+
+OPENAI_SEED = 42
+IMPORT_TO_PACKAGE = {
+    "PIL": "Pillow",
+    "bs4": "beautifulsoup4",
+    "cv2": "opencv-python",
+    "sklearn": "scikit-learn",
+    "yaml": "PyYAML",
+}
+MUTATION_IMPORT_SKIP = {
+    "__future__",
+    "source",
+    "pytest",
+    "hypothesis",
+}
 
 def test_metrics(test_func, n=50):
     """Function used to calculate the soundness and validity metrics for display on the website"""
@@ -106,8 +123,137 @@ def evaluate_pbt_test(source_code, invariant, test_code, api_name="api.function"
     }
 
 
+def prepare_mutation_test_code(test_code, api_name):
+    """Point generated tests at the temporary source.py module that mutmut changes."""
+    module_name, _, attr_name = api_name.rpartition(".")
+    if not attr_name:
+        attr_name = api_name
 
-def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True):
+    mutation_test_code = test_code
+    if module_name and attr_name:
+        mutation_test_code = mutation_test_code.replace(api_name, f"source.{attr_name}")
+        mutation_test_code = mutation_test_code.replace(f"from {module_name} import {attr_name}", f"from source import {attr_name}")
+    if attr_name:
+        mutation_test_code = mutation_test_code.replace(f"np.{attr_name}", f"source.{attr_name}")
+
+    return f"import source\nfrom source import {attr_name}\n" + mutation_test_code
+
+
+def prepare_mutation_source_code(source_code, api_name):
+    """Make inspected source snippets importable enough for mutmut."""
+    module_name, _, attr_name = api_name.rpartition(".")
+    import_modules = [module_name] if module_name else []
+
+    if module_name and attr_name:
+        try:
+            module = __import__(module_name, fromlist=[attr_name])
+            target = getattr(module, attr_name)
+            target_module = getattr(target, "__module__", "")
+            if target_module and target_module not in import_modules:
+                import_modules.append(target_module)
+        except Exception:
+            pass
+    if module_name == "numpy" or module_name.startswith("numpy."):
+        for numpy_module in [
+            "numpy._core.function_base",
+            "numpy._core.overrides",
+            "numpy._core.numeric",
+            "numpy._core.multiarray",
+        ]:
+            if numpy_module not in import_modules:
+                import_modules.append(numpy_module)
+
+    bootstrap_lines = [
+        "import importlib as _codex_importlib",
+    ]
+    for import_module in import_modules:
+        bootstrap_lines.extend([
+            "try:",
+            f"    globals().update(_codex_importlib.import_module({import_module!r}).__dict__)",
+            "except Exception:",
+            "    pass",
+        ])
+
+    return "\n".join(bootstrap_lines) + "\n\n" + source_code
+
+
+def parse_mutation_packages(mutation_packages):
+    if not mutation_packages:
+        return []
+    if isinstance(mutation_packages, str):
+        raw_packages = re.split(r"[\n,]+", mutation_packages)
+    else:
+        raw_packages = list(mutation_packages)
+    return [package.strip() for package in raw_packages if str(package).strip()]
+
+
+def imported_top_level_modules(*code_blocks):
+    modules = set()
+    for code in code_blocks:
+        if not code:
+            continue
+        try:
+            tree = ast.parse(code)
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    modules.add(alias.name.split(".")[0])
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                modules.add(node.module.split(".")[0])
+    return modules
+
+
+def inferred_mutation_packages(source_code, test_code):
+    packages = []
+    for module_name in sorted(imported_top_level_modules(source_code, test_code)):
+        if module_name in MUTATION_IMPORT_SKIP:
+            continue
+        if module_name in getattr(sys, "stdlib_module_names", set()):
+            continue
+        if importlib.util.find_spec(module_name) is not None:
+            continue
+        packages.append(IMPORT_TO_PACKAGE.get(module_name, module_name))
+    return packages
+
+
+def install_mutation_packages(temp_dir, mutation_packages, source_code="", test_code="", auto_install=True):
+    packages = parse_mutation_packages(mutation_packages)
+    if auto_install:
+        for package in inferred_mutation_packages(source_code, test_code):
+            if package not in packages:
+                packages.append(package)
+    if not packages:
+        return ""
+
+    install_result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--quiet",
+            "--target",
+            str(temp_dir),
+            *packages,
+        ],
+        cwd=temp_dir,
+        capture_output=True,
+        text=True,
+        timeout=180,
+    )
+    if install_result.returncode != 0:
+        return (
+            "Could not install mutation packages into the temporary environment.\n\n"
+            f"Packages: {', '.join(packages)}\n\n"
+            f"{install_result.stdout.strip() or install_result.stderr.strip()}"
+        )
+    return ""
+
+
+
+def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True, seed=OPENAI_SEED):
     """Function runs a deep analysis on all survived mutants, and then uses GPT to provided a in-depth summary
     high, medium, low on the criticality of the mutants killed/not killed
     """
@@ -216,7 +362,7 @@ def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True):
         # Display the text all at once
         response = client.responses.create(
             model=model,
-            input=PROMPT
+            input=PROMPT,
         )
     
         output = response.output_text
@@ -244,7 +390,7 @@ def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True):
 
 
 
-def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4-mini", streaming=True, api_name="api.function", show_mutation_tests = True):
+def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4-mini", streaming=True, api_name="api.function", show_mutation_tests = True, mutation_packages="", mutation_auto_install=True, seed=OPENAI_SEED):
     """Function calls ChatGPT, and via the model, assess a confidence level on how good the invariant is
     where high, high level of confidence the invariant is robust, medium, where the model is unsure, and low where the model thinks the
     invariant may be incorrect"""
@@ -319,7 +465,7 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             if not streaming:
                 response = client.responses.create(
                     model=model,
-                    input=PROMPT
+                    input=PROMPT,
                 )
                 output = response.output_text
 
@@ -328,7 +474,7 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                 events = client.responses.create(
                     model=model,
                     input=PROMPT,
-                    stream=True
+                    stream=True,
                 )
 
                 chunks = []
@@ -349,7 +495,7 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             test_code = str(data.get("test_code", ""))
             lineno = list(data.get("lineno", []))
             covered_mutants_score = None
-            mutation_analysis = ""
+            mutation_error = ""
 
             # If the user selected to do mutmut mutation testing
             if show_mutation_tests:
@@ -360,11 +506,11 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                     # Save the user provided source code. This will be crucial for the setup.cfg later
                     source_path = temp_dir / "source.py"
                     # Writes the source code to source path
-                    source_path.write_text(source_code, encoding="utf-8")
+                    source_path.write_text(prepare_mutation_source_code(source_code, api_name), encoding="utf-8")
 
                     # Save/write the generated hypothesis invariant
                     test_path = temp_dir / "test_invariant.py"
-                    test_path.write_text(test_code, encoding="utf-8")
+                    test_path.write_text(prepare_mutation_test_code(test_code, api_name), encoding="utf-8")
 
 
                     # 3. Create mutmut config setup.cfg
@@ -379,16 +525,45 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                         
                     )
 
-                    # Run the terminal commands :D 
-                    mutmut_output = subprocess.run(
-                        ["mutmut", "run"],
-                        cwd=temp_dir,
-                        capture_output=True,
-                        text=True
-
+                    mutation_error = install_mutation_packages(
+                        temp_dir,
+                        mutation_packages,
+                        source_code=source_code,
+                        test_code=test_code,
+                        auto_install=mutation_auto_install,
                     )
 
-                    output = mutmut_output.stdout 
+                    if not mutation_error:
+                        clean_test_output = subprocess.run(
+                            [sys.executable, "-m", "pytest", "-q", str(test_path.name)],
+                            cwd=temp_dir,
+                            capture_output=True,
+                            text=True
+                        )
+                        if clean_test_output.returncode != 0:
+                            mutation_error = (
+                                clean_test_output.stdout.strip()
+                                or clean_test_output.stderr.strip()
+                                or "Generated mutation test failed before mutmut could run."
+                            )
+
+                    # Run the terminal commands :D 
+                    if not mutation_error:
+                        mutmut_output = subprocess.run(
+                            ["mutmut", "run"],
+                            cwd=temp_dir,
+                            capture_output=True,
+                            text=True
+
+                        )
+
+                        output = mutmut_output.stdout
+                        mutation_stderr = mutmut_output.stderr
+                        if mutmut_output.returncode not in {0, 1}:
+                            mutation_error = mutation_stderr.strip() or output.strip()
+                    else:
+                        output = ""
+                        mutation_stderr = ""
                     # Match the output to closer format :D
 
 
@@ -419,9 +594,19 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                             + metrics["wizard"]
                         )
 
-                        # Calculate the mutation score
-                        if metrics["total_mutants"]:
-                            covered_mutants_score = metrics["killed"] / metrics["total_mutants"]
+                        # Calculate the mutation score. Killed mutants are good;
+                        # survived/no-test/timeouts/suspicious mutants lower the score.
+                        scored_mutants = (
+                            metrics["killed"]
+                            + metrics["survived"]
+                            + metrics["no_tests"]
+                            + metrics["timeout"]
+                            + metrics["suspicious"]
+                        )
+                        if scored_mutants:
+                            covered_mutants_score = metrics["killed"] / scored_mutants
+                    elif not mutation_error:
+                        mutation_error = (mutation_stderr.strip() or output.strip() or "mutmut did not return a parseable summary.")
 
 
             # {"invariant": invariant,"test_code": output, "validity": validity, "soundness": soundness, "error": error,}
@@ -442,6 +627,7 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             result["lineno"] = lineno
             if show_mutation_tests:
                 result["mutation_score"] = covered_mutants_score
+                result["mutation_error"] = mutation_error
 
             results.append(result)
 
@@ -460,16 +646,16 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
     return {"results": results}
 
 
-def mutation_analysis_for_test(source_code, test_code, model="gpt-5.4-mini"):
+def mutation_analysis_for_test(source_code, test_code, api_name="api.function", model="gpt-5.4-mini", mutation_packages="", mutation_auto_install=True, seed=OPENAI_SEED):
     """Create a temporary mutmut project and generate an analysis report for surviving mutants."""
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir = Path(temp_dir)
 
         source_path = temp_dir / "source.py"
-        source_path.write_text(source_code, encoding="utf-8")
+        source_path.write_text(prepare_mutation_source_code(source_code, api_name), encoding="utf-8")
 
         test_path = temp_dir / "test_invariant.py"
-        test_path.write_text(test_code, encoding="utf-8")
+        test_path.write_text(prepare_mutation_test_code(test_code, api_name), encoding="utf-8")
 
         setup_path = temp_dir / "setup.cfg"
         setup_path.write_text(
@@ -481,10 +667,41 @@ def mutation_analysis_for_test(source_code, test_code, model="gpt-5.4-mini"):
             """.strip(), encoding="utf-8",
         )
 
+        mutation_error = install_mutation_packages(
+            temp_dir,
+            mutation_packages,
+            source_code=source_code,
+            test_code=test_code,
+            auto_install=mutation_auto_install,
+        )
+        if mutation_error:
+            return (
+                "# Mutation Analysis Unavailable\n\n"
+                "The requested temporary mutation packages could not be installed.\n\n"
+                "```text\n"
+                f"{mutation_error}\n"
+                "```"
+            )
+
+        clean_test_output = subprocess.run(
+            [sys.executable, "-m", "pytest", "-q", str(test_path.name)],
+            cwd=temp_dir,
+            capture_output=True,
+            text=True,
+        )
+        if clean_test_output.returncode != 0:
+            return (
+                "# Mutation Analysis Unavailable\n\n"
+                "The generated property-based test failed against the temporary source.py before mutmut could run.\n\n"
+                "```text\n"
+                f"{clean_test_output.stdout.strip() or clean_test_output.stderr.strip()}\n"
+                "```"
+            )
+
         subprocess.run(
             ["mutmut", "run"],
             cwd=temp_dir,
             capture_output=True,
             text=True,
         )
-        return analyze_mutants(temp_dir, model=model, streaming=False)
+        return analyze_mutants(temp_dir, model=model, streaming=False, seed=seed)

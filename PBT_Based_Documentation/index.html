@@ -13,7 +13,11 @@
         <div class="masthead">
           <div>
             <p class="eyebrow">PBT documentation lab</p>
-            <h1 id="page-title">Invariant-Based Documentation generator</h1>
+            <h1 id="page-title">
+              <span>Invariant-Based</span>
+              <span>Documentation</span>
+              <span>generator</span>
+            </h1>
           </div>
           <div class="status" id="flow-status" data-mode="draft">
             <span class="status-dot" aria-hidden="true"></span>
@@ -85,6 +89,11 @@
               <input id="openai-key" name="openai_key" type="password" placeholder="sk-..." autocomplete="off">
             </label>
 
+            <label class="field" for="openai-seed">
+              <span>Seed</span>
+              <input id="openai-seed" name="openai_seed" type="number" value="42" step="1">
+            </label>
+
             <label class="toggle-field" for="assess-metrics">
               <input id="assess-metrics" name="assess_metrics" type="checkbox">
               <span>Assess metrics</span>
@@ -93,6 +102,16 @@
             <label class="toggle-field mutation-toggle" for="show-mutation-testing">
               <input id="show-mutation-testing" name="show_mutation_testing" type="checkbox">
               <span>Show mutation testing</span>
+            </label>
+
+            <label class="field mutation-packages-field" for="mutation-packages">
+              <span>Mutation packages</span>
+              <input id="mutation-packages" name="mutation_packages" type="text" placeholder="Optional: torch, pandas==2.2.3">
+            </label>
+
+            <label class="toggle-field mutation-auto-install" for="mutation-auto-install">
+              <input id="mutation-auto-install" name="mutation_auto_install" type="checkbox" checked>
+              <span>Auto-install imported packages</span>
             </label>
 
             <button type="submit" id="run-button">

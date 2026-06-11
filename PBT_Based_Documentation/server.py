@@ -24,8 +24,9 @@ from metrics import mutation_analysis_for_test
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
 METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.4-mini")
-GPT_CACHE: dict[tuple[str, str], str] = {}
-METRICS_CACHE: dict[tuple[str, str, str, bool], dict[str, Any]] = {}
+OPENAI_SEED = 42
+GPT_CACHE: dict[tuple[str, str, int], str] = {}
+METRICS_CACHE: dict[tuple[str, str, str, bool, int], dict[str, Any]] = {}
 SOURCE_CACHE: dict[str, dict[str, str]] = {}
 
 
@@ -50,22 +51,29 @@ def request_openai_key(openai_key: str | None):
                 os.environ["OPENAI_API_KEY"] = old_key
 
 
-def run_project_gpt(prompt: str, openai_key: str | None) -> str:
+def request_seed(payload: dict[str, Any]) -> int:
+    try:
+        return int(payload.get("openai_seed", OPENAI_SEED))
+    except (TypeError, ValueError):
+        return OPENAI_SEED
+
+
+def run_project_gpt(prompt: str, openai_key: str | None, seed: int = OPENAI_SEED) -> str:
     if not openai_key and not os.environ.get("OPENAI_API_KEY"):
         raise RuntimeError("Paste an OpenAI API key or set OPENAI_API_KEY before starting server.py.")
-    cache_key = (MODEL, prompt)
+    cache_key = (MODEL, prompt, seed)
     if cache_key in GPT_CACHE:
         return GPT_CACHE[cache_key]
     with request_openai_key(openai_key):
-        text = project_response_text(MODEL, prompt, stream=False)
+        text = project_response_text(MODEL, prompt, stream=False, seed=seed)
     GPT_CACHE[cache_key] = text
     return text
 
 
-def stream_project_gpt(prompt: str, openai_key: str | None):
+def stream_project_gpt(prompt: str, openai_key: str | None, seed: int = OPENAI_SEED):
     if not openai_key and not os.environ.get("OPENAI_API_KEY"):
         raise RuntimeError("Paste an OpenAI API key or set OPENAI_API_KEY before starting server.py.")
-    cache_key = (MODEL, prompt)
+    cache_key = (MODEL, prompt, seed)
     if cache_key in GPT_CACHE:
         yield GPT_CACHE[cache_key]
         return
@@ -95,6 +103,7 @@ def stream_project_gpt(prompt: str, openai_key: str | None):
                     {"role": "user", "content": prompt},
                 ],
                 stream=True,
+                seed=seed,
             )
             for event in events:
                 delta = event.choices[0].delta.content or ""
@@ -321,10 +330,11 @@ class Handler(SimpleHTTPRequestHandler):
                 api_name = str(payload.get("api_name") or "api.function")
                 source_code = str(payload.get("source_code") or payload.get("documentation") or "")
                 openai_key = str(payload.get("openai_key") or "")
+                seed = request_seed(payload)
                 if not source_code.strip():
                     self.send_json(400, {"error": "Source code is required."})
                     return
-                raw = run_project_gpt(invariant_prompt(api_name, source_code), openai_key)
+                raw = run_project_gpt(invariant_prompt(api_name, source_code), openai_key, seed=seed)
                 self.send_json(200, {"invariants": parse_json_array(raw), "model": MODEL})
                 return
 
@@ -335,10 +345,13 @@ class Handler(SimpleHTTPRequestHandler):
                 invariants = payload.get("invariants") or []
                 openai_key = str(payload.get("openai_key") or "")
                 show_mutation_tests = bool(payload.get("show_mutation_tests"))
+                mutation_packages = str(payload.get("mutation_packages") or "")
+                mutation_auto_install = bool(payload.get("mutation_auto_install", True))
+                seed = request_seed(payload)
                 if not source_code.strip() or not isinstance(invariants, list):
                     self.send_json(400, {"error": "Source code and invariants are required."})
                     return
-                cache_key = (METRICS_MODEL, source_code, json.dumps(invariants, sort_keys=True), show_mutation_tests)
+                cache_key = (METRICS_MODEL, source_code, json.dumps(invariants, sort_keys=True), show_mutation_tests, mutation_packages, mutation_auto_install, seed)
                 if cache_key not in METRICS_CACHE:
                     with request_openai_key(openai_key):
                         METRICS_CACHE[cache_key] = invariant_metrics_test(
@@ -348,6 +361,9 @@ class Handler(SimpleHTTPRequestHandler):
                             streaming=False,
                             api_name=api_name,
                             show_mutation_tests=show_mutation_tests,
+                            mutation_packages=mutation_packages,
+                            mutation_auto_install=mutation_auto_install,
+                            seed=seed,
                         )
                 self.send_json(
                     200,
@@ -360,9 +376,13 @@ class Handler(SimpleHTTPRequestHandler):
 
             if self.path == "/api/mutation-analysis":
                 payload = self.read_json()
+                api_name = str(payload.get("api_name") or "api.function")
                 source_code = str(payload.get("source_code") or payload.get("documentation") or "")
                 test_code = str(payload.get("test_code") or "")
                 openai_key = str(payload.get("openai_key") or "")
+                mutation_packages = str(payload.get("mutation_packages") or "")
+                mutation_auto_install = bool(payload.get("mutation_auto_install", True))
+                seed = request_seed(payload)
                 if not source_code.strip() or not test_code.strip():
                     self.send_json(400, {"error": "Source code and test code are required."})
                     return
@@ -370,7 +390,11 @@ class Handler(SimpleHTTPRequestHandler):
                     analysis = mutation_analysis_for_test(
                         source_code=source_code,
                         test_code=test_code,
+                        api_name=api_name,
                         model=METRICS_MODEL,
+                        mutation_packages=mutation_packages,
+                        mutation_auto_install=mutation_auto_install,
+                        seed=seed,
                     )
                 self.send_json(200, {"analysis": analysis})
                 return
@@ -395,11 +419,12 @@ class Handler(SimpleHTTPRequestHandler):
                 invariants = payload.get("invariants") or []
                 tone = str(payload.get("tone") or "contract")
                 openai_key = str(payload.get("openai_key") or "")
+                seed = request_seed(payload)
                 if not source_code.strip() or not isinstance(invariants, list):
                     self.send_json(400, {"error": "Source code and invariants are required."})
                     return
                 markdown = strip_markdown_fences(
-                    run_project_gpt(documentation_prompt(api_name, source_code, invariants, tone), openai_key)
+                    run_project_gpt(documentation_prompt(api_name, source_code, invariants, tone), openai_key, seed=seed)
                 )
                 self.send_json(200, {"markdown": markdown, "model": MODEL})
                 return
@@ -411,11 +436,12 @@ class Handler(SimpleHTTPRequestHandler):
                 invariants = payload.get("invariants") or []
                 tone = str(payload.get("tone") or "contract")
                 openai_key = str(payload.get("openai_key") or "")
+                seed = request_seed(payload)
                 if not source_code.strip() or not isinstance(invariants, list):
                     self.send_json(400, {"error": "Source code and invariants are required."})
                     return
                 prompt = documentation_prompt(api_name, source_code, invariants, tone)
-                self.send_text_stream(stream_project_gpt(prompt, openai_key))
+                self.send_text_stream(stream_project_gpt(prompt, openai_key, seed=seed))
                 return
 
             self.send_json(404, {"error": "Unknown endpoint."})
