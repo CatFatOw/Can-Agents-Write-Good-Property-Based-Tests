@@ -9,6 +9,7 @@ import os
 import sys
 import importlib.util
 import tempfile, shutil
+import textwrap
 from pathlib import Path
 
 OPENAI_SEED = 42
@@ -218,6 +219,13 @@ def inferred_mutation_packages(source_code, test_code):
     return packages
 
 
+def mutation_deps_dir(temp_dir):
+    """Directory where mutation packages get pip-installed. Must be a subdirectory:
+    mutmut strips the project root itself from sys.path, so packages installed
+    directly into temp_dir would be unimportable during the mutation runs."""
+    return Path(temp_dir) / "mutation_deps"
+
+
 def install_mutation_packages(temp_dir, mutation_packages, source_code="", test_code="", auto_install=True):
     packages = parse_mutation_packages(mutation_packages)
     if auto_install:
@@ -235,7 +243,7 @@ def install_mutation_packages(temp_dir, mutation_packages, source_code="", test_
             "install",
             "--quiet",
             "--target",
-            str(temp_dir),
+            str(mutation_deps_dir(temp_dir)),
             *packages,
         ],
         cwd=temp_dir,
@@ -252,16 +260,30 @@ def install_mutation_packages(temp_dir, mutation_packages, source_code="", test_
     return ""
 
 
+def mutation_subprocess_env(temp_dir):
+    """Put the deps directory on PYTHONPATH so pytest/mutmut subprocesses can import
+    the packages installed by install_mutation_packages. The temp dir root itself
+    would not work: mutmut removes it from sys.path before running the tests."""
+    env = os.environ.copy()
+    python_path = [str(mutation_deps_dir(temp_dir))]
+    if env.get("PYTHONPATH"):
+        python_path.append(env["PYTHONPATH"])
+    env["PYTHONPATH"] = os.pathsep.join(python_path)
+    return env
+
+
 
 def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True, seed=OPENAI_SEED):
     """Function runs a deep analysis on all survived mutants, and then uses GPT to provided a in-depth summary
     high, medium, low on the criticality of the mutants killed/not killed
     """
+    mutation_env = mutation_subprocess_env(working_dir)
     survived_mutants = subprocess.run(
         ["mutmut","results"],
         cwd=working_dir,
         capture_output=True,
         text=True,
+        env=mutation_env,
     )
     output = []
     client = OpenAI()
@@ -279,6 +301,7 @@ def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True, seed=OPEN
             cwd=working_dir,
             capture_output=True,
             text=True,
+            env=mutation_env,
         )
         output.append(
             f"Mutant ID: {mutant_id}\n"
@@ -514,15 +537,17 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
 
 
                     # 3. Create mutmut config setup.cfg
+                    # textwrap.dedent so the written file has no leading indentation:
+                    # indented lines are invalid INI and make pytest/mutmut reject the config
                     setup_path = temp_dir / "setup.cfg"
                     setup_path.write_text(
-                        """
+                        textwrap.dedent("""
                         [mutmut]
                         paths_to_mutate=source.py
                         mutate_only_covered_lines=true
                         pytest_add_cli_args_test_selection=.
-                        """.strip(), encoding="utf-8",
-                        
+                        """).strip(), encoding="utf-8",
+
                     )
 
                     mutation_error = install_mutation_packages(
@@ -533,12 +558,17 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                         auto_install=mutation_auto_install,
                     )
 
+                    # Subprocesses need the temp dir on PYTHONPATH to import source.py
+                    # and the packages installed above
+                    mutation_env = mutation_subprocess_env(temp_dir)
+
                     if not mutation_error:
                         clean_test_output = subprocess.run(
                             [sys.executable, "-m", "pytest", "-q", str(test_path.name)],
                             cwd=temp_dir,
                             capture_output=True,
-                            text=True
+                            text=True,
+                            env=mutation_env,
                         )
                         if clean_test_output.returncode != 0:
                             mutation_error = (
@@ -553,8 +583,8 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                             ["mutmut", "run"],
                             cwd=temp_dir,
                             capture_output=True,
-                            text=True
-
+                            text=True,
+                            env=mutation_env,
                         )
 
                         output = mutmut_output.stdout
@@ -657,14 +687,16 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
         test_path = temp_dir / "test_invariant.py"
         test_path.write_text(prepare_mutation_test_code(test_code, api_name), encoding="utf-8")
 
+        # textwrap.dedent so the written file has no leading indentation:
+        # indented lines are invalid INI and make pytest/mutmut reject the config
         setup_path = temp_dir / "setup.cfg"
         setup_path.write_text(
-            """
+            textwrap.dedent("""
             [mutmut]
             paths_to_mutate=source.py
             mutate_only_covered_lines=true
             pytest_add_cli_args_test_selection=.
-            """.strip(), encoding="utf-8",
+            """).strip(), encoding="utf-8",
         )
 
         mutation_error = install_mutation_packages(
@@ -683,11 +715,16 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
                 "```"
             )
 
+        # Subprocesses need the temp dir on PYTHONPATH to import source.py
+        # and the packages installed above
+        mutation_env = mutation_subprocess_env(temp_dir)
+
         clean_test_output = subprocess.run(
             [sys.executable, "-m", "pytest", "-q", str(test_path.name)],
             cwd=temp_dir,
             capture_output=True,
             text=True,
+            env=mutation_env,
         )
         if clean_test_output.returncode != 0:
             return (
@@ -703,5 +740,6 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
             cwd=temp_dir,
             capture_output=True,
             text=True,
+            env=mutation_env,
         )
         return analyze_mutants(temp_dir, model=model, streaming=False, seed=seed)
