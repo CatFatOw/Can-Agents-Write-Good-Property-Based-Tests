@@ -396,7 +396,10 @@ class Handler(SimpleHTTPRequestHandler):
                         mutation_auto_install=mutation_auto_install,
                         seed=seed,
                     )
-                self.send_json(200, {"analysis": analysis})
+                if isinstance(analysis, dict):
+                    self.send_json(200, analysis)
+                else:
+                    self.send_json(200, {"analysis": analysis, "mutants": []})
                 return
 
             if self.path == "/api/rerun-test":

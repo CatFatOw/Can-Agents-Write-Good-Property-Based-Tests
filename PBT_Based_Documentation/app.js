@@ -3,6 +3,7 @@ const documentationInput = document.querySelector("#documentation");
 const apiNameInput = document.querySelector("#api-name");
 const sourceObjectInput = document.querySelector("#source-object");
 const lookupButton = document.querySelector("#lookup-button");
+const themeToggle = document.querySelector("#theme-toggle");
 const toneInput = document.querySelector("#tone");
 const openaiKeyInput = document.querySelector("#openai-key");
 const openaiSeedInput = document.querySelector("#openai-seed");
@@ -52,6 +53,7 @@ let activeGeneratedDocId = "";
 let inactivityTimer = 0;
 const requestCache = new Map();
 const GENERATED_DOCS_TTL_MS = 10 * 60 * 1000;
+const DARK_MODE_STORAGE_KEY = "invariant-docs-dark-mode";
 
 const exampleDocs = {
   "numpy-linspace": {
@@ -78,6 +80,18 @@ const docsExamples = {
   }
 };
 
+function applyTheme(mode) {
+  const dark = mode === "dark";
+  document.body.classList.toggle("dark-mode", dark);
+  if (themeToggle) {
+    themeToggle.setAttribute("aria-pressed", dark ? "true" : "false");
+    themeToggle.textContent = dark ? "Light" : "Dark";
+    themeToggle.title = dark ? "Switch to light mode" : "Switch to dark mode";
+  }
+}
+
+applyTheme(localStorage.getItem(DARK_MODE_STORAGE_KEY) || "light");
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({
     "&": "&amp;",
@@ -91,6 +105,14 @@ function escapeHtml(value) {
 function invariantText(invariant) {
   if (typeof invariant === "string") return invariant;
   return invariant?.invariant || invariant?.text || invariant?.claim || invariant?.description || "";
+}
+
+function normalizeInvariantKey(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[`*_~()[\]{}:;,.!?-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function numberFromUnknown(value) {
@@ -142,6 +164,7 @@ function invariantTexts(invariants) {
 function renderInlineMarkdown(value) {
   return escapeHtml(value)
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
 }
@@ -189,13 +212,33 @@ function renderMarkdown(markdown) {
       continue;
     }
 
-    if (/^- /.test(line.trim())) {
+    if (/^[-*] /.test(line.trim())) {
       const items = [];
-      while (index < lines.length && /^- /.test(lines[index].trim())) {
+      while (index < lines.length && /^[-*] /.test(lines[index].trim())) {
         items.push(lines[index].trim().slice(2));
         index += 1;
       }
       html.push(`<ul>${items.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join("")}</ul>`);
+      continue;
+    }
+
+    if (/^\d+\.\s+/.test(line.trim())) {
+      const items = [];
+      while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
+        items.push(lines[index].trim().replace(/^\d+\.\s+/, ""));
+        index += 1;
+      }
+      html.push(`<ol>${items.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join("")}</ol>`);
+      continue;
+    }
+
+    if (/^>\s?/.test(line.trim())) {
+      const quotes = [];
+      while (index < lines.length && /^>\s?/.test(lines[index].trim())) {
+        quotes.push(lines[index].trim().replace(/^>\s?/, ""));
+        index += 1;
+      }
+      html.push(`<blockquote>${quotes.map(renderInlineMarkdown).join("<br>")}</blockquote>`);
       continue;
     }
 
@@ -209,7 +252,7 @@ function renderMarkdown(markdown) {
 
     const paragraph = [line.trim()];
     index += 1;
-    while (index < lines.length && lines[index].trim() && !/^(#{1,4})\s+/.test(lines[index]) && !lines[index].startsWith("```") && !/^- /.test(lines[index].trim()) && !/^\|.+\|$/.test(lines[index].trim())) {
+    while (index < lines.length && lines[index].trim() && !/^(#{1,4})\s+/.test(lines[index]) && !lines[index].startsWith("```") && !/^[-*] /.test(lines[index].trim()) && !/^\d+\.\s+/.test(lines[index].trim()) && !/^>\s?/.test(lines[index].trim()) && !/^\|.+\|$/.test(lines[index].trim())) {
       paragraph.push(lines[index].trim());
       index += 1;
     }
@@ -696,9 +739,16 @@ function confidenceLabel(metric) {
   return "LOW";
 }
 
-function metricForInvariant(invariant) {
+function metricForInvariant(invariant, index = -1) {
   const text = invariantText(invariant);
-  return currentMetrics.find((metric) => metric.invariant === text);
+  const exact = currentMetrics.find((metric) => metric.invariant === text);
+  if (exact) return exact;
+
+  const key = normalizeInvariantKey(text);
+  const normalized = currentMetrics.find((metric) => normalizeInvariantKey(metric.invariant) === key);
+  if (normalized) return normalized;
+
+  return currentMetrics[index] || null;
 }
 
 function metricMarkup(metric) {
@@ -830,7 +880,7 @@ async function renderInvariantReviewAnimated(invariants) {
   renderInvariantReview([]);
   const list = document.querySelector("#invariant-list");
   for (const [index, invariant] of invariants.entries()) {
-    const metric = metricForInvariant(invariant);
+    const metric = metricForInvariant(invariant, index);
     const wrapper = document.createElement("label");
     wrapper.className = "invariant-item invariant-enter";
     wrapper.dataset.index = String(index);
@@ -852,7 +902,7 @@ function renderInvariantReviewWithMetrics(invariants, loading = false) {
   renderInvariantReview([]);
   const list = document.querySelector("#invariant-list");
   list.innerHTML = invariants.map((invariant, index) => {
-    const metric = metricForInvariant(invariant);
+    const metric = metricForInvariant(invariant, index);
     const range = invariantRange(invariant);
     return `
       <label class="invariant-item" data-index="${index}">
@@ -869,6 +919,96 @@ function renderInvariantReviewWithMetrics(invariants, loading = false) {
     `;
   }).join("");
   attachInvariantHoverHandlers();
+}
+
+function mutationSeverity(mutant) {
+  const text = `${mutant?.severity || ""} ${mutant?.status || ""} ${mutant?.raw || ""}`.toLowerCase();
+  if (text.includes("severe") || text.includes("high")) return "severe";
+  if (text.includes("medium") || text.includes("suspicious")) return "medium";
+  if (text.includes("low") || text.includes("equivalent")) return "low";
+  return "survived";
+}
+
+function mutationCountsMarkup(metric) {
+  const counts = metric?.mutation_counts || {};
+  const entries = [
+    ["killed", "Killed"],
+    ["survived", "Survived"],
+    ["no_tests", "No tests"],
+    ["timeout", "Timeout"],
+    ["suspicious", "Suspicious"],
+    ["skipped", "Skipped"],
+  ].filter(([key]) => counts[key] !== undefined && counts[key] !== null && counts[key] !== "");
+
+  if (!entries.length) return "";
+  return `
+    <div class="mutation-counts" aria-label="Mutation counts">
+      ${entries.map(([key, label]) => `
+        <span class="mutation-count mutation-count-${key}">
+          <strong>${escapeHtml(counts[key])}</strong>
+          ${label}
+        </span>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderSurvivedMutants(metric, index) {
+  const mutants = Array.isArray(metric?.mutants) ? metric.mutants : [];
+  if (!mutants.length) {
+    return `
+      <div class="mutation-empty">
+        ${metric?.mutation_score === 1 ? "No survived mutants for this invariant." : "Run mutation analysis to list survived mutants."}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="survived-mutants">
+      ${mutants.map((mutant, mutantIndex) => {
+        const severity = mutationSeverity(mutant);
+        const title = mutant.id || `Survived mutant ${mutantIndex + 1}`;
+        return `
+          <details class="survived-mutant survived-mutant-${severity}">
+            <summary>
+              <span class="survived-mutant-title">${escapeHtml(title)}</span>
+              <span class="survived-mutant-badge">${escapeHtml(severity)}</span>
+            </summary>
+            ${mutant.raw ? `<p class="survived-mutant-status">${escapeHtml(mutant.raw)}</p>` : ""}
+            ${mutant.diff ? `<pre class="mutation-diff"><code>${escapeHtml(mutant.diff)}</code></pre>` : ""}
+            ${mutant.stderr ? `<pre class="mutation-stderr"><code>${escapeHtml(mutant.stderr)}</code></pre>` : ""}
+            <button type="button" class="secondary-button retest-mutants-button" data-retest-index="${index}">Retest mutants</button>
+          </details>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function renderMutationReport(metric, index) {
+  if (!showMutationTestingInput.checked && !metric?.mutation_analysis && !metric?.mutants) {
+    return "";
+  }
+  return `
+    <div class="mutation-report">
+      <div class="mutation-report-header">
+        <div>
+          <p class="eyebrow">Mutation testing</p>
+          <h4>${metric?.mutation_score === null || metric?.mutation_score === undefined ? "Mutation details" : `Mutation score ${formatScore(metric.mutation_score)}`}</h4>
+        </div>
+        <button type="button" class="secondary-button retest-mutants-button" data-retest-index="${index}">Retest mutants</button>
+      </div>
+      ${mutationCountsMarkup(metric)}
+      ${renderSurvivedMutants(metric, index)}
+      ${metric?.mutation_error ? `<p class="metric-error">${escapeHtml(metric.mutation_error)}</p>` : ""}
+      ${metric?.mutation_analysis ? `
+        <details class="mutation-analysis-copy">
+          <summary>Analysis notes</summary>
+          <div class="mutation-analysis-markdown">${renderMarkdown(metric.mutation_analysis)}</div>
+        </details>
+      ` : ""}
+    </div>
+  `;
 }
 
 function renderTestsPanel() {
@@ -901,11 +1041,7 @@ function renderTestsPanel() {
           <div class="test-invariant-copy">${renderMarkdown(metric.invariant || "")}</div>
           ${metric.explanation ? `<p class="metric-explanation">${escapeHtml(metric.explanation)}</p>` : ""}
           ${metric.error ? `<p class="metric-error">${escapeHtml(metric.error)}</p>` : ""}
-          ${metric.mutation_analysis ? `
-            <div class="mutation-report">
-              ${renderMarkdown(metric.mutation_analysis)}
-            </div>
-          ` : ""}
+          ${renderMutationReport(metric, index)}
           <label class="test-editor">
             <span>Edit or paste a property-based test</span>
             <textarea data-test-editor="${index}" rows="11">${escapeHtml(metric.test_code || "")}</textarea>
@@ -972,7 +1108,10 @@ async function runMutationAnalysis(index, button) {
 
     currentMetrics[index] = {
       ...metric,
-      mutation_analysis: data.analysis || ""
+      mutation_analysis: data.analysis || "",
+      mutants: Array.isArray(data.mutants) ? data.mutants : [],
+      mutation_counts: data.mutation_counts || metric.mutation_counts || {},
+      mutation_score: data.mutation_score ?? metric.mutation_score
     };
     selectedTestIndex = index;
     renderInvariantReviewWithMetrics(currentInvariants);
@@ -1230,6 +1369,17 @@ testsPanel.addEventListener("click", async (event) => {
     return;
   }
 
+  const retestButton = event.target.closest(".retest-mutants-button");
+  if (retestButton) {
+    event.preventDefault();
+    try {
+      await runMutationAnalysis(Number(retestButton.dataset.retestIndex || 0), retestButton);
+    } catch (error) {
+      renderError(error.message || "Could not retest the survived mutants.", "Mutation retest failed", "Could not retest mutants");
+    }
+    return;
+  }
+
   const button = event.target.closest(".rerun-test-button");
   if (!button) return;
   try {
@@ -1248,6 +1398,14 @@ docsOpenButton.addEventListener("click", () => {
 generatedDocsButton.addEventListener("click", () => {
   showGeneratedDoc();
 });
+
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    const nextMode = document.body.classList.contains("dark-mode") ? "light" : "dark";
+    localStorage.setItem(DARK_MODE_STORAGE_KEY, nextMode);
+    applyTheme(nextMode);
+  });
+}
 
 generatedDocsPanel.addEventListener("click", (event) => {
   const button = event.target.closest(".generated-doc-tab");

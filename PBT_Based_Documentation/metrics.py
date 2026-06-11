@@ -80,6 +80,18 @@ def confidence_from_scores(validity, soundness):
     return confidence, score
 
 
+def list_from_unknown(value):
+    if value is None or value == "":
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return list(value)
+    if isinstance(value, str):
+        return re.findall(r"\d+", value)
+    return [value]
+
+
 def evaluate_pbt_test(source_code, invariant, test_code, api_name="api.function"):
     """Run one property-based test and calculate validity/soundness metrics."""
     output = strip_markdown_fences(test_code)
@@ -346,41 +358,110 @@ def mutation_subprocess_env(temp_dir):
     return env
 
 
+def parse_mutation_summary(output):
+    emoji_matches = re.findall(
+        r"🎉\s+(\d+)\s+🫥\s+(\d+)\s+⏰\s+(\d+)\s+🤔\s+(\d+)\s+🙁\s+(\d+)\s+🔇\s+(\d+)\s+🧙\s+(\d+)",
+        output or "",
+    )
+    if emoji_matches:
+        killed, no_tests, timeout, suspicious, survived, skipped, wizard = map(int, emoji_matches[-1])
+        return {
+            "killed": killed,
+            "no_tests": no_tests,
+            "timeout": timeout,
+            "suspicious": suspicious,
+            "survived": survived,
+            "skipped": skipped,
+            "wizard": wizard,
+        }
 
-def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True, seed=OPENAI_SEED):
-    """Function runs a deep analysis on all survived mutants, and then uses GPT to provided a in-depth summary
-    high, medium, low on the criticality of the mutants killed/not killed
-    """
+    summary = {
+        "killed": len(re.findall(r"\bkilled\b", output or "", re.I)),
+        "survived": len(re.findall(r"\bsurvived\b", output or "", re.I)),
+        "no_tests": len(re.findall(r"\b(no tests?|not covered)\b", output or "", re.I)),
+        "timeout": len(re.findall(r"\btimeout\b", output or "", re.I)),
+        "suspicious": len(re.findall(r"\bsuspicious\b", output or "", re.I)),
+        "skipped": len(re.findall(r"\bskipped\b", output or "", re.I)),
+        "wizard": len(re.findall(r"\bwizard\b", output or "", re.I)),
+    }
+    return summary if any(summary.values()) else {}
+
+
+def mutation_score_from_summary(summary):
+    scored_mutants = (
+        summary.get("killed", 0)
+        + summary.get("survived", 0)
+        + summary.get("no_tests", 0)
+        + summary.get("timeout", 0)
+        + summary.get("suspicious", 0)
+    )
+    if not scored_mutants:
+        return None
+    return summary.get("killed", 0) / scored_mutants
+
+
+def parse_mutmut_result_line(line):
+    text = line.strip()
+    if not text:
+        return None
+    mutant_id, _, status = text.partition(":")
+    if not status:
+        parts = text.split()
+        mutant_id = parts[0] if parts else text
+        status = " ".join(parts[1:])
+    status = status.strip() or "unknown"
+    return {
+        "id": mutant_id.strip(),
+        "status": status,
+        "raw": text,
+    }
+
+
+def collect_survived_mutants(working_dir):
     mutation_env = mutation_subprocess_env(working_dir)
     survived_mutants = subprocess.run(
-        ["mutmut","results"],
+        ["mutmut", "results"],
         cwd=working_dir,
         capture_output=True,
         text=True,
         env=mutation_env,
     )
-    output = []
-    client = OpenAI()
-            
-
-    # List of all mutants that have survived :D
-    all_survived_mutants = survived_mutants.stdout.splitlines()
-    for survived in all_survived_mutants:
-        mutant_id = survived.split(":")[0].strip()
-        if not mutant_id:
+    mutants = []
+    for line in survived_mutants.stdout.splitlines():
+        parsed = parse_mutmut_result_line(line)
+        if not parsed or "survived" not in parsed["status"].lower():
             continue
-        # show why the mutant was not killed 
         analysis = subprocess.run(
-            ["mutmut", "show", mutant_id],
+            ["mutmut", "show", parsed["id"]],
             cwd=working_dir,
             capture_output=True,
             text=True,
             env=mutation_env,
         )
+        mutants.append({
+            **parsed,
+            "diff": analysis.stdout.strip(),
+            "stderr": analysis.stderr.strip(),
+        })
+    return mutants
+
+
+
+def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True, seed=OPENAI_SEED, survived_mutants=None):
+    """Function runs a deep analysis on all survived mutants, and then uses GPT to provided a in-depth summary
+    high, medium, low on the criticality of the mutants killed/not killed
+    """
+    output = []
+    client = OpenAI()
+            
+
+    # List of all mutants that have survived :D
+    for survived in survived_mutants or collect_survived_mutants(working_dir):
         output.append(
-            f"Mutant ID: {mutant_id}\n"
-            f"STDOUT:\n{analysis.stdout}\n"
-            f"STDERR:\n{analysis.stderr}\n"
+            f"Mutant ID: {survived['id']}\n"
+            f"STATUS: {survived.get('status', '')}\n"
+            f"STDOUT:\n{survived.get('diff', '')}\n"
+            f"STDERR:\n{survived.get('stderr', '')}\n"
             "END OF ANALYSIS"
         )
 
@@ -590,9 +671,10 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             score = float(data.get("score", 0))
             explanation = str(data.get("explanation", ""))
             test_code = str(data.get("test_code", ""))
-            lineno = list(data.get("lineno", []))
+            lineno = list_from_unknown(data.get("lineno"))
             covered_mutants_score = None
             mutation_error = ""
+            mutation_counts = {}
 
             # If the user selected to do mutmut mutation testing
             if show_mutation_tests:
@@ -673,47 +755,10 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                     else:
                         output = ""
                         mutation_stderr = ""
-                    # Match the output to closer format :D
-
-
-                    matches = re.findall(
-    r"🎉\s+(\d+)\s+🫥\s+(\d+)\s+⏰\s+(\d+)\s+🤔\s+(\d+)\s+🙁\s+(\d+)\s+🔇\s+(\d+)\s+🧙\s+(\d+)",
-    output
-)
-
-                    if matches:
-                        killed, no_tests, timeout, suspicious, survived, skipped, wizard = map(int, matches[-1])
-
-                        metrics = {
-                            "killed": killed,
-                            "no_tests": no_tests,
-                            "timeout": timeout,
-                            "suspicious": suspicious,
-                            "survived": survived,
-                            "skipped": skipped,
-                            "wizard": wizard,
-                        }
-                        metrics["total_mutants"] = (
-                            metrics["killed"]
-                            + metrics["no_tests"]
-                            + metrics["timeout"]
-                            + metrics["suspicious"]
-                            + metrics["survived"]
-                            + metrics["skipped"]
-                            + metrics["wizard"]
-                        )
-
-                        # Calculate the mutation score. Killed mutants are good;
-                        # survived/no-test/timeouts/suspicious mutants lower the score.
-                        scored_mutants = (
-                            metrics["killed"]
-                            + metrics["survived"]
-                            + metrics["no_tests"]
-                            + metrics["timeout"]
-                            + metrics["suspicious"]
-                        )
-                        if scored_mutants:
-                            covered_mutants_score = metrics["killed"] / scored_mutants
+                    mutation_counts = parse_mutation_summary(output)
+                    if mutation_counts:
+                        mutation_counts["total_mutants"] = sum(mutation_counts.values())
+                        covered_mutants_score = mutation_score_from_summary(mutation_counts)
                     elif not mutation_error:
                         mutation_error = (mutation_stderr.strip() or output.strip() or "mutmut did not return a parseable summary.")
 
@@ -737,11 +782,12 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             if show_mutation_tests:
                 result["mutation_score"] = covered_mutants_score
                 result["mutation_error"] = mutation_error
+                result["mutation_counts"] = mutation_counts
 
             results.append(result)
 
         except Exception as e:
-            results.append({
+            result = {
                 "invariant": test_invariant,
                 "test_code": "",
                 "validity": 0,
@@ -750,7 +796,12 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                 "score": 0,
                 "explanation": "Could not generate or evaluate a metric for this invariant.",
                 "error": str(e)
-            })
+            }
+            if show_mutation_tests:
+                result["mutation_score"] = None
+                result["mutation_error"] = str(e)
+                result["mutation_counts"] = {}
+            results.append(result)
 
     return {"results": results}
 
@@ -787,13 +838,16 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
         )
         write_mutation_sitecustomize(temp_dir, source_code, test_code, api_name)
         if mutation_error:
-            return (
-                "# Mutation Analysis Unavailable\n\n"
-                "The requested temporary mutation packages could not be installed.\n\n"
-                "```text\n"
-                f"{mutation_error}\n"
-                "```"
-            )
+            return {
+                "analysis": (
+                    "# Mutation Analysis Unavailable\n\n"
+                    "The requested temporary mutation packages could not be installed.\n\n"
+                    "```text\n"
+                    f"{mutation_error}\n"
+                    "```"
+                ),
+                "mutants": [],
+            }
 
         # Subprocesses need the temp dir on PYTHONPATH to import source.py
         # and the packages installed above
@@ -807,16 +861,19 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
             env=mutation_env,
         )
         if clean_test_output.returncode != 0:
-            return (
-                "# Mutation Analysis Unavailable\n\n"
-                "The generated property-based test failed against the temporary source.py before mutmut could run.\n\n"
-                "```text\n"
-                f"{clean_test_output.stdout.strip() or clean_test_output.stderr.strip()}\n"
-                "```"
-            )
+            return {
+                "analysis": (
+                    "# Mutation Analysis Unavailable\n\n"
+                    "The generated property-based test failed against the temporary source.py before mutmut could run.\n\n"
+                    "```text\n"
+                    f"{clean_test_output.stdout.strip() or clean_test_output.stderr.strip()}\n"
+                    "```"
+                ),
+                "mutants": [],
+            }
 
         try:
-            subprocess.run(
+            mutmut_run = subprocess.run(
                 ["mutmut", "run"],
                 cwd=temp_dir,
                 capture_output=True,
@@ -824,8 +881,18 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
                 env=mutation_env,
             )
         except FileNotFoundError:
-            return (
-                "# Mutation Analysis Unavailable\n\n"
-                "mutmut is not installed or not on PATH in the server environment."
-            )
-        return analyze_mutants(temp_dir, model=model, streaming=False, seed=seed)
+            return {
+                "analysis": (
+                    "# Mutation Analysis Unavailable\n\n"
+                    "mutmut is not installed or not on PATH in the server environment."
+                ),
+                "mutants": [],
+            }
+        mutants = collect_survived_mutants(temp_dir)
+        summary = parse_mutation_summary(mutmut_run.stdout)
+        return {
+            "analysis": analyze_mutants(temp_dir, model=model, streaming=False, seed=seed, survived_mutants=mutants),
+            "mutants": mutants,
+            "mutation_counts": summary,
+            "mutation_score": mutation_score_from_summary(summary),
+        }

@@ -49,7 +49,7 @@ def _wrapit(obj, method, *args, **kwds):
 
 
 def _wrapfunc(obj, method, *args, **kwds):
-    bound = getattr(obj, method, None)
+    bound = None
     if bound is None:
         return _wrapit(obj, method, *args, **kwds)
 
