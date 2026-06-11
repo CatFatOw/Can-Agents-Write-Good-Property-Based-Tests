@@ -152,8 +152,8 @@ def prepare_mutation_test_code(test_code, api_name):
     return f"import source\nfrom source import {attr_name}\n" + mutation_test_code
 
 
-def mutation_bootstrap_modules(api_name):
-    """Modules whose globals make inspected source snippets importable."""
+def prepare_mutation_source_code(source_code, api_name):
+    """Make inspected source snippets importable enough for mutmut."""
     module_name, _, attr_name = api_name.rpartition(".")
     import_modules = [module_name] if module_name else []
 
@@ -176,92 +176,18 @@ def mutation_bootstrap_modules(api_name):
             if numpy_module not in import_modules:
                 import_modules.append(numpy_module)
 
-    return import_modules
-
-
-def strip_function_decorators(source_code):
-    """Remove decorators from top-level functions. mutmut refuses to mutate
-    decorated functions (except staticmethod/classmethod), so e.g. numpy's
-    @array_function_dispatch would silently produce zero mutants."""
-    try:
-        tree = ast.parse(source_code)
-    except SyntaxError:
-        return source_code
-
-    decorator_lines = set()
-    for node in tree.body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            for decorator in node.decorator_list:
-                decorator_lines.update(range(decorator.lineno, (decorator.end_lineno or decorator.lineno) + 1))
-    if not decorator_lines:
-        return source_code
-
-    kept_lines = [
-        line for lineno, line in enumerate(source_code.splitlines(), start=1)
-        if lineno not in decorator_lines
+    bootstrap_lines = [
+        "import importlib as _codex_importlib",
     ]
-    return "\n".join(kept_lines)
-
-
-def prepare_mutation_source_code(source_code, api_name):
-    """Make inspected source snippets importable enough for mutmut."""
-    source_code = strip_function_decorators(source_code)
-
-    # Plain import statements only: mutmut rewrites module-level code when copying
-    # source.py into mutants/ and corrupts string literals there, so the bootstrap
-    # cannot use importlib.import_module("name") strings
-    bootstrap_lines = []
-    import_modules = mutation_bootstrap_modules(api_name)
-    if import_modules:
-        # The globals().update calls also overwrite this module's identity dunders,
-        # which breaks mutmut's trampoline bookkeeping, so save and restore them
-        bootstrap_lines.append("_codex_dunders = __name__, __file__, __package__, __spec__, __loader__")
-    for index, import_module in enumerate(import_modules):
-        alias = f"_codex_module_{index}"
+    for import_module in import_modules:
         bootstrap_lines.extend([
             "try:",
-            f"    import {import_module} as {alias}",
-            f"    globals().update({alias}.__dict__)",
+            f"    globals().update(_codex_importlib.import_module({import_module!r}).__dict__)",
             "except Exception:",
             "    pass",
         ])
-    if import_modules:
-        bootstrap_lines.append("__name__, __file__, __package__, __spec__, __loader__ = _codex_dunders")
 
     return "\n".join(bootstrap_lines) + "\n\n" + source_code
-
-
-def prepare_mutation_sitecustomize(source_code, test_code, api_name):
-    """Preload every module the source and tests need at interpreter startup.
-    mutmut unloads the modules its in-process pytest runs loaded, and C-extension
-    packages such as numpy cannot be imported twice per process, so they must
-    already be loaded before mutmut starts running tests."""
-    preload_modules = list(mutation_bootstrap_modules(api_name))
-    for module_name in sorted(imported_top_level_modules(source_code, test_code)):
-        if module_name in MUTATION_IMPORT_SKIP or module_name in preload_modules:
-            continue
-        preload_modules.append(module_name)
-
-    sitecustomize_lines = []
-    for preload_module in preload_modules:
-        sitecustomize_lines.extend([
-            "try:",
-            f"    __import__({preload_module!r})",
-            "except Exception:",
-            "    pass",
-        ])
-    return "\n".join(sitecustomize_lines) + "\n"
-
-
-def write_mutation_sitecustomize(temp_dir, source_code, test_code, api_name):
-    """Place the preload hook on PYTHONPATH so every pytest/mutmut subprocess runs it."""
-    deps_dir = mutation_deps_dir(temp_dir)
-    deps_dir.mkdir(exist_ok=True)
-    sitecustomize_path = deps_dir / "sitecustomize.py"
-    sitecustomize_path.write_text(
-        prepare_mutation_sitecustomize(source_code, test_code, api_name),
-        encoding="utf-8",
-    )
 
 
 def parse_mutation_packages(mutation_packages):
@@ -713,10 +639,9 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                         test_code=test_code,
                         auto_install=mutation_auto_install,
                     )
-                    write_mutation_sitecustomize(temp_dir, source_code, test_code, api_name)
 
-                    # Subprocesses need the deps dir on PYTHONPATH for the installed
-                    # packages and the sitecustomize preload hook
+                    # Subprocesses need the temp dir on PYTHONPATH to import source.py
+                    # and the packages installed above
                     mutation_env = mutation_subprocess_env(temp_dir)
 
                     if not mutation_error:
@@ -736,22 +661,18 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
 
                     # Run the terminal commands :D 
                     if not mutation_error:
-                        try:
-                            mutmut_output = subprocess.run(
-                                ["mutmut", "run"],
-                                cwd=temp_dir,
-                                capture_output=True,
-                                text=True,
-                                env=mutation_env,
-                            )
-                            output = mutmut_output.stdout
-                            mutation_stderr = mutmut_output.stderr
-                            if mutmut_output.returncode not in {0, 1}:
-                                mutation_error = mutation_stderr.strip() or output.strip()
-                        except FileNotFoundError:
-                            mutation_error = "mutmut is not installed or not on PATH in the server environment."
-                            output = ""
-                            mutation_stderr = ""
+                        mutmut_output = subprocess.run(
+                            ["mutmut", "run"],
+                            cwd=temp_dir,
+                            capture_output=True,
+                            text=True,
+                            env=mutation_env,
+                        )
+
+                        output = mutmut_output.stdout
+                        mutation_stderr = mutmut_output.stderr
+                        if mutmut_output.returncode not in {0, 1}:
+                            mutation_error = mutation_stderr.strip() or output.strip()
                     else:
                         output = ""
                         mutation_stderr = ""
@@ -836,7 +757,6 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
             test_code=test_code,
             auto_install=mutation_auto_install,
         )
-        write_mutation_sitecustomize(temp_dir, source_code, test_code, api_name)
         if mutation_error:
             return {
                 "analysis": (
@@ -872,6 +792,7 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
                 "mutants": [],
             }
 
+<<<<<<< HEAD
         try:
             mutmut_run = subprocess.run(
                 ["mutmut", "run"],
@@ -896,3 +817,13 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
             "mutation_counts": summary,
             "mutation_score": mutation_score_from_summary(summary),
         }
+=======
+        subprocess.run(
+            ["mutmut", "run"],
+            cwd=temp_dir,
+            capture_output=True,
+            text=True,
+            env=mutation_env,
+        )
+        return analyze_mutants(temp_dir, model=model, streaming=False, seed=seed)
+>>>>>>> parent of e7245ad (fix: mutation testing)
