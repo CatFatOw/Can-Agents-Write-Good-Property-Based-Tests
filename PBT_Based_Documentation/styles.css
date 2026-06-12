@@ -3290,3 +3290,132 @@ body.dark-mode .mutation-unavailable-card pre {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+
+/* Wide mutation report layout rescue. */
+body.stage-tests .workspace {
+  grid-template-columns: minmax(280px, 0.55fr) minmax(760px, 1.45fr);
+}
+
+body.stage-tests .model-card {
+  min-width: 0;
+}
+
+body.stage-tests .tests-panel {
+  overflow: visible;
+}
+
+body.stage-tests .test-list {
+  display: grid;
+  gap: 18px;
+}
+
+body.stage-tests .test-item.has-mutation-report {
+  overflow: visible;
+  border-color: rgba(182, 90, 55, 0.2);
+}
+
+body.stage-tests .test-item.has-mutation-report[open] {
+  padding: 18px;
+}
+
+body.stage-tests .test-item.has-mutation-report > summary {
+  margin-bottom: 14px;
+}
+
+body.stage-tests .test-item.has-mutation-report .mutation-report {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(120, 92, 64, 0.14);
+  background: linear-gradient(135deg, rgba(255, 250, 242, 0.88), rgba(241, 234, 223, 0.62));
+}
+
+body.stage-tests .mutation-analysis-hero {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+body.stage-tests .mutation-summary-strip {
+  justify-content: flex-start;
+}
+
+body.stage-tests .mutation-risk-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+body.stage-tests .mutation-risk-group {
+  padding: 16px;
+  min-height: auto;
+}
+
+body.stage-tests .mutation-risk-header {
+  align-items: center;
+}
+
+body.stage-tests .mutation-risk-header h5 {
+  font-size: clamp(1.1rem, 1.8vw, 1.45rem);
+  line-height: 1.05;
+}
+
+body.stage-tests .mutation-severity-chip,
+body.stage-tests .mutation-summary-pill,
+body.stage-tests .mutation-origin-chip,
+body.stage-tests .mutation-diagnostic-chip,
+body.stage-tests .mutation-group-count {
+  width: auto !important;
+  max-width: 100%;
+  min-height: 26px;
+  padding: 5px 10px;
+  border-radius: 999px !important;
+  white-space: nowrap;
+  line-height: 1;
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  text-wrap: nowrap;
+}
+
+body.stage-tests .mutation-group-help {
+  max-width: 78ch;
+  margin-top: 8px;
+  font-size: 0.98rem;
+}
+
+body.stage-tests .mutation-analysis-items {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: start;
+}
+
+body.stage-tests .mutation-analysis-item {
+  min-width: 0;
+  padding: 13px;
+}
+
+body.stage-tests .mutation-analysis-preview {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  font-size: 0.94rem;
+}
+
+body.stage-tests .mutation-analysis-detail,
+body.stage-tests .mutation-analysis-detail * {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+body.stage-tests .mutation-raw-analysis {
+  max-width: 100%;
+}
+
+body.dark-mode.stage-tests .test-item.has-mutation-report .mutation-report {
+  border-color: rgba(255, 220, 190, 0.16);
+  background: linear-gradient(135deg, rgba(43, 32, 56, 0.92), rgba(26, 21, 38, 0.9));
+}
+
+@media (max-width: 1120px) {
+  body.stage-tests .workspace {
+    grid-template-columns: 1fr;
+  }
+}

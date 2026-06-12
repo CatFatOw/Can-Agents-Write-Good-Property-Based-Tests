@@ -1266,7 +1266,7 @@ function renderTestsPanel() {
     </div>
     <div class="test-list">
       ${currentMetrics.map((metric, index) => `
-        <details class="test-item" ${index === selectedTestIndex ? "open" : ""}>
+        <details class="test-item ${metric?.mutation_analysis || metric?.mutation_error || (Array.isArray(metric?.mutants) && metric.mutants.length) ? "has-mutation-report" : ""}" ${index === selectedTestIndex ? "open" : ""}>
           <summary>
             <span class="test-summary-title">Invariant ${index + 1}</span>
             <span class="test-summary-metrics">
