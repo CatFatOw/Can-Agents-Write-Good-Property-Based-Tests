@@ -573,6 +573,9 @@ function showInputStage() {
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
+  setStage("input");
+  syncMarkdownActions();
+}
 
 runCoverageButton?.addEventListener("click", () => {
   assessCoverage();
@@ -603,10 +606,6 @@ coverageRenderedDocs?.addEventListener("mouseout", (event) => {
 });
 
 coverageSourceLines?.addEventListener("mouseout", clearCoverageHighlights);
-
-setStage("input");
-  syncMarkdownActions();
-}
 
 function showReviewStage() {
   if (!currentInvariants.length) {
@@ -789,7 +788,8 @@ function renderCoverageReport(data) {
 async function assessCoverage() {
   fillCoverageDocsFromCurrent(false);
   const docs = coverageDocsInput.value.trim();
-  if (!currentSource.trim() || !docs) {
+  const sourceCode = currentSource.trim() || documentationInput.value.trim();
+  if (!sourceCode || !docs) {
     renderError("Source code and documentation are required for coverage assessment.", "Coverage failed", "Missing coverage inputs");
     return;
   }
@@ -798,7 +798,7 @@ async function assessCoverage() {
   setStatus("review", "Assessing coverage");
   try {
     const data = await postJson("/api/coverage", {
-      source_code: currentSource,
+      source_code: sourceCode,
       docs,
       openai_key: openaiKeyInput.value.trim(),
       openai_seed: openaiSeedInput.value
