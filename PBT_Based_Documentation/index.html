@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invariant-Based Documentation generator</title>
     <link rel="icon" type="image/png" href="logo_new.png">
-    <link rel="stylesheet" href="styles.css?v=coverage-stage-13">
+    <link rel="stylesheet" href="styles.css?v=coverage-stage-18">
   </head>
   <body class="stage-review">
     <main class="app-shell">
@@ -193,7 +193,8 @@
                 <p class="eyebrow">Source lines covered</p>
                 <h3 id="coverage-score-title">0 of 0 lines</h3>
                 <p id="coverage-score-note">Run coverage, then hover highlighted documentation to reveal source evidence.</p>
-              </div>
+                  <button type="button" class="secondary-button coverage-fullscreen-button is-hidden" id="coverage-fullscreen-button">Show fullscreen</button>
+                </div>
             </div>
 
             <div class="coverage-empty" id="coverage-empty">
@@ -251,11 +252,42 @@
       </section>
     </main>
 
+
+    <div class="coverage-fullscreen-modal is-hidden" id="coverage-fullscreen-modal" role="dialog" aria-modal="true" aria-labelledby="coverage-fullscreen-title">
+      <div class="coverage-fullscreen-backdrop" data-close-coverage-fullscreen></div>
+      <section class="coverage-fullscreen-shell" aria-label="Fullscreen documentation coverage map">
+        <header class="coverage-fullscreen-header">
+          <div>
+            <p class="eyebrow">Coverage map</p>
+            <h2 id="coverage-fullscreen-title">Source and documentation evidence</h2>
+          </div>
+          <button type="button" class="secondary-button" id="coverage-fullscreen-close">Close</button>
+        </header>
+        <div class="coverage-fullscreen-grid">
+          <section class="coverage-source-map coverage-fullscreen-pane" aria-labelledby="coverage-fullscreen-source-title">
+            <div class="coverage-section-heading">
+              <p class="eyebrow">Source evidence</p>
+              <h4 id="coverage-fullscreen-source-title">Source heatmap</h4>
+            </div>
+            <pre id="coverage-fullscreen-source-lines"></pre>
+          </section>
+          <section class="coverage-doc-map coverage-fullscreen-pane" aria-labelledby="coverage-fullscreen-doc-title">
+            <div class="coverage-section-heading">
+              <p class="eyebrow">Rendered Markdown</p>
+              <h4 id="coverage-fullscreen-doc-title">Documentation</h4>
+            </div>
+            <div class="markdown-rendered coverage-rendered-docs" id="coverage-fullscreen-rendered-docs"></div>
+            <div class="coverage-doc-statements" id="coverage-fullscreen-doc-statements"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+
     <aside class="notes" aria-label="Workflow notes">
       <span>Real generation runs through the local Python backend.</span>
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=coverage-stage-13"></script>
+    <script src="app.js?v=coverage-stage-18"></script>
   </body>
 </html>

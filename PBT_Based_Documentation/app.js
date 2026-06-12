@@ -30,6 +30,12 @@ const coverageScoreNote = document.querySelector("#coverage-score-note");
 const coverageDocStatements = document.querySelector("#coverage-doc-statements");
 const coverageRenderedDocs = document.querySelector("#coverage-rendered-docs");
 const coverageSourceLines = document.querySelector("#coverage-source-lines");
+const coverageFullscreenButton = document.querySelector("#coverage-fullscreen-button");
+const coverageFullscreenModal = document.querySelector("#coverage-fullscreen-modal");
+const coverageFullscreenClose = document.querySelector("#coverage-fullscreen-close");
+const coverageFullscreenSourceLines = document.querySelector("#coverage-fullscreen-source-lines");
+const coverageFullscreenRenderedDocs = document.querySelector("#coverage-fullscreen-rendered-docs");
+const coverageFullscreenDocStatements = document.querySelector("#coverage-fullscreen-doc-statements");
 const generatedDocsTitle = document.querySelector("#generated-docs-title");
 const originalExampleDocs = document.querySelector("#original-example-docs");
 const invariantExampleDocs = document.querySelector("#invariant-example-docs");
@@ -55,6 +61,30 @@ document.body.appendChild(sourceHoverCard);
 
 let currentMarkdown = "";
 let currentCoverageData = null;
+let clickSparkId = 0;
+
+function installClickPolish() {
+  document.addEventListener("click", (event) => {
+    const target = event.target.closest("button, .coverage-doc-highlight-block, .coverage-source-line");
+    if (!target || target.disabled) return;
+    target.classList.remove("is-click-pulsing");
+    void target.offsetWidth;
+    target.classList.add("is-click-pulsing");
+    window.setTimeout(() => target.classList.remove("is-click-pulsing"), 520);
+
+    if (!target.matches("button")) return;
+    const rect = target.getBoundingClientRect();
+    const spark = document.createElement("span");
+    spark.className = "click-spark";
+    spark.style.left = `${event.clientX - rect.left}px`;
+    spark.style.top = `${event.clientY - rect.top}px`;
+    spark.dataset.sparkId = String(clickSparkId += 1);
+    target.appendChild(spark);
+    window.setTimeout(() => spark.remove(), 620);
+  });
+}
+
+installClickPolish();
 let currentInvariants = [];
 let currentMetrics = [];
 let selectedTestIndex = 0;
@@ -619,6 +649,67 @@ coverageSourceLines?.addEventListener("mouseout", (event) => {
   clearCoverageHighlights();
 });
 
+function bindCoverageHoverSurface(docStatementsRoot, renderedDocsRoot, sourceLinesRoot) {
+  docStatementsRoot?.addEventListener("mouseover", (event) => {
+    const card = event.target.closest(".coverage-doc-statement");
+    if (!card) return;
+    highlightCoverageEntry(Number(card.dataset.coverageIndex), { scrollSource: true });
+  });
+  docStatementsRoot?.addEventListener("mouseout", (event) => {
+    const next = event.relatedTarget;
+    if (next?.closest?.(".coverage-doc-statement")) return;
+    clearCoverageHighlights();
+  });
+  renderedDocsRoot?.addEventListener("mouseover", (event) => {
+    const span = event.target.closest(".coverage-doc-highlight, .coverage-doc-highlight-block");
+    if (!span) return;
+    highlightCoverageEntry(Number(span.dataset.coverageIndex), { scrollSource: true });
+  });
+  renderedDocsRoot?.addEventListener("mouseout", (event) => {
+    const next = event.relatedTarget;
+    if (next?.closest?.(".coverage-doc-highlight, .coverage-doc-highlight-block")) return;
+    clearCoverageHighlights();
+  });
+  sourceLinesRoot?.addEventListener("mouseover", (event) => {
+    const line = event.target.closest(".coverage-source-line");
+    if (!line) return;
+    const index = coverageEntryIndexForLine(Number(line.dataset.line));
+    if (index < 0) return;
+    highlightCoverageEntry(index, { scrollDoc: true });
+  });
+  sourceLinesRoot?.addEventListener("mouseout", (event) => {
+    const next = event.relatedTarget;
+    if (next?.closest?.(".coverage-source-line")) return;
+    clearCoverageHighlights();
+  });
+}
+
+bindCoverageHoverSurface(coverageFullscreenDocStatements, coverageFullscreenRenderedDocs, coverageFullscreenSourceLines);
+
+function openCoverageFullscreen() {
+  if (!currentCoverageData) return;
+  renderCoverageModalContent(currentCoverageData);
+  coverageFullscreenModal?.classList.remove("is-hidden");
+  document.body.classList.add("coverage-fullscreen-open");
+  coverageFullscreenClose?.focus();
+}
+
+function closeCoverageFullscreen() {
+  coverageFullscreenModal?.classList.add("is-hidden");
+  document.body.classList.remove("coverage-fullscreen-open");
+  clearCoverageHighlights();
+  coverageFullscreenButton?.focus();
+}
+
+coverageFullscreenButton?.addEventListener("click", openCoverageFullscreen);
+coverageFullscreenClose?.addEventListener("click", closeCoverageFullscreen);
+coverageFullscreenModal?.addEventListener("click", (event) => {
+  if (event.target?.matches?.("[data-close-coverage-fullscreen]")) closeCoverageFullscreen();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !coverageFullscreenModal?.classList.contains("is-hidden")) closeCoverageFullscreen();
+});
+
 function showReviewStage() {
   if (!currentInvariants.length) {
     showInputStage();
@@ -713,9 +804,33 @@ function coverageEntryIndexForLine(lineNumber) {
   return (currentCoverageData?.entries || []).findIndex((entry) => coverageEntryLineSet(entry).has(target));
 }
 
+function coverageDocStatementRoots() {
+  return [coverageFullscreenDocStatements].filter(Boolean);
+}
+
+function coverageRenderedDocRoots() {
+  return [coverageFullscreenRenderedDocs].filter(Boolean);
+}
+
+function coverageSourceRoots() {
+  return [coverageFullscreenSourceLines].filter(Boolean);
+}
+
+function activeCoverageRootPair() {
+  if (!coverageFullscreenModal?.classList.contains("is-hidden")) {
+    return {
+      docs: coverageFullscreenRenderedDocs,
+      statements: coverageFullscreenDocStatements,
+      source: coverageFullscreenSourceLines
+    };
+  }
+  return { docs: coverageFullscreenRenderedDocs, statements: coverageFullscreenDocStatements, source: coverageFullscreenSourceLines };
+}
+
 function scrollCoverageDocToEntry(index) {
-  const target = coverageRenderedDocs?.querySelector(`.coverage-doc-highlight-block[data-coverage-index="${index}"], .coverage-doc-highlight[data-coverage-index="${index}"]`)
-    || coverageDocStatements?.querySelector(`.coverage-doc-statement[data-coverage-index="${index}"]`);
+  const roots = activeCoverageRootPair();
+  const target = roots.docs?.querySelector(`.coverage-doc-highlight-block[data-coverage-index="${index}"], .coverage-doc-highlight[data-coverage-index="${index}"]`)
+    || roots.statements?.querySelector(`.coverage-doc-statement[data-coverage-index="${index}"]`);
   target?.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
@@ -723,7 +838,7 @@ function scrollCoverageSourceToEntry(index) {
   const entry = currentCoverageData?.entries?.[index];
   const firstLine = entry?.covered_lines?.[0];
   if (!firstLine) return;
-  coverageSourceLines
+  activeCoverageRootPair().source
     ?.querySelector(`.coverage-source-line[data-line="${Number(firstLine)}"]`)
     ?.scrollIntoView({ block: "center", behavior: "smooth" });
 }
@@ -732,24 +847,24 @@ function highlightCoverageEntry(index, options = {}) {
   const entry = currentCoverageData?.entries?.[index];
   if (!entry) return;
   const lines = coverageEntryLineSet(entry);
-  coverageDocStatements?.querySelectorAll(".coverage-doc-statement").forEach((node) => {
+  coverageDocStatementRoots().forEach((root) => root.querySelectorAll(".coverage-doc-statement").forEach((node) => {
     node.classList.toggle("is-active", Number(node.dataset.coverageIndex) === index);
-  });
-  coverageRenderedDocs?.querySelectorAll(".coverage-doc-highlight, .coverage-doc-highlight-block").forEach((node) => {
+  }));
+  coverageRenderedDocRoots().forEach((root) => root.querySelectorAll(".coverage-doc-highlight, .coverage-doc-highlight-block").forEach((node) => {
     node.classList.toggle("is-active", Number(node.dataset.coverageIndex) === index);
-  });
-  coverageSourceLines?.querySelectorAll(".coverage-source-line").forEach((node) => {
+  }));
+  coverageSourceRoots().forEach((root) => root.querySelectorAll(".coverage-source-line").forEach((node) => {
     const active = lines.has(Number(node.dataset.line));
     node.classList.toggle("is-active", active);
-  });
+  }));
   if (options.scrollDoc) scrollCoverageDocToEntry(index);
   if (options.scrollSource) scrollCoverageSourceToEntry(index);
 }
 
 function clearCoverageHighlights() {
-  coverageDocStatements?.querySelectorAll(".coverage-doc-statement.is-active").forEach((node) => node.classList.remove("is-active"));
-  coverageRenderedDocs?.querySelectorAll(".coverage-doc-highlight.is-active, .coverage-doc-highlight-block.is-active").forEach((node) => node.classList.remove("is-active"));
-  coverageSourceLines?.querySelectorAll(".coverage-source-line.is-active").forEach((node) => node.classList.remove("is-active"));
+  coverageDocStatementRoots().forEach((root) => root.querySelectorAll(".coverage-doc-statement.is-active").forEach((node) => node.classList.remove("is-active")));
+  coverageRenderedDocRoots().forEach((root) => root.querySelectorAll(".coverage-doc-highlight.is-active, .coverage-doc-highlight-block.is-active").forEach((node) => node.classList.remove("is-active")));
+  coverageSourceRoots().forEach((root) => root.querySelectorAll(".coverage-source-line.is-active").forEach((node) => node.classList.remove("is-active")));
 }
 
 function renderCoverageSourceLines(data) {
@@ -825,16 +940,49 @@ function decorateCoverageMarkdown(entries) {
     claimed.add(block);
     block.classList.add("coverage-doc-highlight-block", `confidence-${String(entry.confidence || "medium").toLowerCase()}`);
     block.dataset.coverageIndex = String(index);
+    block.dataset.coverageLines = `Lines ${entry.covered_lines.join(", ")}`;
+    block.title = `Covered source: lines ${entry.covered_lines.join(", ")}`;
     block.tabIndex = 0;
-    const chip = document.createElement("span");
-    chip.className = "coverage-doc-line-chip";
-    chip.textContent = `Lines ${entry.covered_lines.join(", ")}`;
-    block.prepend(chip);
   });
 }
 
 function renderCoverageMarkdown(markdown, entries) {
   return renderMarkdown(markdown);
+}
+
+function decorateCoverageMarkdownRoot(root, entries) {
+  const originalRoot = coverageRenderedDocs;
+  if (root === coverageRenderedDocs) {
+    decorateCoverageMarkdown(entries);
+    return;
+  }
+  const blocks = [...root.querySelectorAll("p, li, tr, blockquote")];
+  const claimed = new Set();
+  (entries || []).forEach((entry, index) => {
+    if (!entry.covered_lines?.length) return;
+    const needle = coverageStatementNeedle(entry.statement);
+    if (!needle) return;
+    const block = blocks.find((candidate) => {
+      if (claimed.has(candidate)) return false;
+      const text = normalizedCoverageText(candidate.textContent);
+      return text.includes(needle) || needle.includes(text.slice(0, Math.min(text.length, 64)));
+    });
+    if (!block) return;
+    claimed.add(block);
+    block.classList.add("coverage-doc-highlight-block", `confidence-${String(entry.confidence || "medium").toLowerCase()}`);
+    block.dataset.coverageIndex = String(index);
+    block.dataset.coverageLines = `Lines ${entry.covered_lines.join(", ")}`;
+    block.title = `Covered source: lines ${entry.covered_lines.join(", ")}`;
+    block.tabIndex = 0;
+  });
+}
+
+function renderCoverageModalContent(data) {
+  if (!coverageFullscreenSourceLines || !coverageFullscreenRenderedDocs || !coverageFullscreenDocStatements) return;
+  coverageFullscreenRenderedDocs.innerHTML = renderCoverageMarkdown(coverageDocsInput.value, data.entries || []);
+  decorateCoverageMarkdownRoot(coverageFullscreenRenderedDocs, data.entries || []);
+  coverageFullscreenSourceLines.innerHTML = renderCoverageSourceLines(data);
+  coverageFullscreenDocStatements.innerHTML = renderCoverageStatements(data);
 }
 
 function renderCoverageReport(data) {
@@ -851,10 +999,12 @@ function renderCoverageReport(data) {
   coverageScoreValue.textContent = `${Math.round(percent)}%`;
   coverageScoreTitle.textContent = `${data.covered_line_count || 0} of ${data.total_line_count || 0} lines`;
   coverageScoreNote.textContent = "Hover highlighted documentation or source lines to jump between the evidence map.";
-  coverageRenderedDocs.innerHTML = renderCoverageMarkdown(coverageDocsInput.value, data.entries || []);
-  decorateCoverageMarkdown(data.entries || []);
-  coverageDocStatements.innerHTML = renderCoverageStatements(data);
-  coverageSourceLines.innerHTML = renderCoverageSourceLines(data);
+  coverageRenderedDocs.innerHTML = `<p class="coverage-inline-message">Coverage is ready. Open the fullscreen evidence map to inspect source lines and rendered Markdown side by side.</p>`;
+  coverageDocStatements.innerHTML = "";
+  coverageSourceLines.innerHTML = "";
+  renderCoverageModalContent(data);
+  coverageResults.classList.add("coverage-results-compact");
+  coverageFullscreenButton?.classList.remove("is-hidden");
 }
 
 async function assessCoverage() {
