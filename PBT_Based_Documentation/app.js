@@ -64,15 +64,27 @@ let currentCoverageData = null;
 let clickSparkId = 0;
 
 function installClickPolish() {
-  document.addEventListener("click", (event) => {
-    const target = event.target.closest("button, .coverage-doc-highlight-block, .coverage-source-line");
-    if (!target || target.disabled) return;
+  const clickableSelector = [
+    "button",
+    "[role='button']",
+    "summary",
+    ".docs-example-choice",
+    ".generated-doc-tab",
+    ".coverage-doc-highlight-block",
+    ".coverage-source-line"
+  ].join(", ");
+
+  document.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    const target = event.target.closest(clickableSelector);
+    if (!target || target.disabled || target.getAttribute("aria-disabled") === "true") return;
+
     target.classList.remove("is-click-pulsing");
     void target.offsetWidth;
     target.classList.add("is-click-pulsing");
     window.setTimeout(() => target.classList.remove("is-click-pulsing"), 520);
 
-    if (!target.matches("button")) return;
+    if (!target.matches("button, [role='button'], summary, .docs-example-choice, .generated-doc-tab")) return;
     const rect = target.getBoundingClientRect();
     const spark = document.createElement("span");
     spark.className = "click-spark";
@@ -81,8 +93,9 @@ function installClickPolish() {
     spark.dataset.sparkId = String(clickSparkId += 1);
     target.appendChild(spark);
     window.setTimeout(() => spark.remove(), 620);
-  });
+  }, { passive: true });
 }
+
 
 installClickPolish();
 let currentInvariants = [];

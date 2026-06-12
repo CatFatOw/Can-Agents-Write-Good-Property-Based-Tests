@@ -4895,3 +4895,25 @@ body.dark-mode #coverage-fullscreen-close {
   position: relative;
   z-index: 3;
 }
+
+/* Make the ripple/pulse polish cover every button-like control. */
+button,
+[role='button'],
+summary,
+.docs-example-choice,
+.generated-doc-tab {
+  position: relative;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+summary {
+  cursor: pointer;
+}
+
+[role='button'].is-click-pulsing,
+summary.is-click-pulsing,
+.docs-example-choice.is-click-pulsing,
+.generated-doc-tab.is-click-pulsing {
+  animation: click-soft-pop 420ms cubic-bezier(.2,.9,.2,1.1) both;
+}
