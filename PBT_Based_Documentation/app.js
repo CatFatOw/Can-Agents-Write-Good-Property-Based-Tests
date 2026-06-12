@@ -584,7 +584,7 @@ runCoverageButton?.addEventListener("click", () => {
 coverageDocStatements?.addEventListener("mouseover", (event) => {
   const card = event.target.closest(".coverage-doc-statement");
   if (!card) return;
-  highlightCoverageEntry(Number(card.dataset.coverageIndex));
+  highlightCoverageEntry(Number(card.dataset.coverageIndex), { scrollSource: true });
 });
 
 coverageDocStatements?.addEventListener("mouseout", (event) => {
@@ -594,18 +594,30 @@ coverageDocStatements?.addEventListener("mouseout", (event) => {
 });
 
 coverageRenderedDocs?.addEventListener("mouseover", (event) => {
-  const span = event.target.closest(".coverage-doc-highlight");
+  const span = event.target.closest(".coverage-doc-highlight, .coverage-doc-highlight-block");
   if (!span) return;
-  highlightCoverageEntry(Number(span.dataset.coverageIndex));
+  highlightCoverageEntry(Number(span.dataset.coverageIndex), { scrollSource: true });
 });
 
 coverageRenderedDocs?.addEventListener("mouseout", (event) => {
   const next = event.relatedTarget;
-  if (next?.closest?.(".coverage-doc-highlight")) return;
+  if (next?.closest?.(".coverage-doc-highlight, .coverage-doc-highlight-block")) return;
   clearCoverageHighlights();
 });
 
-coverageSourceLines?.addEventListener("mouseout", clearCoverageHighlights);
+coverageSourceLines?.addEventListener("mouseover", (event) => {
+  const line = event.target.closest(".coverage-source-line");
+  if (!line) return;
+  const index = coverageEntryIndexForLine(Number(line.dataset.line));
+  if (index < 0) return;
+  highlightCoverageEntry(index, { scrollDoc: true });
+});
+
+coverageSourceLines?.addEventListener("mouseout", (event) => {
+  const next = event.relatedTarget;
+  if (next?.closest?.(".coverage-source-line")) return;
+  clearCoverageHighlights();
+});
 
 function showReviewStage() {
   if (!currentInvariants.length) {
@@ -695,29 +707,59 @@ function coverageEntryLineSet(entry) {
   return new Set((entry?.covered_lines || []).map((line) => Number(line)));
 }
 
-function highlightCoverageEntry(index) {
+function coverageEntryIndexForLine(lineNumber) {
+  const target = Number(lineNumber);
+  if (!Number.isFinite(target)) return -1;
+  return (currentCoverageData?.entries || []).findIndex((entry) => coverageEntryLineSet(entry).has(target));
+}
+
+function scrollCoverageDocToEntry(index) {
+  const target = coverageRenderedDocs?.querySelector(`.coverage-doc-highlight-block[data-coverage-index="${index}"], .coverage-doc-highlight[data-coverage-index="${index}"]`)
+    || coverageDocStatements?.querySelector(`.coverage-doc-statement[data-coverage-index="${index}"]`);
+  target?.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+function scrollCoverageSourceToEntry(index) {
   const entry = currentCoverageData?.entries?.[index];
+  const firstLine = entry?.covered_lines?.[0];
+  if (!firstLine) return;
+  coverageSourceLines
+    ?.querySelector(`.coverage-source-line[data-line="${Number(firstLine)}"]`)
+    ?.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+function highlightCoverageEntry(index, options = {}) {
+  const entry = currentCoverageData?.entries?.[index];
+  if (!entry) return;
   const lines = coverageEntryLineSet(entry);
-  coverageDocStatements.querySelectorAll(".coverage-doc-statement").forEach((node) => {
+  coverageDocStatements?.querySelectorAll(".coverage-doc-statement").forEach((node) => {
     node.classList.toggle("is-active", Number(node.dataset.coverageIndex) === index);
   });
-  coverageSourceLines.querySelectorAll(".coverage-source-line").forEach((node) => {
+  coverageRenderedDocs?.querySelectorAll(".coverage-doc-highlight, .coverage-doc-highlight-block").forEach((node) => {
+    node.classList.toggle("is-active", Number(node.dataset.coverageIndex) === index);
+  });
+  coverageSourceLines?.querySelectorAll(".coverage-source-line").forEach((node) => {
     const active = lines.has(Number(node.dataset.line));
     node.classList.toggle("is-active", active);
   });
+  if (options.scrollDoc) scrollCoverageDocToEntry(index);
+  if (options.scrollSource) scrollCoverageSourceToEntry(index);
 }
 
 function clearCoverageHighlights() {
   coverageDocStatements?.querySelectorAll(".coverage-doc-statement.is-active").forEach((node) => node.classList.remove("is-active"));
+  coverageRenderedDocs?.querySelectorAll(".coverage-doc-highlight.is-active, .coverage-doc-highlight-block.is-active").forEach((node) => node.classList.remove("is-active"));
   coverageSourceLines?.querySelectorAll(".coverage-source-line.is-active").forEach((node) => node.classList.remove("is-active"));
 }
 
 function renderCoverageSourceLines(data) {
   const covered = new Set(data.covered_lines || []);
+  const coverable = new Set(data.coverable_lines || []);
   return (data.source_lines || []).map((line) => {
     const classes = ["coverage-source-line"];
     if (line.blank) classes.push("is-blank");
     if (covered.has(line.line)) classes.push("is-covered");
+    if (coverable.has(line.line) && !covered.has(line.line)) classes.push("is-uncovered-coverable");
     return `<span class="${classes.join(" ")}" data-line="${line.line}"><span class="coverage-line-number">${line.line}</span><code>${escapeHtml(line.text || " ")}</code></span>`;
   }).join("");
 }
@@ -742,7 +784,10 @@ function renderCoverageStatements(data) {
 function coverageStatementPattern(statement) {
   const cleaned = `${statement || ""}`.replace(/\s+/g, " ").trim();
   if (!cleaned || cleaned.length < 16) return null;
-  const fragment = cleaned.slice(0, Math.min(cleaned.length, 90)).replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+  const fragment = cleaned
+    .slice(0, Math.min(cleaned.length, 96))
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\s+/g, "\\s+");
   try {
     return new RegExp(fragment, "i");
   } catch {
@@ -751,24 +796,45 @@ function coverageStatementPattern(statement) {
 }
 
 function markCoverageMarkdown(markdown, entries) {
-  let marked = `${markdown || ""}`;
+  return `${markdown || ""}`;
+}
+
+function normalizedCoverageText(value) {
+  return `${value || ""}`.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function coverageStatementNeedle(statement) {
+  const cleaned = normalizedCoverageText(statement);
+  if (!cleaned || cleaned.length < 16) return "";
+  return cleaned.slice(0, Math.min(cleaned.length, 82));
+}
+
+function decorateCoverageMarkdown(entries) {
+  const blocks = [...coverageRenderedDocs.querySelectorAll("p, li, tr, blockquote")];
+  const claimed = new Set();
   (entries || []).forEach((entry, index) => {
-    const pattern = coverageStatementPattern(entry.statement);
-    if (!pattern || !entry.covered_lines?.length) return;
-    marked = marked.replace(pattern, (match) => `%%COVERAGE_${index}_START%%${match}%%COVERAGE_${index}_END%%`);
+    if (!entry.covered_lines?.length) return;
+    const needle = coverageStatementNeedle(entry.statement);
+    if (!needle) return;
+    const block = blocks.find((candidate) => {
+      if (claimed.has(candidate)) return false;
+      const text = normalizedCoverageText(candidate.textContent);
+      return text.includes(needle) || needle.includes(text.slice(0, Math.min(text.length, 64)));
+    });
+    if (!block) return;
+    claimed.add(block);
+    block.classList.add("coverage-doc-highlight-block", `confidence-${String(entry.confidence || "medium").toLowerCase()}`);
+    block.dataset.coverageIndex = String(index);
+    block.tabIndex = 0;
+    const chip = document.createElement("span");
+    chip.className = "coverage-doc-line-chip";
+    chip.textContent = `Lines ${entry.covered_lines.join(", ")}`;
+    block.prepend(chip);
   });
-  return marked;
 }
 
 function renderCoverageMarkdown(markdown, entries) {
-  let html = renderMarkdown(markCoverageMarkdown(markdown, entries));
-  (entries || []).forEach((entry, index) => {
-    const confidence = String(entry.confidence || "medium").toLowerCase();
-    html = html
-      .replaceAll(`%%COVERAGE_${index}_START%%`, `<span class="coverage-doc-highlight confidence-${confidence}" data-coverage-index="${index}">`)
-      .replaceAll(`%%COVERAGE_${index}_END%%`, `</span>`);
-  });
-  return html;
+  return renderMarkdown(markdown);
 }
 
 function renderCoverageReport(data) {
@@ -776,11 +842,17 @@ function renderCoverageReport(data) {
   const percent = Number(data.coverage_percent || 0);
   coverageEmpty.classList.add("is-hidden");
   coverageResults.classList.remove("is-hidden");
+  coverageResults.classList.remove("coverage-just-rendered");
+  coverageScoreRing.classList.remove("coverage-score-pop");
+  void coverageResults.offsetWidth;
+  coverageResults.classList.add("coverage-just-rendered");
+  coverageScoreRing.classList.add("coverage-score-pop");
   coverageScoreRing.style.setProperty("--coverage-score", percent);
   coverageScoreValue.textContent = `${Math.round(percent)}%`;
   coverageScoreTitle.textContent = `${data.covered_line_count || 0} of ${data.total_line_count || 0} lines`;
-  coverageScoreNote.textContent = "Hover a documentation statement to highlight its covered source lines.";
+  coverageScoreNote.textContent = "Hover highlighted documentation or source lines to jump between the evidence map.";
   coverageRenderedDocs.innerHTML = renderCoverageMarkdown(coverageDocsInput.value, data.entries || []);
+  decorateCoverageMarkdown(data.entries || []);
   coverageDocStatements.innerHTML = renderCoverageStatements(data);
   coverageSourceLines.innerHTML = renderCoverageSourceLines(data);
 }
