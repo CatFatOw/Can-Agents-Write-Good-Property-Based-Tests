@@ -85,12 +85,18 @@ function applyTheme(mode) {
   document.body.classList.toggle("dark-mode", dark);
   if (themeToggle) {
     themeToggle.setAttribute("aria-pressed", dark ? "true" : "false");
-    themeToggle.textContent = dark ? "Light" : "Dark";
+    themeToggle.innerHTML = `
+      <span class="theme-orbit" aria-hidden="true">
+        <span class="theme-sun"></span>
+        <span class="theme-moon"></span>
+      </span>
+      <span class="theme-label">${dark ? "Light mode" : "Dark mode"}</span>
+    `;
     themeToggle.title = dark ? "Switch to light mode" : "Switch to dark mode";
   }
 }
 
-applyTheme(localStorage.getItem(DARK_MODE_STORAGE_KEY) || "light");
+applyTheme(localStorage.getItem(DARK_MODE_STORAGE_KEY) || "dark");
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -819,35 +825,46 @@ function showSourceHoverCard(item, range) {
     hideSourceHoverCard();
     return;
   }
+
   sourceHoverCard.innerHTML = `
     <p class="eyebrow">Source evidence</p>
     <pre>${sourceRangeExcerpt(range)}</pre>
   `;
   const rect = item.getBoundingClientRect();
   const cardWidth = Math.min(460, Math.max(320, window.innerWidth * 0.34));
-  const leftSpace = rect.left;
   const rightSpace = window.innerWidth - rect.right;
   const left = rightSpace >= cardWidth + 18
     ? rect.right + 14
     : Math.max(12, rect.left - cardWidth - 14);
   const top = Math.min(Math.max(12, rect.top), window.innerHeight - 320);
   sourceHoverCard.style.width = `${cardWidth}px`;
-  sourceHoverCard.style.left = `${Math.min(left, window.innerWidth - cardWidth - 12)}px`;
+  sourceHoverCard.style.left = `${left}px`;
   sourceHoverCard.style.top = `${top}px`;
   sourceHoverCard.classList.add("is-visible");
   sourceHoverCard.setAttribute("aria-hidden", "false");
 }
 
+function clearSourceEvidenceState() {
+  document.querySelectorAll(".source-line.is-highlighted, .source-line.is-hovered, .source-code-line.is-highlighted, .source-code-line.is-hovered").forEach((line) => {
+    line.classList.remove("is-highlighted", "is-hovered");
+  });
+  reviewPanel.querySelectorAll(".invariant-item.has-active-range").forEach((item) => {
+    item.classList.remove("has-active-range");
+  });
+}
+
 function hideSourceHoverCard() {
   sourceHoverCard.classList.remove("is-visible");
   sourceHoverCard.setAttribute("aria-hidden", "true");
+  clearSourceEvidenceState();
 }
 
 function highlightSourceRange(range) {
-  reviewPanel.querySelectorAll(".source-line").forEach((line) => {
+  document.querySelectorAll(".source-line, .source-code-line").forEach((line) => {
     const lineNumber = Number(line.dataset.line);
     const highlighted = Boolean(range && lineNumber >= range.start && lineNumber <= range.end);
     line.classList.toggle("is-highlighted", highlighted);
+    line.classList.toggle("is-hovered", highlighted);
   });
 }
 
@@ -860,21 +877,62 @@ function attachInvariantHoverHandlers() {
       highlightSourceRange(range);
       showSourceHoverCard(item, range);
     };
+    const hideRange = () => {
+      hideSourceHoverCard();
+    };
+
+    item.addEventListener("pointerenter", showRange);
+    item.addEventListener("pointermove", showRange);
+    item.addEventListener("pointerleave", hideRange);
     item.addEventListener("mouseenter", showRange);
+    item.addEventListener("mouseleave", hideRange);
     item.addEventListener("focusin", showRange);
-    item.addEventListener("mousemove", showRange);
-    item.addEventListener("mouseleave", () => {
-      item.classList.remove("has-active-range");
-      highlightSourceRange(null);
-      hideSourceHoverCard();
-    });
-    item.addEventListener("focusout", () => {
-      item.classList.remove("has-active-range");
-      highlightSourceRange(null);
-      hideSourceHoverCard();
-    });
+    item.addEventListener("focusout", hideRange);
   });
 }
+
+function pointerIsInsideActiveInvariant(event) {
+  const target = event.target;
+  return Boolean(target?.closest?.(".invariant-item"));
+}
+
+function eventIsInsideInvariant(event) {
+  return Boolean(event.target?.closest?.(".invariant-item"));
+}
+
+document.addEventListener("pointermove", (event) => {
+  if (!sourceHoverCard.classList.contains("is-visible")) return;
+  if (eventIsInsideInvariant(event)) return;
+  hideSourceHoverCard();
+}, true);
+
+document.addEventListener("mouseover", (event) => {
+  if (!sourceHoverCard.classList.contains("is-visible")) return;
+  if (eventIsInsideInvariant(event)) return;
+  hideSourceHoverCard();
+}, true);
+
+reviewPanel.addEventListener("pointerout", (event) => {
+  if (!sourceHoverCard.classList.contains("is-visible")) return;
+  const nextTarget = event.relatedTarget;
+  if (nextTarget?.closest?.(".invariant-item")) return;
+  hideSourceHoverCard();
+}, true);
+
+reviewPanel.addEventListener("mouseout", (event) => {
+  if (!sourceHoverCard.classList.contains("is-visible")) return;
+  const nextTarget = event.relatedTarget;
+  if (nextTarget?.closest?.(".invariant-item")) return;
+  hideSourceHoverCard();
+}, true);
+
+document.addEventListener("scroll", () => {
+  if (sourceHoverCard.classList.contains("is-visible")) hideSourceHoverCard();
+}, true);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") hideSourceHoverCard();
+});
 
 async function renderInvariantReviewAnimated(invariants) {
   renderInvariantReview([]);
@@ -985,6 +1043,185 @@ function renderSurvivedMutants(metric, index) {
   `;
 }
 
+function mutationIssueLabel(text, severity) {
+  const normalized = `${text || ""}`.toLowerCase();
+  if (normalized.includes("equivalent") || normalized.includes("unkillable") || severity === "low") {
+    return "Likely equivalent / low impact";
+  }
+  if (normalized.includes("test") || normalized.includes("hypothesis") || normalized.includes("assert")) {
+    return "PBT test gap";
+  }
+  if (normalized.includes("invariant") || normalized.includes("contract") || normalized.includes("documentation")) {
+    return "Invariant gap";
+  }
+  if (severity === "medium") return "Needs review";
+  return "Coverage gap";
+}
+
+function mutationSectionSeverity(text) {
+  const normalized = `${text || ""}`.toLowerCase();
+  if (normalized.includes("severe") || normalized.includes("high")) return "high";
+  if (normalized.includes("low") || normalized.includes("equivalent") || normalized.includes("unkillable")) return "low";
+  if (normalized.includes("medium") || normalized.includes("suspicious")) return "medium";
+  return "medium";
+}
+
+function cleanMutationHeading(text) {
+  return `${text || ""}`
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/^[-*]\s*/gm, "")
+    .replace(/\*\*/g, "")
+    .replace(/`/g, "")
+    .trim();
+}
+
+function splitMutationAnalysisSections(markdown) {
+  const text = `${markdown || ""}`.trim();
+  if (!text) return [];
+  const lines = text.split(/\r?\n/);
+  const sections = [];
+  let current = [];
+
+  const looksLikeNewMutant = (line) => /^\s*(#{1,5}\s*)?(?:mutant\s*(?:id)?|surviving mutant|severity\s*:)/i.test(line)
+    || /^\s*[-*]\s*(?:mutant\s*(?:id)?|severity\s*:)/i.test(line);
+
+  const flush = () => {
+    const body = current.join("\n").trim();
+    if (body) sections.push({ severity: mutationSectionSeverity(body), text: body });
+    current = [];
+  };
+
+  lines.forEach((line) => {
+    if (looksLikeNewMutant(line) && current.length) flush();
+    current.push(line);
+  });
+  flush();
+
+  if (sections.length <= 1) {
+    const paragraphs = text.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
+    if (paragraphs.length > 1) {
+      return paragraphs.map((part) => ({ severity: mutationSectionSeverity(part), text: part }));
+    }
+  }
+  return sections;
+}
+
+function compactMutationText(markdown, maxLength = 280) {
+  const plain = cleanMutationHeading(markdown)
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (plain.length <= maxLength) return plain;
+  return `${plain.slice(0, maxLength).trim()}...`;
+}
+
+function mutationGroupSummary(groups) {
+  return [
+    ["high", "High", groups.high.length],
+    ["medium", "Medium", groups.medium.length],
+    ["low", "Low", groups.low.length],
+  ].map(([key, label, count]) => `
+    <span class="mutation-summary-pill mutation-summary-${key}">
+      <strong>${count}</strong>${label}
+    </span>
+  `).join("");
+}
+
+function renderMutationUnavailable(metric) {
+  if (!metric?.mutation_error) return "";
+  const error = `${metric.mutation_error}`;
+  const lower = error.toLowerCase();
+  let reason = "Mutation testing could not finish for this invariant.";
+  let source = "Runner issue";
+  if (lower.includes("generated mutation test failed") || lower.includes("pytest") || lower.includes("hypothesis")) {
+    reason = "The generated PBT failed on the original source, so mutmut was skipped.";
+    source = "PBT test issue";
+  } else if (lower.includes("install") || lower.includes("import") || lower.includes("module") || lower.includes("dependency")) {
+    reason = "A dependency/import failed while preparing the temporary mutation project.";
+    source = "Dependency issue";
+  } else if (lower.includes("no usable mutation") || lower.includes("no mutants") || lower.includes("did not produce")) {
+    reason = "mutmut ran but did not produce usable scored mutants for this snippet.";
+    source = "Snippet issue";
+  }
+  return `
+    <aside class="mutation-unavailable-card">
+      <span class="mutation-diagnostic-chip">${escapeHtml(source)}</span>
+      <strong>Mutation analysis unavailable</strong>
+      <p>${escapeHtml(reason)}</p>
+      <details>
+        <summary>Show diagnostic</summary>
+        <pre>${escapeHtml(error)}</pre>
+      </details>
+    </aside>
+  `;
+}
+
+function renderMutationAnalysisGrouped(metric) {
+  const markdown = `${metric?.mutation_analysis || ""}`.trim();
+  if (!markdown) return "";
+
+  const groups = { high: [], medium: [], low: [] };
+  splitMutationAnalysisSections(markdown).forEach((section) => {
+    groups[section.severity || "medium"].push(section);
+  });
+
+  const meta = [
+    ["high", "High severity", "Likely real gap", "Prioritize these. They usually mean the invariant or the PBT should catch behavior that currently survives."],
+    ["medium", "Medium severity", "Review carefully", "These may be meaningful, but could need stronger source context or a better generated test."],
+    ["low", "Low severity", "Likely equivalent", "These are often equivalent, cosmetic, unreachable, or too low-impact to document heavily."],
+  ];
+
+  const renderedGroups = meta.map(([key, title, subtitle, help]) => {
+    const items = groups[key];
+    return `
+      <section class="mutation-risk-group mutation-risk-${key}" style="--group-count: ${items.length}">
+        <header class="mutation-risk-header">
+          <div>
+            <span class="mutation-severity-chip">${title}</span>
+            <h5>${subtitle}</h5>
+          </div>
+          <span class="mutation-group-count">${items.length}</span>
+        </header>
+        <p class="mutation-group-help">${help}</p>
+        ${items.length ? `
+          <div class="mutation-analysis-items">
+            ${items.map((item, itemIndex) => `
+              <article class="mutation-analysis-item" style="--item-index: ${itemIndex}">
+                <div class="mutation-item-topline">
+                  <span class="mutation-origin-chip">${escapeHtml(mutationIssueLabel(item.text, key))}</span>
+                </div>
+                <p class="mutation-analysis-preview">${escapeHtml(compactMutationText(item.text))}</p>
+                <details>
+                  <summary>Details</summary>
+                  <div class="markdown-rendered mutation-analysis-detail">${renderMarkdown(item.text)}</div>
+                </details>
+              </article>
+            `).join("")}
+          </div>
+        ` : `<p class="mutation-none">No ${title.toLowerCase()} mutants detected.</p>`}
+      </section>
+    `;
+  }).join("");
+
+  return `
+    <div class="mutation-analysis-pretty">
+      <header class="mutation-analysis-hero">
+        <div>
+          <p class="eyebrow">Mutation analysis</p>
+          <h4>Surviving mutants by risk</h4>
+          <p>High usually means a real invariant/PBT gap; medium needs human review; low is often equivalent or low-impact.</p>
+        </div>
+        <div class="mutation-summary-strip">${mutationGroupSummary(groups)}</div>
+      </header>
+      <div class="mutation-risk-grid">${renderedGroups}</div>
+      <details class="mutation-raw-analysis">
+        <summary>Show original GPT notes</summary>
+        <div class="markdown-rendered mutation-analysis-detail">${renderMarkdown(markdown)}</div>
+      </details>
+    </div>
+  `;
+}
+
 function renderMutationReport(metric, index) {
   if (!showMutationTestingInput.checked && !metric?.mutation_analysis && !metric?.mutants) {
     return "";
@@ -1000,11 +1237,11 @@ function renderMutationReport(metric, index) {
       </div>
       ${mutationCountsMarkup(metric)}
       ${renderSurvivedMutants(metric, index)}
-      ${metric?.mutation_error ? `<p class="metric-error">${escapeHtml(metric.mutation_error)}</p>` : ""}
+      ${renderMutationUnavailable(metric)}
       ${metric?.mutation_analysis ? `
         <details class="mutation-analysis-copy">
           <summary>Analysis notes</summary>
-          <div class="mutation-analysis-markdown">${renderMarkdown(metric.mutation_analysis)}</div>
+          <div class="mutation-analysis-markdown">${renderMutationAnalysisGrouped(metric)}</div>
         </details>
       ` : ""}
     </div>

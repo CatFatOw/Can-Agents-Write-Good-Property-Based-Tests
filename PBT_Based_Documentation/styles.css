@@ -1,34 +1,18 @@
 :root {
   color-scheme: light;
-  --ink: #17202a;
-  --muted: #69717c;
-  --paper: #fbfcff;
-  --panel: #eef4f7;
-  --line: #d7e1e7;
-  --clay: #c45445;
-  --clay-dark: #8e342b;
-  --sage: #2f806d;
-  --blue: #21627b;
-  --gold: #b8872f;
-  --violet: #7257a6;
-  --shadow: 0 24px 70px rgba(28, 43, 58, 0.14);
+  --ink: #261f1a;
+  --muted: #6f6458;
+  --paper: #fffaf2;
+  --panel: #f1eadf;
+  --line: #dacfc1;
+  --clay: #b65a37;
+  --clay-dark: #843f2c;
+  --sage: #596f5f;
+  --blue: #315c68;
+  --gold: #c99843;
+  --violet: #725f99;
+  --shadow: 0 24px 60px rgba(72, 56, 42, 0.16);
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-body.dark-mode {
-  color-scheme: dark;
-  --ink: #eef6fb;
-  --muted: #a9b7c3;
-  --paper: #111a24;
-  --panel: #182533;
-  --line: #314353;
-  --clay: #ff7d6c;
-  --clay-dark: #ffb4a9;
-  --sage: #74d3b7;
-  --blue: #72c7e4;
-  --gold: #f3c86b;
-  --violet: #bfa4ff;
-  --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
 }
 
 * {
@@ -44,19 +28,12 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    linear-gradient(115deg, rgba(33, 98, 123, 0.14) 0 12%, transparent 12% 100%),
-    linear-gradient(245deg, rgba(196, 84, 69, 0.1) 0 16%, transparent 16% 100%),
-    linear-gradient(135deg, #f7fbff 0%, #eef6f4 44%, #f8f2f7 100%);
+    radial-gradient(circle at 12% 16%, rgba(182, 90, 55, 0.14), transparent 26rem),
+    radial-gradient(circle at 82% 18%, rgba(114, 95, 153, 0.12), transparent 22rem),
+    linear-gradient(135deg, #efe6d8 0%, #f8f3eb 44%, #e1e9e3 100%);
   color: var(--ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   animation: page-wake 520ms var(--ease-out) both;
-}
-
-body.dark-mode {
-  background:
-    linear-gradient(115deg, rgba(114, 199, 228, 0.11) 0 12%, transparent 12% 100%),
-    linear-gradient(245deg, rgba(255, 125, 108, 0.1) 0 16%, transparent 16% 100%),
-    linear-gradient(135deg, #071019 0%, #101c2b 48%, #1d172b 100%);
 }
 
 body::before {
@@ -65,8 +42,8 @@ body::before {
   pointer-events: none;
   content: "";
   background-image:
-    linear-gradient(rgba(23, 32, 42, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(23, 32, 42, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(38, 31, 26, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(38, 31, 26, 0.025) 1px, transparent 1px);
   background-size: 34px 34px;
   mask-image: linear-gradient(to bottom, #000, transparent 84%);
   animation: grid-drift 18s linear infinite;
@@ -74,22 +51,18 @@ body::before {
 
 body::after {
   position: fixed;
-  inset: 0;
+  right: 24px;
+  bottom: 16px;
+  width: 220px;
+  height: 140px;
   pointer-events: none;
   content: "";
   background:
-    radial-gradient(circle at 8% 18%, rgba(255, 255, 255, 0.65) 0 1px, transparent 1.4px),
-    radial-gradient(circle at 24% 72%, rgba(114, 199, 228, 0.55) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 52% 28%, rgba(255, 255, 255, 0.7) 0 1px, transparent 1.4px),
-    radial-gradient(circle at 72% 64%, rgba(255, 180, 169, 0.58) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 92% 22%, rgba(255, 255, 255, 0.64) 0 1px, transparent 1.4px);
-  background-size: 260px 220px, 340px 300px, 420px 360px, 380px 320px, 300px 260px;
-  opacity: 0.34;
-  animation: star-twinkle 5.8s ease-in-out infinite alternate;
-}
-
-body.dark-mode::after {
-  opacity: 0.74;
+    linear-gradient(90deg, transparent 0 22px, rgba(38, 31, 26, 0.06) 23px 24px, transparent 25px),
+    linear-gradient(rgba(38, 31, 26, 0.04) 1px, transparent 1px);
+  background-size: 42px 100%, 100% 18px;
+  opacity: 0.58;
+  transform: rotate(-2deg);
 }
 
 button,
@@ -167,30 +140,6 @@ select {
   position: absolute;
   top: 0;
   right: 0;
-}
-
-.theme-toggle {
-  position: absolute;
-  top: 42px;
-  right: 0;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(251, 252, 255, 0.8);
-  color: var(--blue);
-  cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 850;
-  box-shadow: 0 10px 22px rgba(28, 43, 58, 0.08);
-  transition: transform 180ms var(--ease-out), border-color 180ms ease, background 180ms ease, color 180ms ease;
-}
-
-.theme-toggle:hover {
-  transform: translateY(-1px);
-  border-color: rgba(33, 98, 123, 0.32);
-  background: var(--paper);
-  color: var(--clay-dark);
 }
 
 .eyebrow {
@@ -613,34 +562,6 @@ button {
 
   50% {
     box-shadow: 0 0 0 7px rgba(182, 90, 55, 0);
-  }
-}
-
-@keyframes star-twinkle {
-  0% {
-    opacity: 0.26;
-    transform: translate3d(0, 0, 0);
-  }
-
-  50% {
-    opacity: 0.64;
-  }
-
-  100% {
-    opacity: 0.38;
-    transform: translate3d(12px, -8px, 0);
-  }
-}
-
-@keyframes detail-open {
-  from {
-    opacity: 0.84;
-    transform: translateY(-3px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -1122,7 +1043,6 @@ button {
 
 .test-item[open] {
   border-color: rgba(49, 92, 104, 0.22);
-  animation: detail-open 220ms var(--ease-out) both;
 }
 
 .test-item summary {
@@ -1175,176 +1095,11 @@ button {
 
 .mutation-report {
   margin: 0 14px 14px;
-  padding: 16px;
-  display: grid;
-  gap: 12px;
-  border: 1px solid rgba(49, 92, 104, 0.18);
+  padding: 14px;
+  border: 1px solid rgba(49, 92, 104, 0.16);
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(251, 252, 255, 0.94), rgba(238, 246, 244, 0.82));
+  background: rgba(255, 250, 242, 0.82);
   color: var(--ink);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
-}
-
-.mutation-report-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.mutation-report-header h4 {
-  margin: 2px 0 0;
-  font-size: 1rem;
-}
-
-.mutation-counts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
-  gap: 8px;
-}
-
-.mutation-count {
-  min-height: 54px;
-  padding: 9px 10px;
-  display: grid;
-  align-content: center;
-  gap: 2px;
-  border: 1px solid rgba(49, 92, 104, 0.13);
-  border-radius: 8px;
-  background: rgba(251, 252, 255, 0.78);
-  color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.mutation-count strong {
-  color: var(--ink);
-  font-size: 1.15rem;
-}
-
-.mutation-count-killed strong {
-  color: #236845;
-}
-
-.mutation-count-survived strong,
-.mutation-count-timeout strong,
-.mutation-count-suspicious strong {
-  color: var(--clay-dark);
-}
-
-.survived-mutants {
-  display: grid;
-  gap: 8px;
-}
-
-.survived-mutant {
-  border: 1px solid rgba(49, 92, 104, 0.15);
-  border-radius: 8px;
-  background: rgba(251, 252, 255, 0.8);
-  overflow: hidden;
-}
-
-.survived-mutant[open] {
-  animation: detail-open 200ms var(--ease-out) both;
-}
-
-.survived-mutant summary {
-  min-height: 44px;
-  padding: 0 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  cursor: pointer;
-  font-weight: 850;
-}
-
-.survived-mutant summary:hover {
-  background: rgba(33, 98, 123, 0.07);
-}
-
-.survived-mutant-title {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.survived-mutant-badge {
-  flex: 0 0 auto;
-  min-height: 24px;
-  padding: 3px 8px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.survived-mutant-severe .survived-mutant-badge,
-.survived-mutant-survived .survived-mutant-badge {
-  background: rgba(248, 215, 203, 0.9);
-  color: var(--clay-dark);
-}
-
-.survived-mutant-medium .survived-mutant-badge {
-  background: rgba(249, 232, 190, 0.9);
-  color: #7a5520;
-}
-
-.survived-mutant-low .survived-mutant-badge {
-  background: rgba(214, 232, 218, 0.9);
-  color: #355f3d;
-}
-
-.survived-mutant-status,
-.mutation-empty {
-  margin: 0;
-  padding: 0 12px 12px;
-  color: var(--muted);
-  font-size: 0.86rem;
-  font-weight: 720;
-}
-
-.mutation-diff,
-.mutation-stderr {
-  margin: 0 12px 12px;
-  padding: 12px;
-  border: 1px solid rgba(38, 31, 26, 0.09);
-  border-radius: 8px;
-  background: #101820;
-  color: #e8f4f8;
-}
-
-.mutation-stderr {
-  background: rgba(248, 215, 203, 0.54);
-  color: var(--clay-dark);
-}
-
-.retest-mutants-button {
-  margin: 0 12px 12px;
-}
-
-.mutation-report-header .retest-mutants-button {
-  margin: 0;
-}
-
-.mutation-analysis-copy {
-  border-top: 1px solid rgba(38, 31, 26, 0.08);
-  padding-top: 10px;
-}
-
-.mutation-analysis-copy summary {
-  cursor: pointer;
-  color: var(--blue);
-  font-weight: 850;
-}
-
-.mutation-analysis-markdown {
-  margin-top: 10px;
-  display: grid;
-  gap: 10px;
 }
 
 .test-editor {
@@ -1395,89 +1150,10 @@ button {
 
 .generated-markdown-paper {
   padding: clamp(28px, 3.5vw, 48px);
-  background: rgba(251, 252, 255, 0.96);
 }
 
 .generated-doc-rendered {
   max-width: 920px;
-  margin: 0 auto;
-}
-
-.generated-doc-rendered,
-.generated-docs-rendered {
-  gap: 16px;
-  font-size: 1rem;
-  line-height: 1.7;
-}
-
-.generated-doc-rendered h1,
-.generated-docs-rendered h1 {
-  margin-bottom: 4px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(33, 98, 123, 0.18);
-  color: var(--ink);
-  font-size: clamp(2.1rem, 4vw, 3.25rem);
-}
-
-.generated-doc-rendered h2,
-.generated-docs-rendered h2 {
-  margin-top: 14px;
-  padding: 14px 16px;
-  border: 1px solid rgba(33, 98, 123, 0.16);
-  border-left: 4px solid var(--blue);
-  border-radius: 8px;
-  background:
-    linear-gradient(90deg, rgba(33, 98, 123, 0.11), rgba(196, 84, 69, 0.06));
-  box-shadow: 0 12px 26px rgba(28, 43, 58, 0.07);
-}
-
-.generated-doc-rendered h3,
-.generated-docs-rendered h3 {
-  color: var(--blue);
-  font-size: 1.16rem;
-  font-weight: 700;
-}
-
-.generated-doc-rendered p,
-.generated-doc-rendered li,
-.generated-docs-rendered p,
-.generated-docs-rendered li {
-  color: color-mix(in srgb, var(--ink) 88%, var(--muted));
-}
-
-.generated-doc-rendered ul,
-.generated-doc-rendered ol,
-.generated-docs-rendered ul,
-.generated-docs-rendered ol {
-  padding: 12px 18px 12px 30px;
-  border: 1px solid rgba(33, 98, 123, 0.11);
-  border-radius: 8px;
-  background: rgba(238, 246, 244, 0.52);
-}
-
-.generated-doc-rendered blockquote,
-.generated-docs-rendered blockquote {
-  padding: 13px 15px;
-  border-left-color: var(--clay);
-  background: rgba(255, 241, 236, 0.66);
-}
-
-.generated-doc-rendered .md-code,
-.generated-docs-rendered .md-code {
-  border-color: rgba(33, 98, 123, 0.18);
-  background: linear-gradient(135deg, #10202b, #17212b);
-  color: #e8f4f8;
-  box-shadow: 0 16px 32px rgba(28, 43, 58, 0.16);
-}
-
-.generated-doc-rendered table,
-.generated-docs-rendered table {
-  box-shadow: 0 14px 26px rgba(28, 43, 58, 0.08);
-}
-
-.generated-doc-rendered th,
-.generated-docs-rendered th {
-  background: rgba(33, 98, 123, 0.13);
 }
 
 .docs-example-paper {
@@ -1600,8 +1276,8 @@ button {
   display: grid;
   gap: 12px;
   color: var(--ink);
-  font-size: 0.96rem;
-  line-height: 1.66;
+  font-size: 0.92rem;
+  line-height: 1.58;
 }
 
 .markdown-rendered h1,
@@ -1618,7 +1294,7 @@ button {
 }
 
 .markdown-rendered h2 {
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid rgba(38, 31, 26, 0.1);
   font-size: 1.35rem;
 }
@@ -1628,14 +1304,11 @@ button {
 }
 
 .markdown-rendered p,
-.markdown-rendered ul,
-.markdown-rendered ol,
-.markdown-rendered blockquote {
+.markdown-rendered ul {
   margin: 0;
 }
 
-.markdown-rendered ul,
-.markdown-rendered ol {
+.markdown-rendered ul {
   padding-left: 20px;
 }
 
@@ -1643,30 +1316,21 @@ button {
   margin-top: 6px;
 }
 
-.markdown-rendered blockquote {
-  padding: 10px 12px;
-  border-left: 3px solid rgba(33, 98, 123, 0.55);
-  border-radius: 0 8px 8px 0;
-  background: rgba(238, 246, 244, 0.58);
-  color: #32404c;
-}
-
 .markdown-rendered code {
   padding: 0.08rem 0.28rem;
   border: 1px solid rgba(38, 31, 26, 0.1);
   border-radius: 5px;
-  background: rgba(241, 246, 248, 0.86);
+  background: rgba(241, 234, 223, 0.72);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 0.88em;
 }
 
 .markdown-rendered .md-code {
   min-height: 0;
-  padding: 13px;
+  padding: 12px;
   border: 1px solid rgba(38, 31, 26, 0.1);
   border-radius: 8px;
-  background: rgba(241, 246, 248, 0.72);
-  color: var(--ink);
+  background: rgba(241, 234, 223, 0.58);
   overflow: auto;
 }
 
@@ -1684,7 +1348,6 @@ button {
   border: 1px solid rgba(38, 31, 26, 0.12);
   border-radius: 8px;
   font-size: 0.85rem;
-  background: rgba(251, 252, 255, 0.78);
 }
 
 .markdown-rendered th,
@@ -1696,8 +1359,8 @@ button {
 }
 
 .markdown-rendered th {
-  background: rgba(33, 98, 123, 0.08);
-  color: var(--blue);
+  background: rgba(182, 90, 55, 0.1);
+  color: var(--clay-dark);
   font-weight: 800;
 }
 
@@ -1747,109 +1410,6 @@ pre.is-streaming::after {
   gap: 10px 18px;
   color: var(--muted);
   font-size: 0.86rem;
-}
-
-body.dark-mode .status,
-body.dark-mode .theme-toggle,
-body.dark-mode .step-tab,
-body.dark-mode .source-lookup,
-body.dark-mode .field input,
-body.dark-mode .field select,
-body.dark-mode textarea,
-body.dark-mode .toggle-field,
-body.dark-mode .copy-button,
-body.dark-mode .download-button,
-body.dark-mode .secondary-button,
-body.dark-mode .paper,
-body.dark-mode .test-item,
-body.dark-mode .mutation-report,
-body.dark-mode .survived-mutant,
-body.dark-mode .docs-example-switch,
-body.dark-mode .source-hover-card {
-  border-color: rgba(160, 190, 210, 0.18);
-  background: rgba(17, 26, 36, 0.82);
-  color: var(--ink);
-  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.24);
-}
-
-body.dark-mode .paper {
-  background:
-    linear-gradient(90deg, rgba(114, 199, 228, 0.16) 0 1px, transparent 1px 100%) 42px 0 / 42px 100% no-repeat,
-    rgba(17, 26, 36, 0.92);
-}
-
-body.dark-mode .generated-markdown-paper {
-  background: rgba(11, 18, 26, 0.94);
-}
-
-body.dark-mode .model-card,
-body.dark-mode .output-header,
-body.dark-mode .markdown-rendered h2,
-body.dark-mode .test-item pre,
-body.dark-mode .mutation-analysis-copy {
-  border-color: rgba(160, 190, 210, 0.16);
-}
-
-body.dark-mode .step-tab.is-active,
-body.dark-mode .docs-example-choice:hover,
-body.dark-mode .docs-example-choice.is-active,
-body.dark-mode .metric-test-button:hover,
-body.dark-mode .mutation-pill:hover {
-  background: rgba(114, 199, 228, 0.12);
-  color: var(--blue);
-}
-
-body.dark-mode .markdown-rendered code {
-  border-color: rgba(160, 190, 210, 0.18);
-  background: rgba(24, 37, 51, 0.95);
-}
-
-body.dark-mode .markdown-rendered .md-code,
-body.dark-mode .mutation-diff {
-  background: linear-gradient(135deg, #071019, #121f2c);
-  color: #e8f4f8;
-}
-
-body.dark-mode .markdown-rendered blockquote,
-body.dark-mode .generated-doc-rendered ul,
-body.dark-mode .generated-doc-rendered ol,
-body.dark-mode .generated-docs-rendered ul,
-body.dark-mode .generated-docs-rendered ol,
-body.dark-mode .mutation-count {
-  border-color: rgba(160, 190, 210, 0.16);
-  background: rgba(24, 37, 51, 0.78);
-}
-
-body.dark-mode .generated-doc-rendered h2,
-body.dark-mode .generated-docs-rendered h2 {
-  border-color: rgba(114, 199, 228, 0.24);
-  background: linear-gradient(90deg, rgba(114, 199, 228, 0.16), rgba(255, 125, 108, 0.11));
-}
-
-body.dark-mode .markdown-rendered table {
-  border-color: rgba(160, 190, 210, 0.18);
-  background: rgba(17, 26, 36, 0.86);
-}
-
-body.dark-mode .markdown-rendered th {
-  background: rgba(114, 199, 228, 0.16);
-}
-
-body.dark-mode .markdown-rendered th,
-body.dark-mode .markdown-rendered td {
-  border-bottom-color: rgba(160, 190, 210, 0.14);
-}
-
-body.dark-mode .survived-mutant-severe .survived-mutant-badge,
-body.dark-mode .survived-mutant-survived .survived-mutant-badge,
-body.dark-mode .survived-mutant-medium .survived-mutant-badge,
-body.dark-mode .survived-mutant-low .survived-mutant-badge,
-body.dark-mode .mutation-high,
-body.dark-mode .mutation-medium,
-body.dark-mode .mutation-low,
-body.dark-mode .confidence-pill,
-body.dark-mode .metric-pills span {
-  border-color: rgba(160, 190, 210, 0.18);
 }
 
 body.stage-docs-example .app-shell {
@@ -1980,11 +1540,6 @@ body.stage-docs-example .markdown-rendered .md-code {
     margin-left: -2px;
   }
 
-  .theme-toggle {
-    position: static;
-    align-self: flex-start;
-  }
-
   .masthead {
     padding-right: 0;
   }
@@ -2013,208 +1568,58 @@ body.stage-docs-example .markdown-rendered .md-code {
   }
 }
 
-/* Theme refinement: warm light mode by default, atmospheric dark mode on demand. */
-:root {
-  color-scheme: light;
-  --ink: #2b211b;
-  --muted: #7d6d5c;
-  --paper: #f8f1e7;
-  --panel: #f1e7d8;
-  --line: #dccdbb;
-  --clay: #c06a43;
-  --clay-dark: #98482d;
-  --sage: #71816b;
-  --blue: #786a59;
-  --gold: #c19b5a;
-  --violet: #8b756b;
-  --shadow: 0 26px 64px rgba(82, 62, 42, 0.12);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
 }
 
-body {
-  font-family: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(215, 164, 106, 0.18), transparent 30%),
-    radial-gradient(circle at top right, rgba(197, 145, 92, 0.08), transparent 24%),
-    linear-gradient(180deg, #f7efe2 0%, #f4ebde 44%, #ecdfce 100%);
-}
-
-body::before,
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -2;
-}
-
-body::before {
-  background:
-    radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.52), transparent 0 22%),
-    radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.28), transparent 0 18%),
-    radial-gradient(circle at 72% 86%, rgba(214, 184, 139, 0.16), transparent 0 20%);
-}
-
-body::after {
-  z-index: -1;
-  opacity: 0.45;
-  background-image:
-    linear-gradient(rgba(173, 152, 120, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(173, 152, 120, 0.06) 1px, transparent 1px);
-  background-size: 34px 34px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.22), transparent 72%);
-}
-
-body.dark-mode {
-  color-scheme: dark;
-  --ink: #f0e7da;
-  --muted: #b8a999;
-  --paper: rgba(22, 18, 29, 0.9);
-  --panel: rgba(14, 12, 20, 0.88);
-  --line: rgba(206, 188, 170, 0.16);
-  --clay: #e09b67;
-  --clay-dark: #f0bc8f;
-  --sage: #8ec0a3;
-  --blue: #99c0d8;
-  --gold: #e0b767;
-  --violet: #bba7e8;
-  --shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
-  background:
-    radial-gradient(circle at top left, rgba(95, 86, 163, 0.24), transparent 28%),
-    radial-gradient(circle at 85% 12%, rgba(84, 130, 173, 0.18), transparent 22%),
-    linear-gradient(180deg, #090b14 0%, #11111c 42%, #171421 100%);
-}
-
-body.dark-mode::before {
-  opacity: 0.95;
-  background:
-    radial-gradient(1px 1px at 6% 14%, rgba(255,255,255,0.9), transparent 2px),
-    radial-gradient(1.5px 1.5px at 16% 28%, rgba(255,240,210,0.92), transparent 2px),
-    radial-gradient(1px 1px at 25% 70%, rgba(255,255,255,0.82), transparent 2px),
-    radial-gradient(1.5px 1.5px at 38% 42%, rgba(184,214,255,0.88), transparent 2px),
-    radial-gradient(1px 1px at 49% 18%, rgba(255,255,255,0.78), transparent 2px),
-    radial-gradient(1px 1px at 58% 78%, rgba(255,255,255,0.82), transparent 2px),
-    radial-gradient(1.5px 1.5px at 68% 30%, rgba(255,229,180,0.9), transparent 2px),
-    radial-gradient(1px 1px at 74% 58%, rgba(255,255,255,0.84), transparent 2px),
-    radial-gradient(1px 1px at 84% 16%, rgba(255,255,255,0.88), transparent 2px),
-    radial-gradient(1.5px 1.5px at 91% 74%, rgba(203,227,255,0.86), transparent 2px);
-  animation: star-drift 22s linear infinite;
-}
-
-body.dark-mode::after {
-  opacity: 1;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.06), transparent 0 18%),
-    radial-gradient(circle at 72% 76%, rgba(144, 181, 244, 0.09), transparent 0 20%),
-    radial-gradient(circle at 82% 22%, rgba(243, 198, 127, 0.08), transparent 0 16%);
-  mask-image: none;
-  animation: nebula-shift 18s ease-in-out infinite alternate;
-}
-
-.workspace,
-.output-panel {
-  border-top-color: rgba(109, 86, 61, 0.14);
-  background: linear-gradient(180deg, rgba(255, 250, 242, 0.95), rgba(248, 240, 228, 0.92));
-  box-shadow: var(--shadow);
-}
-
-.workspace::before,
-.output-panel::before {
-  background: linear-gradient(90deg, var(--clay), rgba(207, 164, 91, 0.92), rgba(154, 122, 91, 0.82));
-}
-
-.status,
-.theme-toggle,
-.step-tab,
-.source-lookup,
-.field input,
-.field select,
-textarea,
-.toggle-field,
-.copy-button,
-.download-button,
-.secondary-button,
-.paper,
-.test-item,
-.mutation-report,
-.survived-mutant,
-.docs-example-switch,
-.source-hover-card {
-  border-color: rgba(112, 94, 72, 0.12);
-  background: rgba(255, 250, 242, 0.78);
-}
-
-.theme-toggle {
-  min-width: 78px;
-  color: var(--ink);
-  background: linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(243, 234, 223, 0.88));
-}
-
-.theme-toggle:hover {
-  border-color: rgba(152, 72, 45, 0.22);
-  color: var(--clay-dark);
-}
-
-.masthead h1,
-.output-header h2,
-.paper h3,
-.model-card h2 {
-  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-  letter-spacing: 0;
-}
-
-.masthead h1 {
-  color: #2b2018;
-}
-
-.paper,
-.mutation-report,
-.test-item,
-.generated-doc-tab {
-  box-shadow: 0 18px 38px rgba(80, 61, 40, 0.08);
-}
-
-.prompt-examples .example-prompt,
-.step-tab {
-  background: linear-gradient(180deg, rgba(255, 252, 246, 0.94), rgba(241, 234, 223, 0.78));
-}
-
+/* Add-on layer: keep the warm original light theme, polish rendered Markdown, and add starry dark mode. */
 .markdown-rendered,
 .invariant-copy,
 .test-invariant-copy,
-.mutation-analysis-markdown {
+.mutation-analysis-markdown,
+.generated-doc-rendered,
+.generated-docs-rendered {
   color: var(--ink);
+  font-size: 0.98rem;
+  line-height: 1.7;
 }
 
 .markdown-rendered {
-  max-width: 78ch;
+  max-width: 82ch;
   gap: 14px;
-  font-size: 0.98rem;
-  line-height: 1.72;
 }
 
 .markdown-rendered h1,
 .markdown-rendered h2,
 .markdown-rendered h3,
 .markdown-rendered h4 {
-  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  color: #2b2018;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
 }
 
 .markdown-rendered h1 {
-  font-size: clamp(2.1rem, 3.6vw, 3rem);
-  line-height: 1;
-  margin-top: 0;
+  margin: 0 0 0.35rem;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  line-height: 1.04;
 }
 
 .markdown-rendered h2 {
-  margin-top: 1.2rem;
-  padding-top: 0.8rem;
-  border-top: 1px solid rgba(112, 94, 72, 0.14);
-  font-size: 1.48rem;
+  margin-top: 1.25rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(38, 31, 26, 0.12);
+  font-size: 1.42rem;
 }
 
 .markdown-rendered h3 {
-  font-size: 1.16rem;
+  font-size: 1.15rem;
 }
 
 .markdown-rendered p,
@@ -2225,7 +1630,7 @@ textarea,
 
 .markdown-rendered ul,
 .markdown-rendered ol {
-  padding-left: 1.2rem;
+  padding-left: 1.25rem;
 }
 
 .markdown-rendered li + li {
@@ -2233,69 +1638,133 @@ textarea,
 }
 
 .markdown-rendered strong {
-  color: #31241b;
+  color: #2b211b;
 }
 
 .markdown-rendered a {
   color: var(--clay-dark);
+  text-decoration-color: rgba(132, 63, 44, 0.35);
   text-decoration-thickness: 1px;
-  text-underline-offset: 0.14em;
+  text-underline-offset: 0.15em;
 }
 
 .markdown-rendered blockquote {
-  margin: 0.25rem 0;
-  padding: 0.9rem 1rem;
-  border-left: 3px solid rgba(184, 94, 61, 0.42);
+  margin: 0.3rem 0;
+  padding: 0.95rem 1.05rem;
+  border-left: 3px solid rgba(182, 90, 55, 0.45);
   border-radius: 0 8px 8px 0;
-  background: rgba(245, 237, 224, 0.8);
-  color: #55463a;
+  background: rgba(241, 234, 223, 0.88);
+  color: #58483d;
 }
 
 .markdown-rendered code {
-  border-color: rgba(112, 94, 72, 0.12);
-  background: rgba(242, 233, 220, 0.92);
+  padding: 0.08rem 0.3rem;
+  border: 1px solid rgba(38, 31, 26, 0.12);
+  border-radius: 6px;
+  background: rgba(241, 234, 223, 0.92);
+  color: #2d2119;
 }
 
 .markdown-rendered .md-code {
   padding: 16px 18px;
-  border-color: rgba(112, 94, 72, 0.12);
-  background:
-    linear-gradient(180deg, rgba(250, 244, 234, 0.98), rgba(244, 236, 224, 0.94));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+  border: 1px solid rgba(38, 31, 26, 0.12);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f7efe3, #f0e4d4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 14px 28px rgba(72, 56, 42, 0.08);
+}
+
+.markdown-rendered .md-code code {
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .markdown-rendered table {
-  border-color: rgba(112, 94, 72, 0.12);
-  background: rgba(255, 252, 246, 0.72);
+  overflow: hidden;
+  border: 1px solid rgba(38, 31, 26, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.8);
+  box-shadow: 0 12px 24px rgba(72, 56, 42, 0.08);
 }
 
 .markdown-rendered th {
-  background: rgba(219, 200, 170, 0.34);
-  color: #3c2f25;
+  background: rgba(218, 207, 193, 0.64);
+  color: #2b211b;
+}
+
+.markdown-rendered th,
+.markdown-rendered td {
+  border-color: rgba(38, 31, 26, 0.1);
 }
 
 .generated-markdown-paper,
 .generated-docs-paper,
-.docs-example-paper {
-  background:
-    linear-gradient(180deg, rgba(255, 252, 246, 0.97), rgba(249, 242, 230, 0.92));
+.docs-example-paper,
+.mutation-analysis-markdown,
+.metric-error,
+.saved-invariants {
+  background: linear-gradient(180deg, rgba(255, 250, 242, 0.98), rgba(248, 240, 228, 0.94));
 }
 
-.saved-invariants,
-.source-preview,
-.source-hover-card,
 .mutation-analysis-markdown,
-.mutation-summary-card,
-.mutation-report-summary {
-  background: rgba(255, 249, 240, 0.94);
+.metric-error {
+  padding: 14px;
+  border: 1px solid rgba(38, 31, 26, 0.12);
+  border-radius: 8px;
+}
+
+body.dark-mode {
+  color-scheme: dark;
+  --ink: #f2e9de;
+  --muted: #b8aa9a;
+  --paper: #15121d;
+  --panel: #1d1828;
+  --line: rgba(230, 210, 188, 0.15);
+  --clay: #ef9f6d;
+  --clay-dark: #f3bd93;
+  --sage: #9dc5a5;
+  --blue: #a9c7dc;
+  --gold: #e5bc6f;
+  --violet: #bfaee8;
+  --shadow: 0 28px 84px rgba(0, 0, 0, 0.54);
+  background:
+    radial-gradient(circle at 14% 8%, rgba(107, 91, 181, 0.22), transparent 28%),
+    radial-gradient(circle at 86% 14%, rgba(239, 159, 109, 0.12), transparent 24%),
+    linear-gradient(180deg, #080912 0%, #11101b 46%, #171321 100%);
+}
+
+body.dark-mode::before {
+  opacity: 1;
+  background:
+    radial-gradient(1px 1px at 6% 14%, rgba(255,255,255,0.92), transparent 2px),
+    radial-gradient(1.5px 1.5px at 16% 28%, rgba(255,236,206,0.92), transparent 2px),
+    radial-gradient(1px 1px at 25% 70%, rgba(255,255,255,0.82), transparent 2px),
+    radial-gradient(1.5px 1.5px at 38% 42%, rgba(195,219,255,0.88), transparent 2px),
+    radial-gradient(1px 1px at 49% 18%, rgba(255,255,255,0.78), transparent 2px),
+    radial-gradient(1px 1px at 58% 78%, rgba(255,255,255,0.82), transparent 2px),
+    radial-gradient(1.5px 1.5px at 68% 30%, rgba(255,228,180,0.9), transparent 2px),
+    radial-gradient(1px 1px at 74% 58%, rgba(255,255,255,0.84), transparent 2px),
+    radial-gradient(1px 1px at 84% 16%, rgba(255,255,255,0.88), transparent 2px),
+    radial-gradient(1.5px 1.5px at 91% 74%, rgba(203,227,255,0.86), transparent 2px);
+  animation: star-twinkle 5.6s ease-in-out infinite alternate;
+}
+
+body.dark-mode::after {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 30% 16%, rgba(255,255,255,0.045), transparent 0 16%),
+    radial-gradient(circle at 74% 80%, rgba(143,178,244,0.09), transparent 0 22%);
+  animation: star-drift 22s linear infinite;
 }
 
 body.dark-mode .workspace,
 body.dark-mode .output-panel {
-  border-top-color: rgba(208, 194, 177, 0.1);
-  background: linear-gradient(180deg, rgba(20, 17, 28, 0.88), rgba(17, 14, 24, 0.84));
+  border-color: rgba(230, 210, 188, 0.13);
+  background: rgba(21, 18, 29, 0.9);
+  box-shadow: var(--shadow);
 }
 
+body.dark-mode .status,
 body.dark-mode .theme-toggle,
 body.dark-mode .step-tab,
 body.dark-mode .source-lookup,
@@ -2311,80 +1780,1513 @@ body.dark-mode .test-item,
 body.dark-mode .mutation-report,
 body.dark-mode .survived-mutant,
 body.dark-mode .docs-example-switch,
-body.dark-mode .source-hover-card {
-  border-color: rgba(219, 201, 181, 0.14);
-  background: rgba(23, 19, 32, 0.76);
+body.dark-mode .source-hover-card,
+body.dark-mode .generated-doc-tab {
+  border-color: rgba(230, 210, 188, 0.14);
+  background: rgba(31, 25, 42, 0.84);
+  color: var(--ink);
 }
 
 body.dark-mode .masthead h1,
 body.dark-mode .output-header h2,
-body.dark-mode .paper h3,
 body.dark-mode .model-card h2,
+body.dark-mode .paper h3,
 body.dark-mode .markdown-rendered h1,
 body.dark-mode .markdown-rendered h2,
 body.dark-mode .markdown-rendered h3,
 body.dark-mode .markdown-rendered h4,
 body.dark-mode .markdown-rendered strong {
-  color: #f5eadf;
+  color: #f7ebdf;
+}
+
+body.dark-mode .markdown-rendered,
+body.dark-mode .invariant-copy,
+body.dark-mode .test-invariant-copy,
+body.dark-mode .mutation-analysis-markdown,
+body.dark-mode .generated-doc-rendered,
+body.dark-mode .generated-docs-rendered {
+  color: var(--ink);
 }
 
 body.dark-mode .markdown-rendered blockquote {
-  background: rgba(48, 37, 63, 0.55);
-  border-left-color: rgba(224, 155, 103, 0.52);
-  color: #d7c8b9;
+  background: rgba(55, 43, 68, 0.72);
+  border-left-color: rgba(239, 159, 109, 0.55);
+  color: #dacdc0;
 }
 
 body.dark-mode .markdown-rendered code {
-  border-color: rgba(221, 201, 178, 0.12);
-  background: rgba(59, 45, 75, 0.4);
+  border-color: rgba(230, 210, 188, 0.13);
+  background: rgba(69, 55, 84, 0.7);
+  color: #f7ebdf;
 }
 
-body.dark-mode .markdown-rendered .md-code,
-body.dark-mode .generated-markdown-paper,
-body.dark-mode .generated-docs-paper,
-body.dark-mode .docs-example-paper,
-body.dark-mode .saved-invariants,
-body.dark-mode .source-preview,
-body.dark-mode .mutation-analysis-markdown,
-body.dark-mode .mutation-summary-card,
-body.dark-mode .mutation-report-summary {
-  background: rgba(29, 23, 40, 0.86);
+body.dark-mode .markdown-rendered .md-code {
+  border-color: rgba(230, 210, 188, 0.13);
+  background: linear-gradient(180deg, rgba(44, 35, 56, 0.95), rgba(35, 28, 47, 0.95));
 }
 
 body.dark-mode .markdown-rendered table {
-  background: rgba(26, 20, 36, 0.78);
-  border-color: rgba(221, 201, 178, 0.1);
+  border-color: rgba(230, 210, 188, 0.13);
+  background: rgba(28, 23, 38, 0.82);
 }
 
 body.dark-mode .markdown-rendered th {
-  background: rgba(71, 54, 90, 0.7);
-  color: #f0e7da;
+  background: rgba(84, 65, 101, 0.78);
+  color: #f7ebdf;
 }
 
-body.dark-mode .status,
-body.dark-mode .theme-toggle:hover,
-body.dark-mode .step-tab:hover,
-body.dark-mode .step-tab.is-active {
-  color: #f0e7da;
+body.dark-mode .generated-markdown-paper,
+body.dark-mode .generated-docs-paper,
+body.dark-mode .docs-example-paper,
+body.dark-mode .mutation-analysis-markdown,
+body.dark-mode .metric-error,
+body.dark-mode .saved-invariants,
+body.dark-mode .source-preview {
+  background: linear-gradient(180deg, rgba(32, 26, 43, 0.94), rgba(24, 20, 33, 0.92));
+}
+
+@keyframes star-twinkle {
+  0% { opacity: 0.52; filter: brightness(0.82); }
+  45% { opacity: 1; filter: brightness(1.18); }
+  100% { opacity: 0.72; filter: brightness(0.96); }
 }
 
 @keyframes star-drift {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(18px); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-1.5%, 1.5%, 0); }
 }
 
-@keyframes nebula-shift {
-  0% { transform: scale(1) translate3d(0, 0, 0); }
-  100% { transform: scale(1.06) translate3d(-1%, 1%, 0); }
+/* Production polish layer: animation, document surfaces, and dark-mode readability. */
+.app-shell {
+  animation: app-breathe-in 520ms var(--ease-out) both;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
+.workspace,
+.output-panel,
+.paper,
+.test-item,
+.mutation-report {
+  transition:
+    transform 180ms var(--ease-out),
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.paper:hover,
+.test-item:hover,
+.mutation-report:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 24px 48px rgba(72, 56, 42, 0.12);
+}
+
+.step-tab,
+.example-prompt,
+.theme-toggle,
+.copy-button,
+.download-button,
+.secondary-button,
+.docs-example-choice,
+.generated-doc-tab {
+  position: relative;
+  overflow: hidden;
+}
+
+.step-tab::before,
+.example-prompt::before,
+.theme-toggle::before,
+.copy-button::before,
+.download-button::before,
+.secondary-button::before,
+.docs-example-choice::before,
+.generated-doc-tab::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.42) 45%, transparent 70%);
+  opacity: 0;
+  transform: translateX(-80%);
+  transition: opacity 180ms ease, transform 460ms var(--ease-out);
+}
+
+.step-tab:hover::before,
+.example-prompt:hover::before,
+.theme-toggle:hover::before,
+.copy-button:hover::before,
+.download-button:hover::before,
+.secondary-button:hover::before,
+.docs-example-choice:hover::before,
+.generated-doc-tab:hover::before {
+  opacity: 1;
+  transform: translateX(80%);
+}
+
+.invariant-item,
+.survived-mutant,
+.source-hover-card {
+  animation: soft-rise 220ms var(--ease-out) both;
+}
+
+.markdown-rendered {
+  padding-block: 2px;
+}
+
+.markdown-rendered > * {
+  animation: doc-line-rise 260ms var(--ease-out) both;
+}
+
+.markdown-rendered h1,
+.markdown-rendered h2,
+.markdown-rendered h3 {
+  text-wrap: balance;
+}
+
+.markdown-rendered p,
+.markdown-rendered li {
+  color: color-mix(in srgb, var(--ink) 88%, var(--muted));
+}
+
+.markdown-rendered .md-code,
+.markdown-rendered table,
+.mutation-analysis-markdown,
+.metric-error,
+.saved-invariants {
+  position: relative;
+  overflow: hidden;
+}
+
+.markdown-rendered .md-code::before,
+.mutation-analysis-markdown::before,
+.metric-error::before,
+.saved-invariants::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  content: "";
+  background: linear-gradient(90deg, var(--clay), var(--gold), var(--sage));
+  opacity: 0.75;
+}
+
+.mutation-analysis-markdown,
+.metric-error,
+.saved-invariants,
+.generated-markdown-paper,
+.generated-docs-paper,
+.docs-example-paper {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 18px 36px rgba(72, 56, 42, 0.1);
+}
+
+body.dark-mode {
+  --ink: #fff3e8;
+  --muted: #d2c2b2;
+  --paper: #0b0c14;
+  --panel: #17131f;
+  --line: rgba(245, 225, 204, 0.18);
+  --clay: #ffa26f;
+  --clay-dark: #ffc49d;
+  --sage: #a7d8b4;
+  --blue: #bcd5e7;
+  --gold: #f0c979;
+  --violet: #ccb8f4;
+  --shadow: 0 32px 92px rgba(0, 0, 0, 0.62);
+  background:
+    radial-gradient(circle at 18% 10%, rgba(130, 103, 214, 0.22), transparent 26%),
+    radial-gradient(circle at 85% 16%, rgba(255, 162, 111, 0.12), transparent 25%),
+    radial-gradient(circle at 60% 100%, rgba(93, 126, 192, 0.13), transparent 30%),
+    linear-gradient(180deg, #080912 0%, #11101a 48%, #171321 100%);
+}
+
+body.dark-mode::before {
+  background:
+    radial-gradient(1px 1px at 5% 12%, rgba(255,255,255,0.95), transparent 2px),
+    radial-gradient(1px 1px at 12% 70%, rgba(255,255,255,0.72), transparent 2px),
+    radial-gradient(1.5px 1.5px at 18% 30%, rgba(255,230,198,0.92), transparent 2px),
+    radial-gradient(1px 1px at 27% 58%, rgba(210,230,255,0.88), transparent 2px),
+    radial-gradient(1.5px 1.5px at 39% 18%, rgba(255,255,255,0.82), transparent 2px),
+    radial-gradient(1px 1px at 48% 78%, rgba(255,255,255,0.86), transparent 2px),
+    radial-gradient(1.5px 1.5px at 62% 33%, rgba(255,229,180,0.88), transparent 2px),
+    radial-gradient(1px 1px at 73% 64%, rgba(255,255,255,0.78), transparent 2px),
+    radial-gradient(1.5px 1.5px at 83% 20%, rgba(202,224,255,0.9), transparent 2px),
+    radial-gradient(1px 1px at 92% 82%, rgba(255,255,255,0.84), transparent 2px);
+  background-size: 100% 100%;
+  animation: star-twinkle 4.6s ease-in-out infinite alternate, star-float 28s linear infinite;
+}
+
+body.dark-mode::after {
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255,255,255,0.045), transparent 0 18%),
+    radial-gradient(circle at 72% 76%, rgba(120,154,232,0.12), transparent 0 24%),
+    linear-gradient(110deg, transparent 0 40%, rgba(255,255,255,0.04) 48%, transparent 56%),
+    linear-gradient(72deg, transparent 0 62%, rgba(255, 196, 157, 0.04) 68%, transparent 76%);
+  animation: nebula-pulse 12s ease-in-out infinite alternate, aurora-drift 24s linear infinite;
+}
+
+body.dark-mode .workspace,
+body.dark-mode .output-panel {
+  background:
+    linear-gradient(180deg, rgba(27, 22, 36, 0.92), rgba(19, 16, 28, 0.9));
+  border-color: rgba(245, 225, 204, 0.14);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+
+body.dark-mode .paper,
+body.dark-mode .test-item,
+body.dark-mode .mutation-report,
+body.dark-mode .generated-markdown-paper,
+body.dark-mode .generated-docs-paper,
+body.dark-mode .docs-example-paper {
+  background:
+    linear-gradient(180deg, rgba(36, 29, 48, 0.96), rgba(26, 22, 37, 0.94));
+  border-color: rgba(245, 225, 204, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 58px rgba(0, 0, 0, 0.36);
+}
+
+body.dark-mode .markdown-rendered p,
+body.dark-mode .markdown-rendered li {
+  color: #dfd1c3;
+}
+
+body.dark-mode .markdown-rendered a {
+  color: #ffc49d;
+  text-decoration-color: rgba(255, 196, 157, 0.45);
+}
+
+body.dark-mode .markdown-rendered .md-code,
+body.dark-mode .mutation-analysis-markdown,
+body.dark-mode .metric-error,
+body.dark-mode .saved-invariants,
+body.dark-mode .source-preview,
+body.dark-mode .source-hover-card {
+  background:
+    linear-gradient(180deg, rgba(43, 34, 56, 0.96), rgba(32, 26, 43, 0.96));
+  border-color: rgba(245, 225, 204, 0.14);
+}
+
+body.dark-mode .markdown-rendered table {
+  background: rgba(29, 24, 40, 0.92);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+}
+
+body.dark-mode .markdown-rendered th {
+  background: rgba(93, 72, 111, 0.82);
+}
+
+body.dark-mode .loading-dots span {
+  box-shadow: 0 0 14px rgba(255, 196, 157, 0.55);
+}
+
+body.dark-mode,
+body.dark-mode .placeholder,
+body.dark-mode .review-copy p,
+body.dark-mode .model-card p,
+body.dark-mode .generated-docs-note,
+body.dark-mode .mutation-empty,
+body.dark-mode .source-preview-empty,
+body.dark-mode .metric-explanation,
+body.dark-mode .mutation-analysis-copy,
+body.dark-mode .test-item p,
+body.dark-mode .saved-invariants li {
+  color: #e8d9c9;
+}
+
+body.dark-mode .eyebrow,
+body.dark-mode .field span,
+body.dark-mode .generator > label,
+body.dark-mode .source-line-number,
+body.dark-mode .generated-doc-tab small,
+body.dark-mode .metric-warning {
+  color: #d7b58d;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  color: #fff3e8;
+  caret-color: #ffc49d;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: rgba(232, 217, 201, 0.58);
+}
+
+body.dark-mode option {
+  color: #fff3e8;
+  background: #1d1828;
+}
+
+body.dark-mode .invariant-copy,
+body.dark-mode .test-invariant-copy,
+body.dark-mode .source-line code,
+body.dark-mode .test-editor textarea {
+  color: #fff3e8;
+}
+
+body.dark-mode .line-chip,
+body.dark-mode .metric-pills span,
+body.dark-mode .confidence-pill,
+body.dark-mode .mutation-pill,
+body.dark-mode .survived-mutant-badge {
+  color: #fff3e8;
+}
+
+body.dark-mode .confidence-high,
+body.dark-mode .mutation-high {
+  border-color: rgba(167, 216, 180, 0.34);
+  background: rgba(82, 132, 96, 0.34);
+}
+
+body.dark-mode .confidence-medium,
+body.dark-mode .mutation-medium {
+  border-color: rgba(240, 201, 121, 0.36);
+  background: rgba(136, 102, 48, 0.36);
+}
+
+body.dark-mode .confidence-low,
+body.dark-mode .mutation-low,
+body.dark-mode .metric-error {
+  border-color: rgba(255, 162, 111, 0.38);
+  background: rgba(126, 62, 58, 0.34);
+}
+
+body.dark-mode .source-line.is-highlighted {
+  background: rgba(151, 194, 162, 0.2);
+  box-shadow: inset 3px 0 0 rgba(167, 216, 180, 0.78);
+}
+
+body.dark-mode .source-hover-card {
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.58), 0 0 34px rgba(166, 138, 255, 0.14);
+}
+
+body.dark-mode .step-tab::before,
+body.dark-mode .example-prompt::before,
+body.dark-mode .theme-toggle::before,
+body.dark-mode .copy-button::before,
+body.dark-mode .download-button::before,
+body.dark-mode .secondary-button::before,
+body.dark-mode .docs-example-choice::before,
+body.dark-mode .generated-doc-tab::before {
+  background: linear-gradient(110deg, transparent 0%, rgba(255, 221, 184, 0.18) 45%, transparent 70%);
+}
+
+body.dark-mode .workspace::before,
+body.dark-mode .output-panel::before {
+  background: linear-gradient(90deg, #ffa26f, #f0c979, #bfaee8, #a7d8b4);
+  background-size: 220px 100%;
+  animation: accent-slide 3.8s ease-in-out infinite;
+}
+
+body.dark-mode .status-dot {
+  box-shadow: 0 0 14px currentColor;
+  animation: stellar-pulse 2.4s ease-in-out infinite;
+}
+
+.theme-toggle {
+  min-width: 42px;
+  min-height: 34px;
+  padding: 0 9px;
+  display: inline-flex;
+  gap: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  opacity: 0.74;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  gap: 8px;
+  opacity: 1;
+}
+
+.theme-orbit {
+  position: relative;
+  width: 28px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 227, 164, 0.95), rgba(221, 153, 87, 0.82));
+  box-shadow: inset 0 0 0 1px rgba(132, 63, 44, 0.16), 0 6px 14px rgba(72, 56, 42, 0.15);
+  transition: background 260ms ease, box-shadow 260ms ease;
+}
+
+.theme-sun,
+.theme-moon {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  transition: transform 320ms var(--ease-out), opacity 220ms ease, box-shadow 260ms ease;
+}
+
+.theme-sun {
+  background: #fff6c9;
+  box-shadow: 0 0 0 3px rgba(255, 246, 201, 0.22), 0 0 14px rgba(255, 190, 89, 0.75);
+  transform: translateX(-5px) scale(1);
+  opacity: 1;
+}
+
+.theme-moon {
+  background: #f5eadf;
+  box-shadow: inset -4px -2px 0 rgba(55, 43, 68, 0.55), 0 0 12px rgba(195, 219, 255, 0.5);
+  transform: translateX(7px) scale(0.55) rotate(-22deg);
+  opacity: 0;
+}
+
+.theme-label {
+  position: relative;
+  z-index: 1;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition: width 220ms var(--ease-out), opacity 160ms ease;
+}
+
+.theme-toggle:hover .theme-label,
+.theme-toggle:focus-visible .theme-label {
+  width: 72px;
+  opacity: 1;
+}
+
+body.dark-mode .theme-orbit {
+  background: linear-gradient(135deg, rgba(31, 25, 42, 0.98), rgba(70, 55, 97, 0.9));
+  box-shadow: inset 0 0 0 1px rgba(245, 225, 204, 0.16), 0 0 18px rgba(166, 138, 255, 0.22);
+}
+
+body.dark-mode .theme-sun {
+  transform: translateX(-8px) scale(0.45) rotate(30deg);
+  opacity: 0;
+}
+
+body.dark-mode .theme-moon {
+  transform: translateX(3px) scale(1) rotate(0deg);
+  opacity: 1;
+}
+
+body.dark-mode .theme-toggle {
+  box-shadow: 0 0 24px rgba(166, 138, 255, 0.16), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.markdown-rendered h2::before,
+.markdown-rendered h3::before {
+  content: "";
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--clay), var(--gold));
+  vertical-align: 0.08em;
+  box-shadow: 0 0 0 4px rgba(182, 90, 55, 0.1);
+}
+
+.markdown-rendered h3::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  background: linear-gradient(135deg, var(--sage), var(--blue));
+}
+
+.markdown-rendered table tr:nth-child(even) td {
+  background: rgba(241, 234, 223, 0.36);
+}
+
+.markdown-rendered .md-code code {
+  color: color-mix(in srgb, var(--ink) 92%, var(--clay));
+}
+
+.generated-doc-rendered > h1:first-child,
+.generated-docs-rendered > h1:first-child,
+.mutation-analysis-markdown > h1:first-child,
+.invariant-copy > h1:first-child {
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(182, 90, 55, 0.18);
+}
+
+.mutation-analysis-markdown {
+  border-left: 3px solid rgba(182, 90, 55, 0.42);
+}
+
+body.dark-mode .markdown-rendered h2::before,
+body.dark-mode .markdown-rendered h3::before {
+  box-shadow: 0 0 16px rgba(255, 196, 157, 0.18);
+}
+
+body.dark-mode .markdown-rendered table tr:nth-child(even) td {
+  background: rgba(68, 55, 84, 0.28);
+}
+
+body.dark-mode .generated-doc-rendered > h1:first-child,
+body.dark-mode .generated-docs-rendered > h1:first-child,
+body.dark-mode .mutation-analysis-markdown > h1:first-child,
+body.dark-mode .invariant-copy > h1:first-child {
+  border-bottom-color: rgba(255, 196, 157, 0.2);
+}
+
+/* Dark readability fix + animated accents for rendered app Markdown. */
+body.dark-mode .prompt-examples .example-prompt,
+body.dark-mode .generated-docs-button,
+body.dark-mode .docs-open-button {
+  border-color: rgba(245, 225, 204, 0.18);
+  background:
+    linear-gradient(180deg, rgba(42, 34, 54, 0.96), rgba(32, 26, 43, 0.95));
+  color: #fff3e8;
+  text-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 16px 34px rgba(0,0,0,0.28);
+}
+
+body.dark-mode .prompt-examples .example-prompt:hover,
+body.dark-mode .generated-docs-button:hover,
+body.dark-mode .docs-open-button:hover {
+  border-color: rgba(255, 196, 157, 0.34);
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(56, 43, 70, 0.98), rgba(39, 31, 52, 0.98));
+}
+
+body.dark-mode .prompt-examples .example-prompt:disabled,
+body.dark-mode .generated-docs-button:disabled {
+  color: rgba(255, 243, 232, 0.48);
+  background:
+    linear-gradient(180deg, rgba(42, 34, 54, 0.7), rgba(32, 26, 43, 0.68));
+}
+
+.markdown-rendered h2::before,
+.markdown-rendered h3::before {
+  animation: markdown-accent-pulse 3.2s ease-in-out infinite;
+}
+
+.markdown-rendered .md-code::before,
+.mutation-analysis-markdown::before,
+.metric-error::before,
+.saved-invariants::before {
+  background-size: 180% 100%;
+  animation: markdown-accent-slide 4.6s ease-in-out infinite;
+}
+
+.markdown-rendered table {
+  position: relative;
+}
+
+.markdown-rendered table::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  content: "";
+  background: linear-gradient(90deg, var(--clay), var(--gold), var(--sage), var(--blue));
+  background-size: 220% 100%;
+  animation: markdown-accent-slide 5.4s ease-in-out infinite;
+}
+
+body.dark-mode .markdown-rendered h2::before,
+body.dark-mode .markdown-rendered h3::before {
+  filter: drop-shadow(0 0 8px rgba(255, 196, 157, 0.26));
+}
+
+body.dark-mode .markdown-rendered .md-code::before,
+body.dark-mode .mutation-analysis-markdown::before,
+body.dark-mode .metric-error::before,
+body.dark-mode .saved-invariants::before,
+body.dark-mode .markdown-rendered table::before {
+  opacity: 0.95;
+  filter: drop-shadow(0 0 10px rgba(255, 196, 157, 0.18));
+}
+
+@keyframes markdown-accent-pulse {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.68;
   }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes markdown-accent-slide {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes app-breathe-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes soft-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes doc-line-rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes star-float {
+  0% { background-position: 0 0; }
+  100% { background-position: 24px 42px; }
+}
+
+@keyframes nebula-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes aurora-drift {
+  0% {
+    background-position: 0 0, 0 0, -120px 0, 160px 0;
+  }
+  100% {
+    background-position: 0 0, 0 0, 180px 0, -160px 0;
+  }
+}
+
+@keyframes stellar-pulse {
+  0%,
+  100% {
+    opacity: 0.62;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.16);
+  }
+}
+
+
+/* Final app-Markdown color pass: warmer in light mode, clearer in dark mode. */
+.markdown-rendered h2,
+.markdown-rendered h3,
+.markdown-rendered h4,
+.mutation-analysis-markdown h2,
+.mutation-analysis-markdown h3,
+.metric-error h2,
+.metric-error h3,
+.saved-invariants h2,
+.saved-invariants h3 {
+  color: color-mix(in srgb, var(--ink) 82%, var(--clay));
+}
+
+.markdown-rendered h2::before,
+.markdown-rendered h3::before,
+.mutation-analysis-markdown h2::before,
+.mutation-analysis-markdown h3::before,
+.metric-error h2::before,
+.metric-error h3::before,
+.saved-invariants h2::before,
+.saved-invariants h3::before {
+  background: linear-gradient(135deg, var(--clay), var(--gold), var(--sage));
+  animation: markdown-accent-pulse 3s ease-in-out infinite;
+}
+
+.markdown-rendered blockquote,
+.mutation-analysis-markdown blockquote,
+.metric-error blockquote,
+.saved-invariants blockquote {
+  border-left-color: var(--clay);
+  background: linear-gradient(90deg, rgba(182, 90, 55, 0.14), rgba(201, 152, 67, 0.08));
+}
+
+.markdown-rendered table,
+.mutation-analysis-markdown table,
+.metric-error table,
+.saved-invariants table {
+  box-shadow: 0 18px 42px rgba(74, 54, 33, 0.1);
+}
+
+body.dark-mode .markdown-rendered h2,
+body.dark-mode .markdown-rendered h3,
+body.dark-mode .markdown-rendered h4,
+body.dark-mode .mutation-analysis-markdown h2,
+body.dark-mode .mutation-analysis-markdown h3,
+body.dark-mode .metric-error h2,
+body.dark-mode .metric-error h3,
+body.dark-mode .saved-invariants h2,
+body.dark-mode .saved-invariants h3 {
+  color: #ffe0c7;
+}
+
+body.dark-mode .markdown-rendered blockquote,
+body.dark-mode .mutation-analysis-markdown blockquote,
+body.dark-mode .metric-error blockquote,
+body.dark-mode .saved-invariants blockquote {
+  border-left-color: #ffb178;
+  background: linear-gradient(90deg, rgba(255, 177, 120, 0.18), rgba(174, 203, 151, 0.08));
+  color: #f7eadc;
+}
+
+body.dark-mode .markdown-rendered table,
+body.dark-mode .mutation-analysis-markdown table,
+body.dark-mode .metric-error table,
+body.dark-mode .saved-invariants table {
+  border-color: rgba(255, 224, 199, 0.16);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.28);
+}
+
+
+/* Dark-mode contrast fix for example documentation tabs. */
+body.dark-mode .docs-example-switch {
+  border-color: rgba(255, 224, 199, 0.2);
+  background: rgba(20, 16, 28, 0.72);
+}
+
+body.dark-mode .docs-example-choice {
+  color: #f2dfcf;
+  background: transparent;
+  border-color: transparent;
+}
+
+body.dark-mode .docs-example-choice:hover {
+  color: #fff8ef;
+  background: rgba(255, 177, 120, 0.14);
+  border-color: rgba(255, 224, 199, 0.2);
+}
+
+body.dark-mode .docs-example-choice.is-active {
+  color: #261f1a;
+  background: linear-gradient(180deg, #fff8ef, #ead8c4);
+  border-color: rgba(255, 248, 239, 0.88);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24), inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+
+/* Global dark-mode surface pass for generated review content. */
+body.dark-mode .invariant-item,
+body.dark-mode .invariant-card,
+body.dark-mode .candidate-card,
+body.dark-mode .claim-card,
+body.dark-mode .metric-card,
+body.dark-mode .metric-detail,
+body.dark-mode .mutation-card,
+body.dark-mode .mutation-summary-card,
+body.dark-mode .survived-mutant,
+body.dark-mode .test-editor,
+body.dark-mode .test-panel,
+body.dark-mode .review-card,
+body.dark-mode .generated-doc-card,
+body.dark-mode .saved-doc-card {
+  color: #f8efe6;
+  border-color: rgba(255, 224, 199, 0.18);
+  background:
+    linear-gradient(135deg, rgba(44, 34, 56, 0.95), rgba(28, 22, 40, 0.93)),
+    radial-gradient(circle at 14% 0%, rgba(255, 177, 120, 0.13), transparent 34%);
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .invariant-item:hover,
+body.dark-mode .invariant-card:hover,
+body.dark-mode .candidate-card:hover,
+body.dark-mode .claim-card:hover,
+body.dark-mode .metric-card:hover,
+body.dark-mode .mutation-card:hover {
+  border-color: rgba(255, 177, 120, 0.34);
+  background:
+    linear-gradient(135deg, rgba(52, 39, 64, 0.97), rgba(32, 25, 45, 0.95)),
+    radial-gradient(circle at 14% 0%, rgba(255, 177, 120, 0.18), transparent 38%);
+}
+
+body.dark-mode .invariant-item p,
+body.dark-mode .invariant-item li,
+body.dark-mode .invariant-card p,
+body.dark-mode .candidate-card p,
+body.dark-mode .claim-card p,
+body.dark-mode .metric-card p,
+body.dark-mode .mutation-card p,
+body.dark-mode .test-panel p,
+body.dark-mode .generated-doc-card p,
+body.dark-mode .saved-doc-card p {
+  color: #f8efe6;
+}
+
+body.dark-mode .invariant-item h3,
+body.dark-mode .invariant-item h4,
+body.dark-mode .invariant-card h3,
+body.dark-mode .candidate-card h3,
+body.dark-mode .claim-card h3,
+body.dark-mode .metric-card h3,
+body.dark-mode .mutation-card h3 {
+  color: #ffe1c7;
+}
+
+body.dark-mode .line-chip,
+body.dark-mode .source-line-chip,
+body.dark-mode [class*="line-chip"],
+body.dark-mode [class*="line-range"],
+body.dark-mode [class*="confidence"],
+body.dark-mode [class*="validity"],
+body.dark-mode [class*="soundness"],
+body.dark-mode [class*="metric-pill"],
+body.dark-mode [class*="mutation-pill"] {
+  color: #261f1a;
+  border-color: rgba(255, 248, 239, 0.48);
+  background: linear-gradient(135deg, #d8eadc, #fff0d9);
+}
+
+body.dark-mode [class*="confidence-low"],
+body.dark-mode [class*="validity-low"],
+body.dark-mode [class*="soundness-low"],
+body.dark-mode [class*="mutation-low"] {
+  color: #fff7f0;
+  border-color: rgba(255, 148, 125, 0.42);
+  background: linear-gradient(135deg, rgba(185, 69, 61, 0.72), rgba(95, 43, 58, 0.82));
+}
+
+body.dark-mode [class*="confidence-medium"],
+body.dark-mode [class*="validity-medium"],
+body.dark-mode [class*="soundness-medium"],
+body.dark-mode [class*="mutation-medium"] {
+  color: #2d2115;
+  border-color: rgba(255, 207, 139, 0.56);
+  background: linear-gradient(135deg, #f0c979, #ffe3a3);
+}
+
+body.dark-mode [class*="confidence-high"],
+body.dark-mode [class*="validity-high"],
+body.dark-mode [class*="soundness-high"],
+body.dark-mode [class*="mutation-high"] {
+  color: #132218;
+  border-color: rgba(174, 203, 151, 0.66);
+  background: linear-gradient(135deg, #aecb97, #def0d4);
+}
+
+body.dark-mode .metric-test-button,
+body.dark-mode .check-test-button,
+body.dark-mode .rerun-test-button,
+body.dark-mode .copy-button,
+body.dark-mode .download-button,
+body.dark-mode .secondary-action {
+  color: #fff3e8;
+  border-color: rgba(255, 224, 199, 0.2);
+  background: rgba(49, 38, 62, 0.9);
+}
+
+body.dark-mode .metric-test-button:hover,
+body.dark-mode .check-test-button:hover,
+body.dark-mode .rerun-test-button:hover,
+body.dark-mode .copy-button:hover,
+body.dark-mode .download-button:hover,
+body.dark-mode .secondary-action:hover {
+  color: #261f1a;
+  background: linear-gradient(135deg, #fff4e8, #f0c979);
+}
+
+
+/* Warmer source-evidence highlighting in dark mode. */
+body.dark-mode .source-line.is-highlighted,
+body.dark-mode .source-line.is-hovered,
+body.dark-mode .source-code-line.is-highlighted,
+body.dark-mode .source-code-line.is-hovered,
+body.dark-mode [class*="source-line"][class*="highlight"],
+body.dark-mode [class*="source-code-line"][class*="highlight"] {
+  color: #fff7ed;
+  border-left-color: #ff9b58;
+  background:
+    linear-gradient(90deg, rgba(255, 155, 88, 0.34), rgba(255, 196, 117, 0.2) 46%, rgba(255, 196, 117, 0.08)),
+    rgba(70, 47, 35, 0.56);
+  box-shadow: inset 5px 0 0 rgba(255, 177, 120, 0.82), 0 0 26px rgba(255, 155, 88, 0.18);
+}
+
+body.dark-mode .source-line.is-highlighted .line-number,
+body.dark-mode .source-line.is-hovered .line-number,
+body.dark-mode .source-code-line.is-highlighted .line-number,
+body.dark-mode .source-code-line.is-hovered .line-number,
+body.dark-mode [class*="source-line"][class*="highlight"] .line-number,
+body.dark-mode [class*="source-code-line"][class*="highlight"] .line-number {
+  color: #ffc07a;
+}
+
+body.dark-mode .source-line.is-highlighted code,
+body.dark-mode .source-line.is-hovered code,
+body.dark-mode .source-code-line.is-highlighted code,
+body.dark-mode .source-code-line.is-hovered code,
+body.dark-mode [class*="source-line"][class*="highlight"] code,
+body.dark-mode [class*="source-code-line"][class*="highlight"] code {
+  color: #fffaf4;
+}
+
+
+/* Final dark-mode invariant review contrast + hover cleanup pass. */
+body.dark-mode .review-panel .invariant-item,
+body.dark-mode #review-panel .invariant-item {
+  color: #fff5ea !important;
+  background: linear-gradient(135deg, rgba(43, 32, 56, 0.96), rgba(28, 22, 40, 0.94)) !important;
+  border-color: rgba(255, 220, 190, 0.18) !important;
+}
+
+body.dark-mode .review-panel .invariant-item p,
+body.dark-mode .review-panel .invariant-item span,
+body.dark-mode #review-panel .invariant-item p,
+body.dark-mode #review-panel .invariant-item span {
+  color: #fff5ea !important;
+}
+
+body.dark-mode .review-panel .metric-pills,
+body.dark-mode #review-panel .metric-pills {
+  background: transparent !important;
+}
+
+body.dark-mode .review-panel .metric-pills span,
+body.dark-mode #review-panel .metric-pills span,
+body.dark-mode .review-panel .confidence-pill,
+body.dark-mode #review-panel .confidence-pill,
+body.dark-mode .review-panel .mutation-pill,
+body.dark-mode #review-panel .mutation-pill {
+  color: #241d18 !important;
+  text-shadow: none !important;
+  border-color: rgba(255, 236, 213, 0.42) !important;
+  background: linear-gradient(135deg, #fff3df, #e8d8bd) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.34), 0 10px 22px rgba(0,0,0,0.22) !important;
+}
+
+body.dark-mode .review-panel .confidence-high,
+body.dark-mode #review-panel .confidence-high {
+  color: #172215 !important;
+  background: linear-gradient(135deg, #b8d7a5, #e9f6dd) !important;
+  border-color: rgba(184, 215, 165, 0.72) !important;
+}
+
+body.dark-mode .review-panel .confidence-medium,
+body.dark-mode #review-panel .confidence-medium {
+  color: #2c2115 !important;
+  background: linear-gradient(135deg, #efc06e, #ffe3a6) !important;
+  border-color: rgba(255, 211, 146, 0.72) !important;
+}
+
+body.dark-mode .review-panel .confidence-low,
+body.dark-mode #review-panel .confidence-low,
+body.dark-mode .review-panel .mutation-pill,
+body.dark-mode #review-panel .mutation-pill {
+  color: #fff8f0 !important;
+  background: linear-gradient(135deg, #c86b56, #7b3d54) !important;
+  border-color: rgba(255, 164, 131, 0.64) !important;
+}
+
+body.dark-mode .review-panel .metric-test-button,
+body.dark-mode #review-panel .metric-test-button,
+body.dark-mode .review-panel .mutation-analysis-button,
+body.dark-mode #review-panel .mutation-analysis-button {
+  color: #fff6ec !important;
+  background: linear-gradient(135deg, rgba(69, 50, 82, 0.98), rgba(45, 34, 59, 0.98)) !important;
+  border-color: rgba(255, 223, 197, 0.35) !important;
+  text-shadow: none !important;
+}
+
+body.dark-mode .review-panel .metric-test-button:hover,
+body.dark-mode #review-panel .metric-test-button:hover,
+body.dark-mode .review-panel .mutation-analysis-button:hover,
+body.dark-mode #review-panel .mutation-analysis-button:hover {
+  color: #261f1a !important;
+  background: linear-gradient(135deg, #fff4e8, #f0c979) !important;
+}
+
+
+/* Polished grouped mutation analysis report. */
+.mutation-analysis-copy > summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.mutation-analysis-pretty {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.mutation-analysis-overview,
+.mutation-analysis-group,
+.mutation-unavailable-card,
+.mutation-raw-analysis {
+  border: 1px solid rgba(120, 92, 64, 0.16);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 250, 242, 0.92), rgba(241, 234, 223, 0.72));
+  padding: 16px;
+}
+
+.mutation-analysis-overview h4,
+.mutation-group-heading h5 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.mutation-analysis-overview p,
+.mutation-group-help {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.mutation-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mutation-severity-chip,
+.mutation-origin-chip,
+.mutation-diagnostic-chip,
+.mutation-group-count {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 28px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mutation-group-count {
+  color: #261f1a;
+  background: #fff0d9;
+  border: 1px solid rgba(182, 90, 55, 0.24);
+}
+
+.mutation-severe .mutation-severity-chip {
+  color: #fff8f0;
+  background: linear-gradient(135deg, #c86b56, #7b3d54);
+}
+
+.mutation-medium .mutation-severity-chip {
+  color: #2c2115;
+  background: linear-gradient(135deg, #efc06e, #ffe3a6);
+}
+
+.mutation-low .mutation-severity-chip {
+  color: #172215;
+  background: linear-gradient(135deg, #b8d7a5, #e9f6dd);
+}
+
+.mutation-analysis-items {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.mutation-analysis-item {
+  border: 1px solid rgba(120, 92, 64, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.76);
+  padding: 12px;
+}
+
+.mutation-origin-chip {
+  color: #6d3b2a;
+  background: rgba(255, 177, 120, 0.18);
+  border: 1px solid rgba(182, 90, 55, 0.18);
+}
+
+.mutation-analysis-preview {
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+
+.mutation-analysis-item details,
+.mutation-raw-analysis,
+.mutation-unavailable-card details {
+  margin-top: 10px;
+}
+
+.mutation-analysis-item summary,
+.mutation-raw-analysis summary,
+.mutation-unavailable-card summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: var(--clay);
+}
+
+.mutation-unavailable-card {
+  border-color: rgba(182, 90, 55, 0.22);
+  background: linear-gradient(135deg, rgba(255, 238, 221, 0.92), rgba(255, 250, 242, 0.84));
+}
+
+.mutation-unavailable-card strong {
+  display: block;
+  margin-top: 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.1rem;
+}
+
+.mutation-unavailable-card pre {
+  overflow: auto;
+  white-space: pre-wrap;
+  max-height: 240px;
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--ink);
+  background: rgba(38, 31, 26, 0.06);
+}
+
+body.dark-mode .mutation-analysis-copy > summary {
+  color: #ffe0c7;
+}
+
+body.dark-mode .mutation-analysis-overview,
+body.dark-mode .mutation-analysis-group,
+body.dark-mode .mutation-unavailable-card,
+body.dark-mode .mutation-raw-analysis,
+body.dark-mode .mutation-analysis-item {
+  color: #fff5ea;
+  border-color: rgba(255, 220, 190, 0.18);
+  background: linear-gradient(135deg, rgba(43, 32, 56, 0.96), rgba(28, 22, 40, 0.94));
+}
+
+body.dark-mode .mutation-analysis-overview p,
+body.dark-mode .mutation-group-help,
+body.dark-mode .mutation-analysis-preview,
+body.dark-mode .mutation-unavailable-card p {
+  color: #f3dfcc;
+}
+
+body.dark-mode .mutation-origin-chip,
+body.dark-mode .mutation-diagnostic-chip {
+  color: #2b1e18;
+  background: linear-gradient(135deg, #ffbf86, #ffe3c2);
+  border-color: rgba(255, 224, 199, 0.32);
+}
+
+body.dark-mode .mutation-analysis-item summary,
+body.dark-mode .mutation-raw-analysis summary,
+body.dark-mode .mutation-unavailable-card summary {
+  color: #ffbf86;
+}
+
+body.dark-mode .mutation-unavailable-card pre {
+  color: #fff5ea;
+  background: rgba(12, 10, 18, 0.55);
+  border: 1px solid rgba(255, 224, 199, 0.14);
+}
+
+
+/* Final dark-mode invariant pill contrast pass. */
+body.dark-mode .review-panel .line-chip,
+body.dark-mode #review-panel .line-chip,
+body.dark-mode .review-panel [class*="line-chip"],
+body.dark-mode #review-panel [class*="line-chip"] {
+  color: #231913 !important;
+  text-shadow: none !important;
+  border-color: rgba(255, 184, 104, 0.72) !important;
+  background: linear-gradient(135deg, #ffb566 0%, #ffe0a8 100%) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 10px 24px rgba(255, 153, 82, 0.18) !important;
+}
+
+body.dark-mode .review-panel .metric-pills span:not(.confidence-high):not(.confidence-medium):not(.confidence-low):not(.mutation-pill),
+body.dark-mode #review-panel .metric-pills span:not(.confidence-high):not(.confidence-medium):not(.confidence-low):not(.mutation-pill) {
+  color: #ffe8d2 !important;
+  text-shadow: none !important;
+  border-color: rgba(255, 184, 104, 0.38) !important;
+  background: linear-gradient(135deg, rgba(82, 55, 72, 0.98), rgba(48, 36, 58, 0.98)) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 10px 24px rgba(0, 0, 0, 0.24) !important;
+}
+
+body.dark-mode .review-panel .metric-pills span:not(.confidence-high):not(.confidence-medium):not(.confidence-low):not(.mutation-pill)::after,
+body.dark-mode #review-panel .metric-pills span:not(.confidence-high):not(.confidence-medium):not(.confidence-low):not(.mutation-pill)::after {
+  opacity: 0.18;
+}
+
+
+/* Final source evidence popover close behavior. */
+.source-hover-card {
+  pointer-events: none !important;
+  transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease !important;
+}
+
+.source-hover-card:not(.is-visible) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(8px) scale(0.98) !important;
+}
+
+.source-hover-card.is-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+
+/* Clean grouped mutation analysis redesign. */
+.mutation-analysis-pretty {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+  animation: mutation-panel-in 260ms ease both;
+}
+
+.mutation-analysis-hero,
+.mutation-risk-group,
+.mutation-raw-analysis,
+.mutation-unavailable-card {
+  border: 1px solid rgba(120, 92, 64, 0.14);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 250, 242, 0.94), rgba(241, 234, 223, 0.76));
+  box-shadow: 0 16px 36px rgba(78, 55, 32, 0.08);
+}
+
+.mutation-analysis-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+}
+
+.mutation-analysis-hero h4,
+.mutation-risk-header h5 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.mutation-analysis-hero p,
+.mutation-group-help,
+.mutation-none,
+.mutation-analysis-preview {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.mutation-summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.mutation-summary-pill,
+.mutation-severity-chip,
+.mutation-origin-chip,
+.mutation-diagnostic-chip,
+.mutation-group-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  min-height: 28px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.mutation-summary-pill strong {
+  font-size: 0.95rem;
+}
+
+.mutation-risk-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mutation-risk-group {
+  min-width: 0;
+  padding: 14px;
+  animation: mutation-card-in 320ms ease both;
+}
+
+.mutation-risk-group:nth-child(1) { animation-delay: 40ms; }
+.mutation-risk-group:nth-child(2) { animation-delay: 95ms; }
+.mutation-risk-group:nth-child(3) { animation-delay: 150ms; }
+
+.mutation-risk-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mutation-analysis-items {
+  display: grid;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.mutation-analysis-item {
+  border: 1px solid rgba(120, 92, 64, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.76);
+  padding: 11px;
+  animation: mutation-item-in 260ms ease both;
+  animation-delay: calc(90ms + var(--item-index, 0) * 45ms);
+}
+
+.mutation-analysis-item details {
+  margin-top: 8px;
+}
+
+.mutation-analysis-item summary,
+.mutation-raw-analysis summary,
+.mutation-unavailable-card summary {
+  cursor: pointer;
+  color: var(--clay);
+  font-weight: 850;
+}
+
+.mutation-analysis-preview {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+
+.mutation-raw-analysis {
+  padding: 12px 14px;
+}
+
+.mutation-unavailable-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-color: rgba(182, 90, 55, 0.24);
+}
+
+.mutation-unavailable-card pre {
+  overflow: auto;
+  max-height: 220px;
+  white-space: pre-wrap;
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(38, 31, 26, 0.06);
+}
+
+.mutation-risk-high .mutation-severity-chip,
+.mutation-summary-high {
+  color: #fff8f0;
+  background: linear-gradient(135deg, #c86b56, #7b3d54);
+}
+
+.mutation-risk-medium .mutation-severity-chip,
+.mutation-summary-medium {
+  color: #2c2115;
+  background: linear-gradient(135deg, #efc06e, #ffe3a6);
+}
+
+.mutation-risk-low .mutation-severity-chip,
+.mutation-summary-low {
+  color: #172215;
+  background: linear-gradient(135deg, #b8d7a5, #e9f6dd);
+}
+
+.mutation-origin-chip,
+.mutation-diagnostic-chip {
+  color: #6d3b2a;
+  background: rgba(255, 177, 120, 0.18);
+  border: 1px solid rgba(182, 90, 55, 0.16);
+}
+
+.mutation-group-count {
+  color: var(--ink);
+  background: rgba(255, 250, 242, 0.78);
+  border: 1px solid rgba(120, 92, 64, 0.14);
+}
+
+@media (max-width: 1180px) {
+  .mutation-risk-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mutation-analysis-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .mutation-summary-strip {
+    justify-content: flex-start;
+  }
+}
+
+body.dark-mode .mutation-analysis-hero,
+body.dark-mode .mutation-risk-group,
+body.dark-mode .mutation-raw-analysis,
+body.dark-mode .mutation-unavailable-card,
+body.dark-mode .mutation-analysis-item {
+  color: #fff5ea;
+  border-color: rgba(255, 220, 190, 0.16);
+  background: linear-gradient(135deg, rgba(43, 32, 56, 0.98), rgba(26, 21, 38, 0.96));
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+body.dark-mode .mutation-analysis-hero p,
+body.dark-mode .mutation-group-help,
+body.dark-mode .mutation-none,
+body.dark-mode .mutation-analysis-preview {
+  color: #f1ddc9;
+}
+
+body.dark-mode .mutation-origin-chip,
+body.dark-mode .mutation-diagnostic-chip {
+  color: #2b1e18;
+  background: linear-gradient(135deg, #ffbf86, #ffe3c2);
+  border-color: rgba(255, 224, 199, 0.32);
+}
+
+body.dark-mode .mutation-group-count {
+  color: #ffe9d2;
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 224, 199, 0.16);
+}
+
+body.dark-mode .mutation-analysis-item summary,
+body.dark-mode .mutation-raw-analysis summary,
+body.dark-mode .mutation-unavailable-card summary {
+  color: #ffbf86;
+}
+
+body.dark-mode .mutation-unavailable-card pre {
+  color: #fff5ea;
+  background: rgba(12, 10, 18, 0.55);
+  border: 1px solid rgba(255, 224, 199, 0.12);
+}
+
+@keyframes mutation-panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mutation-card-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes mutation-item-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
