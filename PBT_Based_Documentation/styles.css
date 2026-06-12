@@ -4387,3 +4387,87 @@ body.dark-mode.stage-coverage .coverage-rendered-docs.markdown-rendered {
   display: table;
   width: 100%;
 }
+
+/* Coverage layout repair: keep indicators subtle and out of the text flow. */
+.coverage-doc-highlight-block {
+  padding: 1.05rem 1.1rem 1rem 1.18rem !important;
+  min-height: auto;
+}
+
+.coverage-doc-line-chip {
+  position: absolute;
+  top: 0.72rem;
+  right: 0.78rem;
+  float: none !important;
+  max-width: min(42%, 260px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0 !important;
+  padding: 0.22rem 0.5rem !important;
+  font-size: 0.64rem !important;
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.coverage-doc-highlight-block:hover .coverage-doc-line-chip,
+.coverage-doc-highlight-block.is-active .coverage-doc-line-chip {
+  opacity: 1;
+}
+
+.coverage-rendered-docs code:not(pre code) {
+  padding: 0.03em 0.22em !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.coverage-source-line.is-uncovered-coverable {
+  position: relative;
+  background: linear-gradient(90deg, rgba(176, 78, 60, 0.13), rgba(176, 78, 60, 0.03)) !important;
+  border-left-color: rgba(217, 91, 68, 0.58) !important;
+}
+
+.coverage-source-line.is-uncovered-coverable::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  right: 8px;
+  width: 4px;
+  border-radius: 999px;
+  background: rgba(217, 91, 68, 0.62);
+  opacity: 0.76;
+}
+
+.coverage-source-line.is-uncovered-coverable .coverage-line-number::after {
+  content: none !important;
+  display: none !important;
+}
+
+.coverage-source-line.is-covered.is-uncovered-coverable {
+  background: inherit !important;
+}
+
+.coverage-source-line.is-covered.is-uncovered-coverable::after {
+  display: none;
+}
+
+body.dark-mode .coverage-doc-highlight-block {
+  padding: 1.05rem 1.1rem 1rem 1.18rem !important;
+}
+
+body.dark-mode .coverage-doc-line-chip {
+  color: #3b2215 !important;
+  background: linear-gradient(135deg, rgba(255, 190, 132, 0.88), rgba(255, 226, 177, 0.92)) !important;
+  border-color: rgba(255, 218, 172, 0.40) !important;
+}
+
+body.dark-mode .coverage-source-line.is-uncovered-coverable {
+  background: linear-gradient(90deg, rgba(255, 111, 91, 0.16), rgba(255, 111, 91, 0.035)) !important;
+  border-left-color: rgba(255, 126, 96, 0.76) !important;
+}
+
+body.dark-mode .coverage-source-line.is-uncovered-coverable::after {
+  background: rgba(255, 126, 96, 0.78);
+  box-shadow: 0 0 16px rgba(255, 126, 96, 0.24);
+}
