@@ -146,7 +146,7 @@ def _parse_json_array(text):
     return data
 
 
-def _normalize_coverage_entries(raw_entries, source_line_count):
+def _normalize_coverage_entries(raw_entries, source_line_count, coverable_lines=None):
     entries = []
     covered = set()
     for index, item in enumerate(raw_entries or []):
@@ -168,7 +168,13 @@ def _normalize_coverage_entries(raw_entries, source_line_count):
                 line_number = int(raw_line)
             except (TypeError, ValueError):
                 continue
-            if 1 <= line_number <= source_line_count and line_number not in normalized_lines:
+            if not (1 <= line_number <= source_line_count):
+                continue
+            # Drop mappings to docstrings, comments, and blank lines so the
+            # documentation cannot claim coverage of non-coverable source.
+            if coverable_lines is not None and line_number not in coverable_lines:
+                continue
+            if line_number not in normalized_lines:
                 normalized_lines.append(line_number)
                 covered.add(line_number)
         confidence = str(item.get("confidence") or "MEDIUM").upper()
@@ -205,6 +211,8 @@ For EACH meaningful documentation statement:
 4. If the statement is unsupported by the source, return an empty covered_lines list.
 5. Use exact 1-based line numbers from the provided source code.
 6. Be conservative. Only map lines when there is clear evidence.
+7. Map ONLY to executable source lines. Never map to docstring lines,
+   comment lines, or blank lines, even when they describe the behavior.
 
 Return ONLY valid JSON, as an array of objects:
 [
@@ -228,17 +236,20 @@ DOCUMENTATION:
         model=model,
         input=prompt,
     )
-    raw_entries = _parse_json_array(response.output_text)
-    entries, covered_lines = _normalize_coverage_entries(raw_entries, len(source_lines_raw))
-
     coverable_lines = _coverable_source_lines(source_code)
-    covered_coverable = covered_lines & coverable_lines
+    raw_entries = _parse_json_array(response.output_text)
+    entries, covered_lines = _normalize_coverage_entries(
+        raw_entries, len(source_lines_raw), coverable_lines
+    )
+
+    # covered_lines is already restricted to coverable lines, so docstrings,
+    # comments, and blank lines count toward neither numerator nor denominator.
     total_coverable = len(coverable_lines)
-    coverage_percent = round((len(covered_coverable) / total_coverable) * 100, 1) if total_coverable else 0
+    coverage_percent = round((len(covered_lines) / total_coverable) * 100, 1) if total_coverable else 0
 
     return {
         "coverage_percent": coverage_percent,
-        "covered_line_count": len(covered_coverable),
+        "covered_line_count": len(covered_lines),
         "total_line_count": total_coverable,
         "covered_lines": sorted(covered_lines),
         "coverable_lines": sorted(coverable_lines),
@@ -285,9 +296,12 @@ def _coverable_source_lines(source_code):
     The heatmap still displays every line, but the denominator should not punish
     the documentation for blank lines, comments, or giant embedded docstrings.
     """
-    docstring_lines = _docstring_line_numbers(source_code)
+    # Normalize identically to the numbered source sent to the model so that
+    # ast line numbers align with the 1-based heatmap line numbers.
+    normalized = source_code.strip("\n")
+    docstring_lines = _docstring_line_numbers(normalized)
     coverable = set()
-    for index, line in enumerate(source_code.strip("\n").splitlines(), start=1):
+    for index, line in enumerate(normalized.splitlines(), start=1):
         stripped = line.strip()
         if not stripped or stripped.startswith("#") or index in docstring_lines:
             continue

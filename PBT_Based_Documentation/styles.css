@@ -3968,7 +3968,7 @@ body.stage-coverage .coverage-rendered-docs h3 {
   line-height: 1.08;
 }
 
-body.stage-coverage .coverage-doc-statements {
+body.stage-coverage #coverage-doc-statements {
   display: none;
 }
 
