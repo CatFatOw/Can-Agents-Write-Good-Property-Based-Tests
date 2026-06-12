@@ -18,6 +18,18 @@ const docsExamplePanel = document.querySelector("#docs-example-panel");
 const generatedDocsPanel = document.querySelector("#generated-docs-panel");
 const generatedDocsTabs = document.querySelector("#generated-docs-tabs");
 const generatedDocsRendered = document.querySelector("#generated-docs-rendered");
+const coveragePanel = document.querySelector("#coverage-panel");
+const coverageDocsInput = document.querySelector("#coverage-docs-input");
+const runCoverageButton = document.querySelector("#run-coverage-button");
+const coverageEmpty = document.querySelector("#coverage-empty");
+const coverageResults = document.querySelector("#coverage-results");
+const coverageScoreRing = document.querySelector("#coverage-score-ring");
+const coverageScoreValue = document.querySelector("#coverage-score-value");
+const coverageScoreTitle = document.querySelector("#coverage-score-title");
+const coverageScoreNote = document.querySelector("#coverage-score-note");
+const coverageDocStatements = document.querySelector("#coverage-doc-statements");
+const coverageRenderedDocs = document.querySelector("#coverage-rendered-docs");
+const coverageSourceLines = document.querySelector("#coverage-source-lines");
 const generatedDocsTitle = document.querySelector("#generated-docs-title");
 const originalExampleDocs = document.querySelector("#original-example-docs");
 const invariantExampleDocs = document.querySelector("#invariant-example-docs");
@@ -42,6 +54,7 @@ sourceHoverCard.setAttribute("aria-hidden", "true");
 document.body.appendChild(sourceHoverCard);
 
 let currentMarkdown = "";
+let currentCoverageData = null;
 let currentInvariants = [];
 let currentMetrics = [];
 let selectedTestIndex = 0;
@@ -270,7 +283,7 @@ function renderMarkdown(markdown) {
 
 function setStage(stage) {
   hideSourceHoverCard();
-  document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests", "stage-docs-example", "stage-generated-docs");
+  document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests", "stage-coverage", "stage-docs-example", "stage-generated-docs");
   document.body.classList.add(`stage-${stage}`);
   stepTabs.forEach((tab) => {
     const active = tab.dataset.step === stage;
@@ -379,6 +392,7 @@ function showGeneratedDoc(docId = activeGeneratedDocId || generatedDocs[0]?.id |
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.remove("is-hidden");
   backReviewButton.classList.add("is-hidden");
@@ -553,12 +567,44 @@ function showInputStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
   outputEyebrow.textContent = "Review invariants";
   outputTitle.textContent = "Check the claims";
-  setStage("input");
+
+runCoverageButton?.addEventListener("click", () => {
+  assessCoverage();
+});
+
+coverageDocStatements?.addEventListener("mouseover", (event) => {
+  const card = event.target.closest(".coverage-doc-statement");
+  if (!card) return;
+  highlightCoverageEntry(Number(card.dataset.coverageIndex));
+});
+
+coverageDocStatements?.addEventListener("mouseout", (event) => {
+  const next = event.relatedTarget;
+  if (next?.closest?.(".coverage-doc-statement")) return;
+  clearCoverageHighlights();
+});
+
+coverageRenderedDocs?.addEventListener("mouseover", (event) => {
+  const span = event.target.closest(".coverage-doc-highlight");
+  if (!span) return;
+  highlightCoverageEntry(Number(span.dataset.coverageIndex));
+});
+
+coverageRenderedDocs?.addEventListener("mouseout", (event) => {
+  const next = event.relatedTarget;
+  if (next?.closest?.(".coverage-doc-highlight")) return;
+  clearCoverageHighlights();
+});
+
+coverageSourceLines?.addEventListener("mouseout", clearCoverageHighlights);
+
+setStage("input");
   syncMarkdownActions();
 }
 
@@ -570,6 +616,7 @@ function showReviewStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
@@ -588,6 +635,7 @@ function showCompareStage(force = false) {
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.remove("is-hidden");
   testsPanel.classList.add("is-hidden");
+  coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.remove("is-hidden");
@@ -607,6 +655,7 @@ function showTestsStage(testIndex = selectedTestIndex) {
   renderTestsPanel();
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.add("is-hidden");
+  coveragePanel?.classList.add("is-hidden");
   testsPanel.classList.remove("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
@@ -616,6 +665,152 @@ function showTestsStage(testIndex = selectedTestIndex) {
   setStage("tests");
   setStatus("ready", "Tests ready");
   syncMarkdownActions();
+}
+
+
+function fillCoverageDocsFromCurrent(force = false) {
+  if (!coverageDocsInput) return;
+  if ((force || !coverageDocsInput.value.trim()) && currentMarkdown.trim()) {
+    coverageDocsInput.value = currentMarkdown;
+  }
+}
+
+function showCoverageStage() {
+  fillCoverageDocsFromCurrent(false);
+  reviewPanel.classList.add("is-hidden");
+  comparePanel.classList.add("is-hidden");
+  testsPanel.classList.add("is-hidden");
+  coveragePanel?.classList.add("is-hidden");
+  docsExamplePanel.classList.add("is-hidden");
+  generatedDocsPanel.classList.add("is-hidden");
+  coveragePanel.classList.remove("is-hidden");
+  backReviewButton.classList.add("is-hidden");
+  outputEyebrow.textContent = "Assess documentation coverage";
+  outputTitle.textContent = "Map docs to source";
+  setStage("coverage");
+  setStatus("review", "Coverage ready");
+  syncMarkdownActions();
+}
+
+function coverageEntryLineSet(entry) {
+  return new Set((entry?.covered_lines || []).map((line) => Number(line)));
+}
+
+function highlightCoverageEntry(index) {
+  const entry = currentCoverageData?.entries?.[index];
+  const lines = coverageEntryLineSet(entry);
+  coverageDocStatements.querySelectorAll(".coverage-doc-statement").forEach((node) => {
+    node.classList.toggle("is-active", Number(node.dataset.coverageIndex) === index);
+  });
+  coverageSourceLines.querySelectorAll(".coverage-source-line").forEach((node) => {
+    const active = lines.has(Number(node.dataset.line));
+    node.classList.toggle("is-active", active);
+  });
+}
+
+function clearCoverageHighlights() {
+  coverageDocStatements?.querySelectorAll(".coverage-doc-statement.is-active").forEach((node) => node.classList.remove("is-active"));
+  coverageSourceLines?.querySelectorAll(".coverage-source-line.is-active").forEach((node) => node.classList.remove("is-active"));
+}
+
+function renderCoverageSourceLines(data) {
+  const covered = new Set(data.covered_lines || []);
+  return (data.source_lines || []).map((line) => {
+    const classes = ["coverage-source-line"];
+    if (line.blank) classes.push("is-blank");
+    if (covered.has(line.line)) classes.push("is-covered");
+    return `<span class="${classes.join(" ")}" data-line="${line.line}"><span class="coverage-line-number">${line.line}</span><code>${escapeHtml(line.text || " ")}</code></span>`;
+  }).join("");
+}
+
+function renderCoverageStatements(data) {
+  const entries = data.entries || [];
+  if (!entries.length) {
+    return `<p class="placeholder">No documentation statements were mapped to source lines.</p>`;
+  }
+  return entries.map((entry, index) => {
+    const lineText = entry.covered_lines?.length ? `Lines ${entry.covered_lines.join(", ")}` : "Unsupported by source";
+    return `
+      <button type="button" class="coverage-doc-statement confidence-${String(entry.confidence || "medium").toLowerCase()}" data-coverage-index="${index}">
+        <span class="coverage-confidence">${escapeHtml(entry.confidence || "MEDIUM")}</span>
+        <span class="coverage-lines-chip">${escapeHtml(lineText)}</span>
+        <span class="coverage-statement-text">${escapeHtml(entry.statement || "Untitled documentation statement")}</span>
+      </button>
+    `;
+  }).join("");
+}
+
+function coverageStatementPattern(statement) {
+  const cleaned = `${statement || ""}`.replace(/\s+/g, " ").trim();
+  if (!cleaned || cleaned.length < 16) return null;
+  const fragment = cleaned.slice(0, Math.min(cleaned.length, 90)).replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+  try {
+    return new RegExp(fragment, "i");
+  } catch {
+    return null;
+  }
+}
+
+function markCoverageMarkdown(markdown, entries) {
+  let marked = `${markdown || ""}`;
+  (entries || []).forEach((entry, index) => {
+    const pattern = coverageStatementPattern(entry.statement);
+    if (!pattern || !entry.covered_lines?.length) return;
+    marked = marked.replace(pattern, (match) => `%%COVERAGE_${index}_START%%${match}%%COVERAGE_${index}_END%%`);
+  });
+  return marked;
+}
+
+function renderCoverageMarkdown(markdown, entries) {
+  let html = renderMarkdown(markCoverageMarkdown(markdown, entries));
+  (entries || []).forEach((entry, index) => {
+    const confidence = String(entry.confidence || "medium").toLowerCase();
+    html = html
+      .replaceAll(`%%COVERAGE_${index}_START%%`, `<span class="coverage-doc-highlight confidence-${confidence}" data-coverage-index="${index}">`)
+      .replaceAll(`%%COVERAGE_${index}_END%%`, `</span>`);
+  });
+  return html;
+}
+
+function renderCoverageReport(data) {
+  currentCoverageData = data;
+  const percent = Number(data.coverage_percent || 0);
+  coverageEmpty.classList.add("is-hidden");
+  coverageResults.classList.remove("is-hidden");
+  coverageScoreRing.style.setProperty("--coverage-score", percent);
+  coverageScoreValue.textContent = `${Math.round(percent)}%`;
+  coverageScoreTitle.textContent = `${data.covered_line_count || 0} of ${data.total_line_count || 0} lines`;
+  coverageScoreNote.textContent = "Hover a documentation statement to highlight its covered source lines.";
+  coverageRenderedDocs.innerHTML = renderCoverageMarkdown(coverageDocsInput.value, data.entries || []);
+  coverageDocStatements.innerHTML = renderCoverageStatements(data);
+  coverageSourceLines.innerHTML = renderCoverageSourceLines(data);
+}
+
+async function assessCoverage() {
+  fillCoverageDocsFromCurrent(false);
+  const docs = coverageDocsInput.value.trim();
+  if (!currentSource.trim() || !docs) {
+    renderError("Source code and documentation are required for coverage assessment.", "Coverage failed", "Missing coverage inputs");
+    return;
+  }
+  runCoverageButton.disabled = true;
+  runCoverageButton.textContent = "Assessing...";
+  setStatus("review", "Assessing coverage");
+  try {
+    const data = await postJson("/api/coverage", {
+      source_code: currentSource,
+      docs,
+      openai_key: openaiKeyInput.value.trim(),
+      openai_seed: openaiSeedInput.value
+    }, { cache: false });
+    renderCoverageReport(data);
+    setStatus("ready", "Coverage assessed");
+  } catch (error) {
+    renderError(error.message || "Coverage assessment failed. Add an OpenAI key or set OPENAI_API_KEY, then try again.", "Coverage failed", "Could not assess documentation coverage");
+  } finally {
+    runCoverageButton.disabled = false;
+    runCoverageButton.textContent = "Assess coverage";
+  }
 }
 
 async function loadDocsExample(exampleId = "numpy-pad") {
@@ -669,6 +864,7 @@ function renderError(message, eyebrow = "GPT call failed", title = "Could not ru
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
@@ -1421,6 +1617,7 @@ async function generateMarkdownFromReview() {
     generatedDoc.classList.remove("is-streaming");
     generatedDoc.innerHTML = renderMarkdown(currentMarkdown);
     addGeneratedDoc(currentMarkdown, accepted);
+    fillCoverageDocsFromCurrent(true);
     syncMarkdownActions();
     showCompareStage();
   } catch (error) {
@@ -1511,6 +1708,7 @@ form.addEventListener("submit", async (event) => {
   runButton.innerHTML = loadingDots("Generating");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
   reviewPanel.classList.remove("is-hidden");
@@ -1703,6 +1901,8 @@ stepTabs.forEach((tab) => {
       showCompareStage();
     } else if (tab.dataset.step === "tests") {
       showTestsStage();
+    } else if (tab.dataset.step === "coverage") {
+      showCoverageStage();
     }
   });
 });

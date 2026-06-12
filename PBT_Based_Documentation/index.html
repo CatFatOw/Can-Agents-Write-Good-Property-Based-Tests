@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invariant-Based Documentation generator</title>
     <link rel="icon" type="image/png" href="logo_new.png">
-    <link rel="stylesheet" href="styles.css?v=mutation-report-wide-1">
+    <link rel="stylesheet" href="styles.css?v=coverage-stage-8">
   </head>
   <body class="stage-review">
     <main class="app-shell">
@@ -42,6 +42,10 @@
           <button type="button" class="step-tab" data-step="compare">
             <span aria-hidden="true">04</span>
             Final Markdown
+          </button>
+          <button type="button" class="step-tab" data-step="coverage">
+            <span aria-hidden="true">05</span>
+            Coverage
           </button>
         </div>
 
@@ -167,6 +171,57 @@
           </p>
         </div>
 
+        <div class="coverage-panel is-hidden" id="coverage-panel">
+          <article class="paper coverage-command-card">
+            <div class="coverage-editor-header">
+              <div>
+                <p class="eyebrow">Documentation coverage</p>
+                <h3>Assess source coverage</h3>
+              </div>
+              <button type="button" class="secondary-button" id="run-coverage-button">Assess coverage</button>
+            </div>
+            <p class="coverage-help">Generated Markdown is loaded automatically. Paste or edit documentation, then reassess how much source behavior it covers.</p>
+            <textarea id="coverage-docs-input" class="coverage-docs-input" rows="7" placeholder="Generated or pasted documentation to assess..."></textarea>
+          </article>
+
+          <article class="coverage-workspace" id="coverage-results-card">
+            <div class="coverage-score-card">
+              <div class="coverage-score-ring" id="coverage-score-ring" style="--coverage-score: 0">
+                <span id="coverage-score-value">0%</span>
+              </div>
+              <div>
+                <p class="eyebrow">Source lines covered</p>
+                <h3 id="coverage-score-title">0 of 0 lines</h3>
+                <p id="coverage-score-note">Run coverage, then hover highlighted documentation to reveal source evidence.</p>
+              </div>
+            </div>
+
+            <div class="coverage-empty" id="coverage-empty">
+              <p class="eyebrow">Coverage map</p>
+              <h3>No coverage assessment yet</h3>
+              <p>Generate documentation or paste your own Markdown, then click Assess coverage.</p>
+            </div>
+
+            <div class="coverage-results is-hidden" id="coverage-results">
+              <section class="coverage-source-map" aria-labelledby="coverage-source-title">
+                <div class="coverage-section-heading">
+                  <p class="eyebrow">Source evidence</p>
+                  <h4 id="coverage-source-title">Source heatmap</h4>
+                </div>
+                <pre id="coverage-source-lines"></pre>
+              </section>
+              <section class="coverage-doc-map" aria-labelledby="coverage-doc-title">
+                <div class="coverage-section-heading">
+                  <p class="eyebrow">Rendered Markdown</p>
+                  <h4 id="coverage-doc-title">Documentation</h4>
+                </div>
+                <div class="markdown-rendered coverage-rendered-docs" id="coverage-rendered-docs"></div>
+                <div class="coverage-doc-statements" id="coverage-doc-statements"></div>
+              </section>
+            </div>
+          </article>
+        </div>
+
         <div class="docs-example-panel is-hidden" id="docs-example-panel">
           <div class="docs-example-switch" aria-label="Documentation examples">
             <button type="button" class="docs-example-choice is-active" data-doc-example="numpy-pad">np.pad</button>
@@ -201,6 +256,6 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=mutation-report-wide-1"></script>
+    <script src="app.js?v=coverage-stage-8"></script>
   </body>
 </html>

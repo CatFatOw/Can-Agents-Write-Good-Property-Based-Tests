@@ -21,6 +21,7 @@ from gpt_documentation_generator import strip_markdown_fences
 from metrics import evaluate_pbt_test
 from metrics import invariant_metrics_test
 from metrics import mutation_analysis_for_test
+from coverage import assess_documentation_coverage
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
 METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.4-mini")
@@ -413,6 +414,28 @@ class Handler(SimpleHTTPRequestHandler):
                     return
                 result = evaluate_pbt_test(source_code, invariant, test_code, api_name=api_name)
                 self.send_json(200, {"metric": result})
+                return
+
+            if self.path == "/api/coverage":
+                payload = self.read_json()
+                source_code = str(payload.get("source_code") or payload.get("documentation") or "")
+                docs = str(payload.get("docs") or payload.get("markdown") or "")
+                openai_key = str(payload.get("openai_key") or "")
+                seed = request_seed(payload)
+                if not source_code.strip() or not docs.strip():
+                    self.send_json(400, {"error": "Source code and documentation are required."})
+                    return
+                if not openai_key and not os.environ.get("OPENAI_API_KEY"):
+                    self.send_json(400, {"error": "OpenAI key is required for coverage assessment. Paste a key or set OPENAI_API_KEY."})
+                    return
+                with request_openai_key(openai_key):
+                    result = assess_documentation_coverage(
+                        documentation=docs,
+                        source_code=source_code,
+                        model=METRICS_MODEL,
+                        seed=seed,
+                    )
+                self.send_json(200, result)
                 return
 
             if self.path == "/api/documentation":
