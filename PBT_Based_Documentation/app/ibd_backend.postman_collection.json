@@ -511,6 +511,484 @@
             "description": "Gets only the TD_md field for one documentation id. Response shape: { \"post_TD\": \"...\" }."
           },
           "response": []
+        },
+        {
+          "name": "Get Invariants By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Invariants response returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json()).to.have.property(\"invariants\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/invariants/{{documentationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "invariants",
+                "{{documentationId}}"
+              ]
+            },
+            "description": "Gets the stored invariants for one documentation id. Response shape: { \"invariants\": ... }. Returns 404 if the id has no invariants."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Invariants",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Invariants updated\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invariants\": {{invariantsPayload}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/documentation/{{documentationId}}/invariants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "{{documentationId}}",
+                "invariants"
+              ]
+            },
+            "description": "Updates only the invariants column for one documentation row. Must be the owner. Lists/dicts are stored as JSON text; a plain string is also accepted. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Legacy Generation API",
+      "item": [
+        {
+          "name": "Lookup Source",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"object_name\": \"{{objectName}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/source",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "source"
+              ]
+            },
+            "description": "Resolves the source code for a fully-qualified object name (server.py-compatible /api/source endpoint)."
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Invariants",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_code\": \"{{sourceCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/invariants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "invariants"
+              ]
+            },
+            "description": "Generates candidate invariants from pasted or looked-up source code."
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Documentation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_code\": \"{{sourceCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documentation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documentation"
+              ]
+            },
+            "description": "Generates invariant-based Markdown documentation."
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Documentation (Stream)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "text/plain"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_code\": \"{{sourceCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documentation-stream",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "documentation-stream"
+              ]
+            },
+            "description": "Streams generated Markdown as text/plain so the frontend can render progressively."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Metrics",
+      "item": [
+        {
+          "name": "Calculate Metrics",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_code\": \"{{sourceCode}}\",\n  \"hypothesis_tests\": \"{{hypothesisTests}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "metrics"
+              ]
+            },
+            "description": "Calculates validity/soundness and mutation metrics (server.py-compatible /api/metrics endpoint)."
+          },
+          "response": []
+        },
+        {
+          "name": "Mutation Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_code\": \"{{sourceCode}}\",\n  \"hypothesis_tests\": \"{{hypothesisTests}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mutation-analysis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mutation-analysis"
+              ]
+            },
+            "description": "Analyzes mutation survivors for one generated Hypothesis test."
+          },
+          "response": []
+        },
+        {
+          "name": "Rerun Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_code\": \"{{sourceCode}}\",\n  \"hypothesis_tests\": \"{{hypothesisTests}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rerun-test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rerun-test"
+              ]
+            },
+            "description": "Re-runs one generated test and returns the metric object."
+          },
+          "response": []
+        },
+        {
+          "name": "Coverage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_code\": \"{{sourceCode}}\",\n  \"IBD_generated_md\": \"{{ibdMarkdown}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/coverage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "coverage"
+              ]
+            },
+            "description": "Maps generated documentation claims back to source-code evidence."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Model API",
+      "item": [
+        {
+          "name": "Get Model Providers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/model-api/providers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "model-api",
+                "providers"
+              ]
+            },
+            "description": "Returns provider options for the frontend dropdown."
+          },
+          "response": []
+        },
+        {
+          "name": "Select Model Provider",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"{{modelProvider}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/model-api/selection",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "model-api",
+                "selection"
+              ]
+            },
+            "description": "Validates a provider choice. Returns 400 for an unknown provider. Valid ids: openai, claude, cmu_gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Model Providers (Legacy Alias)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/model-providers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "model-providers"
+              ]
+            },
+            "description": "Frontend-friendly alias for /model-api/providers that sits beside the other /api routes."
+          },
+          "response": []
+        },
+        {
+          "name": "Select Model Provider (Legacy Alias)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"{{modelProvider}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/model-selection",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "model-selection"
+              ]
+            },
+            "description": "Frontend-friendly alias for /model-api/selection."
+          },
+          "response": []
         }
       ]
     },
@@ -664,6 +1142,21 @@
     {
       "key": "hypothesisTests",
       "value": "from hypothesis import given\\n\\n# Generated Hypothesis tests go here.",
+      "type": "string"
+    },
+    {
+      "key": "objectName",
+      "value": "math.gcd",
+      "type": "string"
+    },
+    {
+      "key": "modelProvider",
+      "value": "claude",
+      "type": "string"
+    },
+    {
+      "key": "invariantsPayload",
+      "value": "[\"output is always non-negative\"]",
       "type": "string"
     },
     {
