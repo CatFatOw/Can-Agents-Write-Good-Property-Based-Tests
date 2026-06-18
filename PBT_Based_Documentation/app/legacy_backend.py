@@ -86,13 +86,19 @@ def model_provider_config(
     payload: dict[str, Any],
     fallback_key: str | None = None,
     fallback_model: str = MODEL,
+    model_field: str = "model",
 ) -> dict[str, str]:
     """Normalize provider/key/model fields while keeping openai_key compatible."""
     provider = str(payload.get("model_provider") or payload.get("provider") or "openai")
     if provider not in PROVIDERS:
         raise ValueError(f"Unknown model provider: {provider}")
 
-    provider_model = PROVIDERS[provider].get("default_model") or fallback_model
+    if model_field == "metrics_model":
+        provider_model = PROVIDERS[provider].get("default_metrics_model")
+    else:
+        provider_model = PROVIDERS[provider].get("default_markdown_model") or PROVIDERS[provider].get("default_model")
+    provider_model = provider_model or fallback_model
+    requested_model = str(payload.get(model_field) or payload.get("model") or "").strip()
     config = {
         "provider": provider,
         "api_key": str(
@@ -103,7 +109,7 @@ def model_provider_config(
             or ""
         ),
         "base_url": str(payload.get("base_url") or ""),
-        "model": str(payload.get("model") or provider_model or MODEL),
+        "model": requested_model or str(provider_model or fallback_model),
     }
 
     if provider == "cmu_gateway":
@@ -130,6 +136,7 @@ def request_model_api(
     payload: dict[str, Any],
     fallback_key: str | None = None,
     fallback_model: str = MODEL,
+    model_field: str = "model",
 ):
     """Apply request provider settings to the environment for existing wrappers.
 
@@ -137,7 +144,12 @@ def request_model_api(
     OPENAI_BASE_URL. Claude uses ANTHROPIC_API_KEY in the direct Messages API
     helper below.
     """
-    config = model_provider_config(payload, fallback_key=fallback_key, fallback_model=fallback_model)
+    config = model_provider_config(
+        payload,
+        fallback_key=fallback_key,
+        fallback_model=fallback_model,
+        model_field=model_field,
+    )
     provider = config["provider"]
 
     old_openai_key = os.environ.get("OPENAI_API_KEY")
@@ -230,13 +242,13 @@ def request_seed(payload: dict[str, Any]) -> int:
 
 def run_project_gpt(prompt: str, openai_key: str | None, seed: int = OPENAI_SEED, payload: dict[str, Any] | None = None) -> str:
     payload = payload or {}
-    config = model_provider_config(payload, fallback_key=openai_key)
+    config = model_provider_config(payload, fallback_key=openai_key, model_field="markdown_model")
     if config["provider"] == "openai" and not config["api_key"] and not os.environ.get("OPENAI_API_KEY"):
         raise RuntimeError("Paste an OpenAI API key or set OPENAI_API_KEY before starting the FastAPI server.")
     cache_key = (config["provider"], config["model"], config["base_url"], prompt, seed)
     if cache_key in GPT_CACHE:
         return GPT_CACHE[cache_key]
-    with request_model_api(payload, fallback_key=openai_key) as active_config:
+    with request_model_api(payload, fallback_key=openai_key, model_field="markdown_model") as active_config:
         if active_config["provider"] == "claude":
             text = anthropic_response_text(active_config["model"], prompt, active_config["api_key"])
         else:
@@ -253,7 +265,7 @@ def run_project_gpt(prompt: str, openai_key: str | None, seed: int = OPENAI_SEED
 
 def stream_project_gpt(prompt: str, openai_key: str | None, seed: int = OPENAI_SEED, payload: dict[str, Any] | None = None) -> Iterator[str]:
     payload = payload or {}
-    config = model_provider_config(payload, fallback_key=openai_key)
+    config = model_provider_config(payload, fallback_key=openai_key, model_field="markdown_model")
     if config["provider"] == "openai" and not config["api_key"] and not os.environ.get("OPENAI_API_KEY"):
         raise RuntimeError("Paste an OpenAI API key or set OPENAI_API_KEY before starting the FastAPI server.")
     cache_key = (config["provider"], config["model"], config["base_url"], prompt, seed)
@@ -267,7 +279,7 @@ def stream_project_gpt(prompt: str, openai_key: str | None, seed: int = OPENAI_S
         raise RuntimeError("Install the openai package with: python3 -m pip install openai") from exc
 
     chunks: list[str] = []
-    with request_model_api(payload, fallback_key=openai_key) as active_config:
+    with request_model_api(payload, fallback_key=openai_key, model_field="markdown_model") as active_config:
         if active_config["provider"] == "claude":
             text = anthropic_response_text(active_config["model"], prompt, active_config["api_key"])
             chunks.append(text)
@@ -488,7 +500,7 @@ def generate_invariants(payload: dict[str, Any]) -> dict[str, Any]:
         seed=request_seed(payload),
         payload=payload,
     )
-    return {"invariants": parse_json_array(raw), "model": model_provider_config(payload)["model"]}
+    return {"invariants": parse_json_array(raw), "model": model_provider_config(payload, model_field="markdown_model")["model"]}
 
 
 def generate_metrics(payload: dict[str, Any]) -> dict[str, Any]:
@@ -498,13 +510,18 @@ def generate_metrics(payload: dict[str, Any]) -> dict[str, Any]:
     if not source_code.strip() or not isinstance(invariants, list):
         raise ValueError("Source code and invariants are required.")
 
-    show_mutation_tests = bool(payload.get("show_mutation_tests"))
+    # Keep the overall metrics endpoint responsive. Mutation testing is much
+    # slower because it shells out to pytest/mutmut per invariant, so only run it
+    # here when a caller explicitly opts into the expensive legacy behavior.
+    show_mutation_tests = bool(payload.get("run_mutation_in_overall") and payload.get("show_mutation_tests"))
     mutation_packages = str(payload.get("mutation_packages") or "")
     mutation_auto_install = bool(payload.get("mutation_auto_install", True))
     seed = request_seed(payload)
-    config = model_provider_config(payload, fallback_model=METRICS_MODEL)
+    config = model_provider_config(payload, fallback_model=METRICS_MODEL, model_field="metrics_model")
     if config["provider"] == "claude":
         raise ValueError("Claude is wired for invariant/documentation generation, but metrics still require GPT/OpenAI or an OpenAI-compatible gateway.")
+    if not invariants:
+        return {"metrics": [], "model": config["model"]}
     cache_key = (
         config["provider"],
         config["model"],
@@ -521,6 +538,7 @@ def generate_metrics(payload: dict[str, Any]) -> dict[str, Any]:
             payload,
             fallback_key=str(payload.get("openai_key") or ""),
             fallback_model=METRICS_MODEL,
+            model_field="metrics_model",
         ) as active_config:
             METRICS_CACHE[cache_key] = invariant_metrics_test(
                 source_code=source_code,
@@ -542,12 +560,13 @@ def generate_mutation_analysis(payload: dict[str, Any]) -> dict[str, Any]:
     test_code = str(payload.get("test_code") or "")
     if not source_code.strip() or not test_code.strip():
         raise ValueError("Source code and test code are required.")
-    if model_provider_config(payload, fallback_model=METRICS_MODEL)["provider"] == "claude":
+    if model_provider_config(payload, fallback_model=METRICS_MODEL, model_field="metrics_model")["provider"] == "claude":
         raise ValueError("Claude mutation analysis is not wired yet; use GPT/OpenAI or the CMU gateway for metrics.")
     with request_model_api(
         payload,
         fallback_key=str(payload.get("openai_key") or ""),
         fallback_model=METRICS_MODEL,
+        model_field="metrics_model",
     ) as active_config:
         analysis = mutation_analysis_for_test(
             source_code=source_code,
@@ -576,14 +595,14 @@ def generate_coverage(payload: dict[str, Any]) -> dict[str, Any]:
     source_code = str(payload.get("source_code") or payload.get("documentation") or "")
     docs = str(payload.get("docs") or payload.get("markdown") or "")
     openai_key = str(payload.get("openai_key") or "")
-    config = model_provider_config(payload, fallback_key=openai_key, fallback_model=METRICS_MODEL)
+    config = model_provider_config(payload, fallback_key=openai_key, fallback_model=METRICS_MODEL, model_field="metrics_model")
     if not source_code.strip() or not docs.strip():
         raise ValueError("Source code and documentation are required.")
     if config["provider"] == "claude":
         raise ValueError("Claude coverage assessment is not wired yet; use GPT/OpenAI or the CMU gateway for coverage.")
     if config["provider"] == "openai" and not config["api_key"] and not os.environ.get("OPENAI_API_KEY"):
         raise ValueError("OpenAI key is required for coverage assessment. Paste a key or set OPENAI_API_KEY.")
-    with request_model_api(payload, fallback_key=openai_key, fallback_model=METRICS_MODEL) as active_config:
+    with request_model_api(payload, fallback_key=openai_key, fallback_model=METRICS_MODEL, model_field="metrics_model") as active_config:
         return assess_documentation_coverage(
             documentation=docs,
             source_code=source_code,
@@ -606,7 +625,7 @@ def generate_documentation(payload: dict[str, Any]) -> dict[str, Any]:
             payload=payload,
         )
     )
-    return {"markdown": markdown, "model": model_provider_config(payload)["model"]}
+    return {"markdown": markdown, "model": model_provider_config(payload, model_field="markdown_model")["model"]}
 
 
 def stream_documentation(payload: dict[str, Any]) -> Iterator[str]:

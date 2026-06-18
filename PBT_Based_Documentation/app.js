@@ -10,6 +10,8 @@ const openaiKeyInput = document.querySelector("#openai-key");
 const apiKeyLabel = document.querySelector("#api-key-label");
 const modelBaseUrlField = document.querySelector("#model-base-url-field");
 const modelBaseUrlInput = document.querySelector("#model-base-url");
+const markdownModelInput = document.querySelector("#markdown-model");
+const metricsModelInput = document.querySelector("#metrics-model");
 const openaiSeedInput = document.querySelector("#openai-seed");
 const assessMetricsInput = document.querySelector("#assess-metrics");
 const showMutationTestingInput = document.querySelector("#show-mutation-testing");
@@ -119,16 +121,22 @@ const MODEL_PROVIDER_META = {
   openai: {
     keyLabel: "OpenAI key",
     keyPlaceholder: "sk-...",
+    markdownModel: "gpt-5.5",
+    metricsModel: "gpt-5.4-mini",
     showBaseUrl: false
   },
   claude: {
     keyLabel: "Anthropic key",
     keyPlaceholder: "sk-ant-...",
+    markdownModel: "claude-sonnet-4-6",
+    metricsModel: "claude-sonnet-4-6",
     showBaseUrl: false
   },
   cmu_gateway: {
     keyLabel: "Gateway key",
     keyPlaceholder: "Paste gateway key",
+    markdownModel: "gpt-5.5",
+    metricsModel: "gpt-5.4-mini",
     showBaseUrl: true
   }
 };
@@ -143,6 +151,8 @@ function updateModelProviderControls() {
   const meta = MODEL_PROVIDER_META[currentModelProvider()] || MODEL_PROVIDER_META.openai;
   if (apiKeyLabel) apiKeyLabel.textContent = meta.keyLabel;
   if (openaiKeyInput) openaiKeyInput.placeholder = meta.keyPlaceholder;
+  if (markdownModelInput) markdownModelInput.placeholder = `Default: ${meta.markdownModel}`;
+  if (metricsModelInput) metricsModelInput.placeholder = `Default: ${meta.metricsModel}`;
   modelBaseUrlField?.classList.toggle("is-hidden", !meta.showBaseUrl);
 }
 
@@ -542,6 +552,8 @@ async function postJson(path, payload, options = {}) {
       model_provider: currentModelProvider(),
       model_api_key: openaiKeyInput.value.trim(),
       base_url: modelBaseUrlInput?.value.trim() || (currentModelProvider() === "cmu_gateway" ? DEFAULT_CMU_GATEWAY_BASE_URL : ""),
+      markdown_model: markdownModelInput?.value.trim() || "",
+      metrics_model: metricsModelInput?.value.trim() || "",
       openai_key: openaiKeyInput.value.trim(),
       openai_seed: Number(openaiSeedInput.value || 42)
     })
@@ -565,6 +577,8 @@ async function postTextStream(path, payload, onChunk) {
       model_provider: currentModelProvider(),
       model_api_key: openaiKeyInput.value.trim(),
       base_url: modelBaseUrlInput?.value.trim() || (currentModelProvider() === "cmu_gateway" ? DEFAULT_CMU_GATEWAY_BASE_URL : ""),
+      markdown_model: markdownModelInput?.value.trim() || "",
+      metrics_model: metricsModelInput?.value.trim() || "",
       openai_key: openaiKeyInput.value.trim(),
       openai_seed: Number(openaiSeedInput.value || 42)
     })
@@ -1191,6 +1205,13 @@ function mutationScoreMarkup(metric, index) {
   }
   const mutationError = metric.mutation_error ? ` title="${escapeHtml(metric.mutation_error)}"` : "";
   if (metric.mutation_score === null || metric.mutation_score === undefined || metric.mutation_score === "") {
+    if (metric.test_code) {
+      return `
+        <button type="button" class="mutation-pill mutation-medium mutation-analysis-button" data-mutation-index="${index}">
+          Run mutation
+        </button>
+      `;
+    }
     return `<span class="mutation-pill mutation-low"${mutationError}>Mutation unavailable</span>`;
   }
   const score = Number(metric.mutation_score);
@@ -1846,14 +1867,16 @@ async function assessMetricsForReview() {
   renderTestsPanel();
   setStatus("review", "Assessing metrics");
 
-  const data = await postJson("/api/metrics", {
-    api_name: apiNameInput.value.trim() || "api.function",
-    source_code: currentSource,
-    invariants: invariantTexts(currentInvariants),
-    show_mutation_tests: showMutationTestingInput.checked,
-    mutation_packages: mutationPackagesInput.value.trim(),
-    mutation_auto_install: mutationAutoInstallInput.checked
-  });
+	  const data = await postJson("/api/metrics", {
+	    api_name: apiNameInput.value.trim() || "api.function",
+	    source_code: currentSource,
+	    invariants: invariantTexts(currentInvariants),
+	    // Keep the overall metrics pass fast. Mutation testing runs on demand
+	    // from each generated test's mutation button.
+	    show_mutation_tests: false,
+	    mutation_packages: mutationPackagesInput.value.trim(),
+	    mutation_auto_install: mutationAutoInstallInput.checked
+	  });
   currentMetrics = data.metrics || [];
   renderInvariantReviewWithMetrics(currentInvariants);
   renderTestsPanel();

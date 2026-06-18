@@ -87,6 +87,20 @@ The default documentation model is `gpt-5.5`, or set `OPENAI_MODEL` before
 starting the server to override it. Metrics use `OPENAI_METRICS_MODEL`, default
 `gpt-5.4-mini`.
 
+The website also exposes separate model fields:
+
+- **Markdown model** controls invariant extraction and Markdown documentation.
+  Leave blank for the provider default (`gpt-5.5` for GPT/OpenAI, Sonnet for
+  Claude).
+- **Metrics model** controls generated property-based tests and validity /
+  soundness scoring. Leave blank for the provider default (`gpt-5.4-mini` for
+  GPT/OpenAI, Sonnet for Claude).
+
+The overall metrics pass is intentionally fast: it generates tests and
+validity/soundness scores only. Mutation testing is still available, but it runs
+on demand from each generated test's **Run mutation** button instead of running
+for every invariant during the overall metrics pass.
+
 Note: viewing the files on GitHub or hosting only the static files will not run
 model generation. Real generation requires this Python backend, or another
 server host that can run the FastAPI app.

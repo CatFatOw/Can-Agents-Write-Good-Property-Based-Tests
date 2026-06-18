@@ -94,6 +94,8 @@ class ModelProviderResponse(BaseModel):
     key_label: str
     key_placeholder: str
     default_model: str | None = None
+    default_markdown_model: str | None = None
+    default_metrics_model: str | None = None
     key_url: str | None = None
     requires_base_url: bool = False
     openai_compatible: bool = False

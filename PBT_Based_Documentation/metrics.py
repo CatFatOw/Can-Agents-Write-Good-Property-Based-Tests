@@ -26,6 +26,49 @@ MUTATION_IMPORT_SKIP = {
     "hypothesis",
 }
 
+
+def call_metric_model(client, model, prompt, streaming=True, seed=OPENAI_SEED):
+    """Call the selected metrics model.
+
+    Native OpenAI can use the Responses API. OpenAI-compatible gateways usually
+    expose Chat Completions, so use that path whenever OPENAI_BASE_URL is set.
+    """
+    use_chat_completions = bool(os.environ.get("OPENAI_BASE_URL"))
+    if not use_chat_completions and hasattr(client, "responses"):
+        if not streaming:
+            response = client.responses.create(model=model, input=prompt)
+            return getattr(response, "output_text", "")
+
+        chunks = []
+        events = client.responses.create(model=model, input=prompt, stream=True)
+        for event in events:
+            if event.type == "response.output_text.delta":
+                print(event.delta, end="", flush=True)
+                chunks.append(event.delta)
+        print()
+        return "".join(chunks)
+
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a careful Python property-based testing and API documentation assistant.",
+        },
+        {"role": "user", "content": prompt},
+    ]
+    if not streaming:
+        response = client.chat.completions.create(model=model, messages=messages, seed=seed)
+        return response.choices[0].message.content or ""
+
+    chunks = []
+    events = client.chat.completions.create(model=model, messages=messages, stream=True, seed=seed)
+    for event in events:
+        delta = event.choices[0].delta.content or ""
+        if delta:
+            print(delta, end="", flush=True)
+            chunks.append(delta)
+    print()
+    return "".join(chunks)
+
 def test_metrics(test_func, n=50):
     """Function used to calculate the soundness and validity metrics for display on the website"""
 
@@ -562,29 +605,7 @@ def analyze_mutants(working_dir, model="gpt-5.4-mini", streaming=True, seed=OPEN
     """
 
     
-    if not streaming:
-        # Display the text all at once
-        response = client.responses.create(
-            model=model,
-            input=PROMPT,
-        )
-    
-        output = response.output_text
-    else:
-        # display the text gradually
-        events = client.responses.create(
-            model=model,
-            input=PROMPT,
-            stream=streaming,
-        )
-
-        chunks = []
-        for event in events:
-            if event.type == "response.output_text.delta":
-                print(event.delta, end="", flush=True)
-                chunks.append(event.delta)
-        print()
-        output = "".join(chunks)
+    output = call_metric_model(client, model, PROMPT, streaming=streaming, seed=seed)
     return output
 
     
@@ -665,30 +686,7 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
         """
 
         try:
-            # Streaming = false, so we output text immediately
-            if not streaming:
-                response = client.responses.create(
-                    model=model,
-                    input=PROMPT,
-                )
-                output = response.output_text
-
-            # Streaming = true, so we gradually output text
-            else:
-                events = client.responses.create(
-                    model=model,
-                    input=PROMPT,
-                    stream=True,
-                )
-
-                chunks = []
-                for event in events:
-                    if event.type == "response.output_text.delta":
-                        print(event.delta, end="", flush=True)
-                        chunks.append(event.delta)
-
-                print()
-                output = "".join(chunks)
+            output = call_metric_model(client, model, PROMPT, streaming=streaming, seed=seed)
 
             # Turn the output into a json object, even if the model wrapped it in a fence.
             data = parse_json_object(output)

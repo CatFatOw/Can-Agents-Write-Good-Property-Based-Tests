@@ -12,6 +12,10 @@ router = APIRouter(prefix="/model-api", tags=["model api"])
 api_router = APIRouter(prefix="/api", tags=["legacy model api"])
 
 DEFAULT_CMU_GATEWAY_BASE_URL = "https://ai-gateway.andrew.cmu.edu/v1"
+OPENAI_MARKDOWN_MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
+OPENAI_METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.4-mini")
+CLAUDE_MARKDOWN_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+CLAUDE_METRICS_MODEL = os.environ.get("ANTHROPIC_METRICS_MODEL", CLAUDE_MARKDOWN_MODEL)
 
 
 PROVIDERS: dict[str, dict[str, object]] = {
@@ -20,7 +24,9 @@ PROVIDERS: dict[str, dict[str, object]] = {
         "label": "GPT / OpenAI",
         "key_label": "OpenAI key",
         "key_placeholder": "sk-...",
-        "default_model": os.environ.get("OPENAI_MODEL", "gpt-5.5"),
+        "default_model": OPENAI_MARKDOWN_MODEL,
+        "default_markdown_model": OPENAI_MARKDOWN_MODEL,
+        "default_metrics_model": OPENAI_METRICS_MODEL,
         "key_url": None,
         "requires_base_url": False,
         "openai_compatible": True,
@@ -30,7 +36,9 @@ PROVIDERS: dict[str, dict[str, object]] = {
         "label": "Claude / Anthropic",
         "key_label": "Anthropic key",
         "key_placeholder": "sk-ant-...",
-        "default_model": os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6"),
+        "default_model": CLAUDE_MARKDOWN_MODEL,
+        "default_markdown_model": CLAUDE_MARKDOWN_MODEL,
+        "default_metrics_model": CLAUDE_METRICS_MODEL,
         "key_url": "https://console.anthropic.com/settings/keys",
         "requires_base_url": False,
         "openai_compatible": False,
@@ -40,7 +48,9 @@ PROVIDERS: dict[str, dict[str, object]] = {
         "label": "CMU AI Gateway",
         "key_label": "Gateway key",
         "key_placeholder": "Paste gateway key",
-        "default_model": os.environ.get("CMU_AI_GATEWAY_MODEL") or os.environ.get("OPENAI_MODEL", "gpt-5.5"),
+        "default_model": os.environ.get("CMU_AI_GATEWAY_MODEL") or OPENAI_MARKDOWN_MODEL,
+        "default_markdown_model": os.environ.get("CMU_AI_GATEWAY_MODEL") or OPENAI_MARKDOWN_MODEL,
+        "default_metrics_model": os.environ.get("CMU_AI_GATEWAY_METRICS_MODEL") or OPENAI_METRICS_MODEL,
         "key_url": "https://ai-gateway.andrew.cmu.edu/ui/?page=api-keys",
         # Dashboard URLs are for key management. The OpenAI-compatible API base
         # URL should point at /v1 unless CMU changes the gateway deployment.
