@@ -5925,6 +5925,10 @@ body.account-active::before {
   padding: 24px;
 }
 
+.account-detail-modal.is-hidden {
+  display: none;
+}
+
 .account-detail-backdrop {
   position: absolute;
   inset: 0;
