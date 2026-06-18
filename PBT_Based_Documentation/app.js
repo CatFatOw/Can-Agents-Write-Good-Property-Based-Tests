@@ -766,6 +766,7 @@ async function fetchSavedDocs() {
 
 // ----- Account page -----
 let accountDocuments = [];
+let activeAccountDoc = null;
 
 function formatAccountDate(value) {
   if (!value) return "—";
@@ -884,6 +885,7 @@ async function fetchAccountDocs() {
 function showAccountDocDetail(docId) {
   const doc = accountDocuments.find((item) => String(item.id) === String(docId));
   if (!doc || !accountDetailModal) return;
+  activeAccountDoc = doc;
   const invariants = parseStoredInvariants(doc.invariants);
   const metrics = parseStoredMetrics(doc.hypothesis_tests);
   accountDetailTitle.textContent = doc.documentation_title || "Document";
@@ -927,8 +929,22 @@ function showAccountDocDetail(docId) {
       </section>
     ` : ""}
     <section class="account-detail-section">
-      <p class="eyebrow">Generated Markdown</p>
-      <div class="markdown-rendered account-detail-markdown">${doc.IBD_generated_md ? renderMarkdown(doc.IBD_generated_md) : '<p class="placeholder">No Markdown stored.</p>'}</div>
+      <div class="account-detail-md-head">
+        <p class="eyebrow">Generated Markdown</p>
+        <div class="account-detail-md-actions">
+          <button type="button" class="secondary-button" id="account-md-download">Download .md</button>
+          <button type="button" class="secondary-button" id="account-md-edit">Edit</button>
+        </div>
+      </div>
+      <p class="account-message" id="account-md-message"></p>
+      <div class="markdown-rendered account-detail-markdown" id="account-detail-markdown">${doc.IBD_generated_md ? renderMarkdown(doc.IBD_generated_md) : '<p class="placeholder">No Markdown stored.</p>'}</div>
+      <div class="account-detail-md-editor is-hidden" id="account-detail-md-editor">
+        <textarea id="account-md-textarea" rows="16" spellcheck="false"></textarea>
+        <div class="account-detail-md-editor-actions">
+          <button type="button" class="landing-primary-button" id="account-md-save">Save changes</button>
+          <button type="button" class="secondary-button" id="account-md-cancel">Cancel</button>
+        </div>
+      </div>
     </section>
   `;
   accountDetailModal.classList.remove("is-hidden");
@@ -939,6 +955,86 @@ function showAccountDocDetail(docId) {
 function closeAccountDocDetail() {
   accountDetailModal?.classList.add("is-hidden");
   document.body.classList.remove("account-detail-open");
+  activeAccountDoc = null;
+}
+
+function setAccountMarkdownEditing(editing) {
+  const rendered = accountDetailBody?.querySelector("#account-detail-markdown");
+  const editor = accountDetailBody?.querySelector("#account-detail-md-editor");
+  const textarea = accountDetailBody?.querySelector("#account-md-textarea");
+  const editButton = accountDetailBody?.querySelector("#account-md-edit");
+  const message = accountDetailBody?.querySelector("#account-md-message");
+  if (!rendered || !editor) return;
+  if (message) {
+    message.textContent = "";
+    message.classList.remove("is-success");
+  }
+  if (editing) {
+    if (textarea && activeAccountDoc) textarea.value = activeAccountDoc.IBD_generated_md || "";
+    rendered.classList.add("is-hidden");
+    editor.classList.remove("is-hidden");
+    editButton?.classList.add("is-hidden");
+    textarea?.focus();
+  } else {
+    rendered.classList.remove("is-hidden");
+    editor.classList.add("is-hidden");
+    editButton?.classList.remove("is-hidden");
+  }
+}
+
+function downloadActiveAccountMarkdown() {
+  if (!activeAccountDoc) return;
+  const filename = `${slugify(activeAccountDoc.documentation_title || "documentation")}.md`;
+  downloadMarkdown(activeAccountDoc.IBD_generated_md || "", filename);
+}
+
+async function saveAccountMarkdown(button) {
+  if (!activeAccountDoc) return;
+  const textarea = accountDetailBody?.querySelector("#account-md-textarea");
+  const message = accountDetailBody?.querySelector("#account-md-message");
+  const rendered = accountDetailBody?.querySelector("#account-detail-markdown");
+  const newMarkdown = textarea ? textarea.value : "";
+  button.disabled = true;
+  if (message) {
+    message.classList.remove("is-success");
+    message.textContent = "Saving changes...";
+  }
+  try {
+    const payload = {
+      documentation_title: activeAccountDoc.documentation_title || "api.function",
+      source_code: activeAccountDoc.source_code || "",
+      IBD_generated_md: newMarkdown,
+      TD_md: activeAccountDoc.TD_md || "",
+      invariants: activeAccountDoc.invariants ?? null,
+      soundness: activeAccountDoc.soundness ?? null,
+      validity: activeAccountDoc.validity ?? null,
+      mutation_score: activeAccountDoc.mutation_score ?? null,
+      mutation_summary: activeAccountDoc.mutation_summary ?? null,
+      hypothesis_tests: activeAccountDoc.hypothesis_tests ?? null
+    };
+    const response = await fetch(`/documentation/update_ibd/${activeAccountDoc.id}`, {
+      method: "PUT",
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not save changes.");
+    activeAccountDoc.IBD_generated_md = newMarkdown;
+    const index = accountDocuments.findIndex((item) => String(item.id) === String(activeAccountDoc.id));
+    if (index >= 0) accountDocuments[index] = { ...accountDocuments[index], IBD_generated_md: newMarkdown };
+    if (rendered) {
+      rendered.innerHTML = newMarkdown ? renderMarkdown(newMarkdown) : '<p class="placeholder">No Markdown stored.</p>';
+    }
+    setAccountMarkdownEditing(false);
+    if (message) {
+      message.textContent = "Changes saved.";
+      message.classList.add("is-success");
+    }
+  } catch (error) {
+    if (message) message.textContent = error.message || "Could not save changes.";
+  } finally {
+    button.disabled = false;
+  }
 }
 
 function showAccountPage() {
@@ -2844,6 +2940,25 @@ accountDocsList?.addEventListener("click", (event) => {
 accountDetailClose?.addEventListener("click", closeAccountDocDetail);
 accountDetailModal?.addEventListener("click", (event) => {
   if (event.target?.matches?.("[data-close-account-detail]")) closeAccountDocDetail();
+});
+
+accountDetailBody?.addEventListener("click", (event) => {
+  if (event.target.closest("#account-md-download")) {
+    downloadActiveAccountMarkdown();
+    return;
+  }
+  if (event.target.closest("#account-md-edit")) {
+    setAccountMarkdownEditing(true);
+    return;
+  }
+  if (event.target.closest("#account-md-cancel")) {
+    setAccountMarkdownEditing(false);
+    return;
+  }
+  const saveButton = event.target.closest("#account-md-save");
+  if (saveButton) {
+    saveAccountMarkdown(saveButton);
+  }
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !accountDetailModal?.classList.contains("is-hidden")) closeAccountDocDetail();

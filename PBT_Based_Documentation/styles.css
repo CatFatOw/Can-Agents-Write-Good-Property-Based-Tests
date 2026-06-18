@@ -5956,9 +5956,18 @@ body.account-active::before {
   margin-bottom: 14px;
 }
 
+.account-detail-header > div {
+  min-width: 0;
+}
+
 .account-detail-header h2 {
   margin: 4px 0 0;
   word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.account-detail-header .secondary-button {
+  flex-shrink: 0;
 }
 
 .account-detail-body {
@@ -5984,6 +5993,7 @@ body.account-active::before {
 .account-detail-meta dd {
   margin: 2px 0 0;
   font-weight: 780;
+  overflow-wrap: anywhere;
 }
 
 .account-detail-invariants {
@@ -6030,6 +6040,59 @@ body.account-active::before {
   font-weight: 720;
 }
 
+.account-metric > :not(summary) {
+  margin-top: 10px;
+}
+
+.account-metric summary > span:first-child {
+  flex-shrink: 0;
+}
+
+/* Generated Markdown toolbar + inline editor */
+.account-detail-md-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.account-detail-md-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.account-detail-md-editor {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.account-detail-md-editor.is-hidden {
+  display: none;
+}
+
+.account-detail-md-editor textarea {
+  width: 100%;
+  min-height: 320px;
+  resize: vertical;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.account-detail-md-editor-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 body.account-detail-open {
   overflow: hidden;
 }
@@ -6045,6 +6108,22 @@ body.dark-mode .account-stat,
 body.dark-mode .account-metric {
   border-color: rgba(255, 238, 210, 0.12);
   background: rgba(255, 238, 210, 0.06);
+}
+
+body.dark-mode .account-metric summary {
+  color: #f7ead7;
+}
+
+body.dark-mode .account-metric-pills span,
+body.dark-mode .account-doc-pills span {
+  background: rgba(169, 199, 220, 0.18);
+  color: var(--blue);
+}
+
+body.dark-mode .account-detail-md-editor textarea {
+  border-color: rgba(255, 238, 210, 0.16);
+  background: rgba(12, 12, 20, 0.6);
+  color: #f7ead7;
 }
 
 body.dark-mode.account-active {
