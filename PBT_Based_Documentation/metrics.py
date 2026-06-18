@@ -1,4 +1,5 @@
 from openai import OpenAI
+from openai import OpenAIError
 import ast 
 import json
 from typing import List
@@ -35,18 +36,23 @@ def call_metric_model(client, model, prompt, streaming=True, seed=OPENAI_SEED):
     """
     use_chat_completions = bool(os.environ.get("OPENAI_BASE_URL"))
     if not use_chat_completions and hasattr(client, "responses"):
-        if not streaming:
-            response = client.responses.create(model=model, input=prompt)
-            return getattr(response, "output_text", "")
+        try:
+            if not streaming:
+                response = client.responses.create(model=model, input=prompt)
+                return getattr(response, "output_text", "")
 
-        chunks = []
-        events = client.responses.create(model=model, input=prompt, stream=True)
-        for event in events:
-            if event.type == "response.output_text.delta":
-                print(event.delta, end="", flush=True)
-                chunks.append(event.delta)
-        print()
-        return "".join(chunks)
+            chunks = []
+            events = client.responses.create(model=model, input=prompt, stream=True)
+            for event in events:
+                if event.type == "response.output_text.delta":
+                    print(event.delta, end="", flush=True)
+                    chunks.append(event.delta)
+            print()
+            return "".join(chunks)
+        except (AttributeError, OpenAIError):
+            # Some configured models/providers expose the OpenAI SDK but only
+            # support Chat Completions. Fall through to that older API shape.
+            pass
 
     messages = [
         {
@@ -55,12 +61,19 @@ def call_metric_model(client, model, prompt, streaming=True, seed=OPENAI_SEED):
         },
         {"role": "user", "content": prompt},
     ]
+    def create_chat_completion(**kwargs):
+        """Retry without seed for gateways that reject OpenAI's seed param."""
+        try:
+            return client.chat.completions.create(**kwargs, seed=seed)
+        except (TypeError, OpenAIError):
+            return client.chat.completions.create(**kwargs)
+
     if not streaming:
-        response = client.chat.completions.create(model=model, messages=messages, seed=seed)
+        response = create_chat_completion(model=model, messages=messages)
         return response.choices[0].message.content or ""
 
     chunks = []
-    events = client.chat.completions.create(model=model, messages=messages, stream=True, seed=seed)
+    events = create_chat_completion(model=model, messages=messages, stream=True)
     for event in events:
         delta = event.choices[0].delta.content or ""
         if delta:
