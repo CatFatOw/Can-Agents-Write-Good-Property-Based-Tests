@@ -406,8 +406,8 @@ select {
 }
 
 .invariant-panel {
-  border-top-color: rgba(79, 143, 107, 0.5);
-  background: rgba(231, 244, 236, 0.6);
+  border-top-color: rgba(38, 31, 26, 0.18);
+  background: rgba(255, 250, 242, 0.54);
 }
 
 /* Landing example switcher + live documentation panels */
@@ -5507,6 +5507,13 @@ body.landing-active .landing-nav {
   backdrop-filter: blur(18px);
 }
 
+/* Keep the nav links/buttons on a single row so the first item ("Examples")
+   is never pushed onto a line above the rest. Mobile re-enables wrapping below. */
+body.landing-active .landing-nav-actions {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
 body.landing-active .landing-brand {
   color: #261f1a !important;
   letter-spacing: 0;
@@ -5514,7 +5521,7 @@ body.landing-active .landing-brand {
 
 body.landing-active .landing-hero {
   min-height: calc(100vh - 76px);
-  grid-template-columns: minmax(420px, 0.95fr) minmax(420px, 1.05fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
   gap: clamp(32px, 5vw, 74px);
   padding: 26px 0 58px;
 }
@@ -5524,12 +5531,20 @@ body.landing-active .terminal-wave {
   min-width: 0;
 }
 
+/* Keep the headline above the terminal panel so any overflow can never be
+   painted over by the block in the adjacent grid column. */
+body.landing-active .landing-copy {
+  position: relative;
+  z-index: 1;
+}
+
 body.landing-active .landing-copy h1 {
   max-width: 780px;
   color: #261f1a !important;
-  font-size: clamp(4rem, 6.6vw, 7.2rem);
+  font-size: clamp(2.8rem, 5.2vw, 5rem);
   line-height: 0.92;
   text-shadow: 0 16px 34px rgba(72, 56, 42, 0.13);
+  overflow-wrap: break-word;
 }
 
 body.landing-active .landing-subtitle {
@@ -6261,6 +6276,8 @@ body.dark-mode.account-active {
   body.landing-active .landing-actions,
   body.landing-active .landing-stats {
     width: 100%;
+    flex-wrap: wrap;
+    white-space: normal;
   }
 
   body.landing-active .landing-primary-button,
@@ -6324,8 +6341,8 @@ body.landing-active.dark-mode .landing-doc-panel {
 }
 
 body.landing-active.dark-mode .invariant-panel {
-  border-color: rgba(167, 216, 180, 0.34);
-  background: rgba(24, 38, 31, 0.66);
+  border-color: rgba(245, 225, 204, 0.16);
+  background: rgba(27, 22, 36, 0.66);
 }
 
 /* Shared landing controls (specificity-safe under body.dark-mode). */

@@ -3126,5 +3126,23 @@ stepTabs.forEach((tab) => {
 
 renderGeneratedDocsLibrary();
 updateModelProviderControls();
-showLandingPage();
+if (getAccessToken()) {
+  // Keep the user signed in across page refreshes by restoring the app view
+  // when a token is present in localStorage.
+  showAppPage();
+  // Verify the stored token is still valid; if it has expired, drop it and fall
+  // back to the landing page instead of leaving failing authenticated requests.
+  fetch("/users/me", { headers: authHeaders({ Accept: "application/json" }) })
+    .then((response) => {
+      if (response.status === 401) {
+        localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+        localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
+        updateAccountMenuLabel();
+        showLandingPage();
+      }
+    })
+    .catch(() => {});
+} else {
+  showLandingPage();
+}
 setStage("input");
