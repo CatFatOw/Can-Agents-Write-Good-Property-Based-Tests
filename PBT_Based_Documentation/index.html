@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invariant-Based Documentation generator</title>
     <link rel="icon" type="image/png" href="logo_new.png">
-    <link rel="stylesheet" href="styles.css?v=coverage-stage-19">
+    <link rel="stylesheet" href="styles.css?v=account-page-1">
   </head>
   <body class="stage-review">
     <section class="landing-page" id="landing-page" aria-labelledby="landing-title">
@@ -14,6 +14,7 @@
         <div class="landing-nav-actions">
           <a href="#examples" class="landing-nav-link">Examples</a>
           <button type="button" class="landing-nav-link login-open-button" data-auth-mode="login">Login</button>
+          <button type="button" class="theme-toggle landing-theme-toggle" aria-pressed="false" title="Toggle dark mode">Dark</button>
           <button type="button" class="landing-primary-button launch-app-button">Launch app</button>
         </div>
       </nav>
@@ -59,17 +60,17 @@
       </div>
 
       <div class="landing-process" aria-label="Documentation workflow">
-        <article>
+        <article data-reveal>
           <span>Tool process</span>
           <h2>Extract source-backed invariants</h2>
           <p>Load Python source with inspect or paste a function body directly into the studio.</p>
         </article>
-        <article>
+        <article data-reveal style="--reveal-delay: 90ms">
           <span>Human process</span>
           <h2>Keep humans in control</h2>
           <p>Approve only the invariants that are supported by code and useful to readers.</p>
         </article>
-        <article>
+        <article data-reveal style="--reveal-delay: 180ms">
           <span>IBD output</span>
           <h2>Generate sharper documentation</h2>
           <p>Produce Markdown with semantic guarantees, preconditions, examples, and source coverage.</p>
@@ -77,30 +78,28 @@
       </div>
 
       <section class="landing-examples" id="examples" aria-labelledby="examples-title">
-        <div class="examples-heading">
+        <div class="examples-heading" data-reveal>
           <p class="eyebrow">Example comparison</p>
           <h2 id="examples-title">Original docs vs invariant-backed docs</h2>
         </div>
-        <div class="landing-doc-compare">
+        <div class="landing-example-switch" role="tablist" aria-label="Example function" data-reveal>
+          <button type="button" class="landing-example-choice is-active" data-landing-example="numpy-pad" role="tab" aria-selected="true">np.pad</button>
+          <button type="button" class="landing-example-choice" data-landing-example="numpy-linspace" role="tab" aria-selected="false">np.linspace</button>
+        </div>
+        <div class="landing-doc-compare" data-reveal>
           <article class="landing-doc-panel">
             <p class="eyebrow">Original documentation</p>
-            <h3>np.pad</h3>
-            <p>Describes parameters and modes, but many behavioral details are spread across prose and examples.</p>
-            <ul>
-              <li>Mode options are listed broadly.</li>
-              <li>Edge cases require careful reading.</li>
-              <li>Source-level guarantees are implicit.</li>
-            </ul>
+            <h3 id="landing-original-title">Original np.pad</h3>
+            <div class="markdown-rendered landing-doc-scroll" id="landing-original-docs">
+              <p class="placeholder">Loading public documentation…</p>
+            </div>
           </article>
           <article class="landing-doc-panel invariant-panel">
             <p class="eyebrow">Invariant-based documentation</p>
-            <h3>np.pad</h3>
-            <p>Promotes reviewed source-backed claims into explicit contracts and edge-case guarantees.</p>
-            <ul>
-              <li>Preconditions are separated from behavior.</li>
-              <li>Mode-specific guarantees are easier to scan.</li>
-              <li>Coverage maps claims back to source evidence.</li>
-            </ul>
+            <h3 id="landing-invariant-title">Invariant-based np.pad</h3>
+            <div class="markdown-rendered landing-doc-scroll" id="landing-invariant-docs">
+              <p class="placeholder">Loading invariant-based documentation…</p>
+            </div>
           </article>
         </div>
         <button type="button" class="landing-secondary-button launch-app-button">Open the generator</button>
@@ -147,6 +146,7 @@
               <input id="saved-doc-search" type="search" placeholder="np.pad, invariant, edge case">
             </label>
             <div class="account-menu-actions">
+              <button type="button" class="secondary-button" id="account-page-button">View account</button>
               <button type="button" class="secondary-button" id="saved-doc-refresh">Refresh saved docs</button>
               <button type="button" class="secondary-button" id="logout-button">Log out</button>
             </div>
@@ -423,6 +423,89 @@
       </section>
     </main>
 
+    <section class="account-page is-hidden" id="account-page" aria-labelledby="account-title">
+      <div class="account-shell">
+        <nav class="account-topbar" aria-label="Account">
+          <button type="button" class="landing-nav-link account-back-button">← Back to app</button>
+          <button type="button" class="theme-toggle" aria-pressed="false" title="Toggle dark mode">Dark</button>
+        </nav>
+
+        <header class="account-header">
+          <p class="eyebrow">Your workspace</p>
+          <h1 id="account-title">Account</h1>
+          <p class="account-subtitle">Manage your profile, password, and everything you have generated.</p>
+        </header>
+
+        <div class="account-grid">
+          <article class="account-card account-profile-card">
+            <p class="eyebrow">Profile</p>
+            <h2 id="account-email">—</h2>
+            <dl class="account-meta">
+              <div><dt>Member since</dt><dd id="account-created">—</dd></div>
+              <div><dt>User ID</dt><dd id="account-id">—</dd></div>
+              <div><dt>Documents</dt><dd id="account-doc-count">0</dd></div>
+            </dl>
+            <div class="account-stat-row" id="account-stats"></div>
+          </article>
+
+          <article class="account-card account-security-card">
+            <p class="eyebrow">Security</p>
+            <h2>Change password</h2>
+            <form class="account-form" id="password-form">
+              <label class="field" for="current-password">
+                <span>Current password</span>
+                <input id="current-password" type="password" autocomplete="current-password" required>
+              </label>
+              <label class="field" for="new-password">
+                <span>New password</span>
+                <input id="new-password" type="password" autocomplete="new-password" required>
+              </label>
+              <label class="field" for="confirm-password">
+                <span>Confirm new password</span>
+                <input id="confirm-password" type="password" autocomplete="new-password" required>
+              </label>
+              <p class="account-message" id="password-message" role="status"></p>
+              <button type="submit" class="landing-primary-button" id="password-submit">Update password</button>
+            </form>
+
+            <div class="account-danger-zone">
+              <h3>Delete account</h3>
+              <p>Permanently remove your account and all saved documentation. This cannot be undone.</p>
+              <p class="account-message" id="delete-message" role="status"></p>
+              <button type="button" class="danger-button" id="delete-account-button">Delete my account</button>
+            </div>
+          </article>
+        </div>
+
+        <section class="account-docs" aria-labelledby="account-docs-title">
+          <div class="account-docs-head">
+            <div>
+              <p class="eyebrow">Generated documentation</p>
+              <h2 id="account-docs-title">Your documents</h2>
+            </div>
+            <button type="button" class="secondary-button" id="account-docs-refresh">Refresh</button>
+          </div>
+          <div class="account-docs-list" id="account-docs-list">
+            <p class="placeholder">Loading your documents…</p>
+          </div>
+        </section>
+      </div>
+
+      <div class="account-detail-modal is-hidden" id="account-detail-modal" role="dialog" aria-modal="true" aria-labelledby="account-detail-title">
+        <div class="account-detail-backdrop" data-close-account-detail></div>
+        <article class="account-detail-shell">
+          <header class="account-detail-header">
+            <div>
+              <p class="eyebrow" id="account-detail-eyebrow">Generated document</p>
+              <h2 id="account-detail-title">Document</h2>
+            </div>
+            <button type="button" class="secondary-button" id="account-detail-close">Close</button>
+          </header>
+          <div class="account-detail-body" id="account-detail-body"></div>
+        </article>
+      </div>
+    </section>
+
 
     <div class="coverage-fullscreen-modal is-hidden" id="coverage-fullscreen-modal" role="dialog" aria-modal="true" aria-labelledby="coverage-fullscreen-title">
       <div class="coverage-fullscreen-backdrop" data-close-coverage-fullscreen></div>
@@ -459,6 +542,6 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=coverage-stage-19"></script>
+    <script src="app.js?v=account-page-1"></script>
   </body>
 </html>

@@ -1,10 +1,10 @@
 """This file handles the routing for users, such as creating users, and getting a specific user with an ID"""
-from fastapi import APIRouter, Depends, status, HTTPException
-import models 
-import database 
-from database import get_db 
-from schemas import UserModel, UserResponse
-import utils, oath2 
+from fastapi import APIRouter, Depends, status, HTTPException, Response
+import models
+import database
+from database import get_db
+from schemas import UserModel, UserResponse, PasswordChange
+import utils, oath2
 from sqlalchemy.orm import Session
 
 router = APIRouter(
@@ -31,6 +31,53 @@ async def create_user(user:UserModel, db:Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return new_user
+
+# CURRENT USER (ACCOUNT) ENDPOINT LOGIC START----
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_profile(curr_user: models.User = Depends(oath2.get_current_user)):
+    """Return the profile (name/email, created time) for the logged-in user."""
+    return curr_user
+
+
+@router.put("/me/password", response_model=UserResponse)
+async def change_password(
+    payload: PasswordChange,
+    db: Session = Depends(get_db),
+    curr_user: models.User = Depends(oath2.get_current_user),
+):
+    """Let the logged-in user change their own password."""
+    if not utils.verify(payload.current_password, curr_user.password):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Current password is incorrect.",
+        )
+    if not payload.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password cannot be empty.",
+        )
+    curr_user.password = utils.hash(payload.new_password)
+    db.commit()
+    db.refresh(curr_user)
+    return curr_user
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_current_user(
+    db: Session = Depends(get_db),
+    curr_user: models.User = Depends(oath2.get_current_user),
+):
+    """Delete the logged-in user's account along with all their documentation."""
+    # Remove owned documentation first so the delete works even when the
+    # database (e.g. SQLite) does not enforce the ON DELETE CASCADE foreign key.
+    db.query(models.Documentation).filter(
+        models.Documentation.owner_id == curr_user.id
+    ).delete(synchronize_session=False)
+    db.delete(curr_user)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+# CURRENT USER (ACCOUNT) ENDPOINT LOGIC END----
+
 
 @router.get("/{id}", response_model=UserResponse)
 async def get_user(id:int, db:Session = Depends(get_db)):

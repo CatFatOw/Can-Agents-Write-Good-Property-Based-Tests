@@ -28,7 +28,13 @@ class TokenData(BaseModel):
 # Users
 class UserModel(BaseModel):
     email:str
-    password:str 
+    password:str
+
+
+class PasswordChange(BaseModel):
+    """Payload for a logged-in user changing their own password."""
+    current_password: str
+    new_password: str
 
 
 class ModelProviderSelection(BaseModel):

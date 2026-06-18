@@ -20,11 +20,35 @@ const savedDocSearchInput = document.querySelector("#saved-doc-search");
 const savedDocRefreshButton = document.querySelector("#saved-doc-refresh");
 const savedDocList = document.querySelector("#saved-doc-list");
 const logoutButton = document.querySelector("#logout-button");
+const accountPageButton = document.querySelector("#account-page-button");
+const accountPage = document.querySelector("#account-page");
+const accountBackButton = document.querySelector(".account-back-button");
+const accountEmail = document.querySelector("#account-email");
+const accountCreated = document.querySelector("#account-created");
+const accountId = document.querySelector("#account-id");
+const accountDocCount = document.querySelector("#account-doc-count");
+const accountStats = document.querySelector("#account-stats");
+const accountDocsList = document.querySelector("#account-docs-list");
+const accountDocsRefresh = document.querySelector("#account-docs-refresh");
+const passwordForm = document.querySelector("#password-form");
+const currentPasswordInput = document.querySelector("#current-password");
+const newPasswordInput = document.querySelector("#new-password");
+const confirmPasswordInput = document.querySelector("#confirm-password");
+const passwordMessage = document.querySelector("#password-message");
+const passwordSubmit = document.querySelector("#password-submit");
+const deleteAccountButton = document.querySelector("#delete-account-button");
+const deleteMessage = document.querySelector("#delete-message");
+const accountDetailModal = document.querySelector("#account-detail-modal");
+const accountDetailClose = document.querySelector("#account-detail-close");
+const accountDetailTitle = document.querySelector("#account-detail-title");
+const accountDetailEyebrow = document.querySelector("#account-detail-eyebrow");
+const accountDetailBody = document.querySelector("#account-detail-body");
 const documentationInput = document.querySelector("#documentation");
 const apiNameInput = document.querySelector("#api-name");
 const sourceObjectInput = document.querySelector("#source-object");
 const lookupButton = document.querySelector("#lookup-button");
 const themeToggle = document.querySelector("#theme-toggle");
+const themeToggles = Array.from(document.querySelectorAll(".theme-toggle"));
 const toneInput = document.querySelector("#tone");
 const modelProviderInput = document.querySelector("#model-provider");
 const openaiKeyInput = document.querySelector("#openai-key");
@@ -146,7 +170,8 @@ function showLandingPage() {
   landingPage?.classList.remove("is-hidden");
   loginPage?.classList.add("is-hidden");
   appShell?.classList.add("is-hidden");
-  document.body.classList.remove("app-active", "auth-active");
+  accountPage?.classList.add("is-hidden");
+  document.body.classList.remove("app-active", "auth-active", "account-active");
   document.body.classList.add("landing-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -155,7 +180,8 @@ function showAppPage() {
   landingPage?.classList.add("is-hidden");
   loginPage?.classList.add("is-hidden");
   appShell?.classList.remove("is-hidden");
-  document.body.classList.remove("landing-active", "auth-active");
+  accountPage?.classList.add("is-hidden");
+  document.body.classList.remove("landing-active", "auth-active", "account-active");
   document.body.classList.add("app-active");
   updateAccountMenuLabel();
   refreshDatabaseStatus();
@@ -211,7 +237,8 @@ function showLoginPage(nextMode = "login") {
   landingPage?.classList.add("is-hidden");
   loginPage?.classList.remove("is-hidden");
   appShell?.classList.add("is-hidden");
-  document.body.classList.remove("landing-active", "app-active");
+  accountPage?.classList.add("is-hidden");
+  document.body.classList.remove("landing-active", "app-active", "account-active");
   document.body.classList.add("auth-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
   window.setTimeout(() => authEmailInput?.focus(), 120);
@@ -324,17 +351,17 @@ const docsExamples = {
 function applyTheme(mode) {
   const dark = mode === "dark";
   document.body.classList.toggle("dark-mode", dark);
-  if (themeToggle) {
-    themeToggle.setAttribute("aria-pressed", dark ? "true" : "false");
-    themeToggle.innerHTML = `
+  themeToggles.forEach((toggle) => {
+    toggle.setAttribute("aria-pressed", dark ? "true" : "false");
+    toggle.innerHTML = `
       <span class="theme-orbit" aria-hidden="true">
         <span class="theme-sun"></span>
         <span class="theme-moon"></span>
       </span>
       <span class="theme-label">${dark ? "Light mode" : "Dark mode"}</span>
     `;
-    themeToggle.title = dark ? "Switch to light mode" : "Switch to dark mode";
-  }
+    toggle.title = dark ? "Switch to light mode" : "Switch to dark mode";
+  });
 }
 
 applyTheme(localStorage.getItem(DARK_MODE_STORAGE_KEY) || "dark");
@@ -734,6 +761,272 @@ async function fetchSavedDocs() {
     renderSavedDocs();
   } catch (error) {
     if (savedDocList) savedDocList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load saved Markdown.")}</p>`;
+  }
+}
+
+// ----- Account page -----
+let accountDocuments = [];
+
+function formatAccountDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return "—";
+  return date.toLocaleString([], {
+    year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+  });
+}
+
+function formatPercentMaybe(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "—";
+  return `${Math.round(numeric * 100)}%`;
+}
+
+function parseStoredMetrics(value) {
+  if (!value) return [];
+  try {
+    const parsed = typeof value === "string" ? JSON.parse(value) : value;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function averageAccountMetric(field) {
+  const values = accountDocuments
+    .map((doc) => Number(doc?.[field]))
+    .filter((value) => Number.isFinite(value));
+  if (!values.length) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function renderAccountStats() {
+  if (!accountStats) return;
+  const stats = [
+    ["Avg soundness", averageAccountMetric("soundness")],
+    ["Avg validity", averageAccountMetric("validity")],
+    ["Avg mutation", averageAccountMetric("mutation_score")]
+  ];
+  accountStats.innerHTML = stats.map(([label, value]) => `
+    <div class="account-stat">
+      <strong>${value === null ? "—" : formatPercentMaybe(value)}</strong>
+      <span>${escapeHtml(label)}</span>
+    </div>
+  `).join("");
+}
+
+async function fetchAccountProfile() {
+  if (!getAccessToken() || !accountEmail) return;
+  accountEmail.textContent = getSavedUserEmail() || "—";
+  accountCreated.textContent = "—";
+  accountId.textContent = "—";
+  try {
+    const response = await fetch("/users/me", { headers: authHeaders({ Accept: "application/json" }) });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not load profile.");
+    accountEmail.textContent = data.email || getSavedUserEmail() || "—";
+    accountCreated.textContent = formatAccountDate(data.created_at);
+    accountId.textContent = data.id != null ? `#${data.id}` : "—";
+  } catch {
+    // Keep the cached email even when the profile lookup fails.
+  }
+}
+
+function renderAccountDocs() {
+  if (!accountDocsList) return;
+  if (!getAccessToken()) {
+    accountDocsList.innerHTML = '<p class="placeholder">Log in to view your documents.</p>';
+    return;
+  }
+  if (!accountDocuments.length) {
+    accountDocsList.innerHTML = '<p class="placeholder">No generated documents yet. Run the generator to create one.</p>';
+    return;
+  }
+  accountDocsList.innerHTML = accountDocuments.map((doc) => {
+    const invariants = parseStoredInvariants(doc.invariants);
+    return `
+      <article class="account-doc-card">
+        <div class="account-doc-info">
+          <strong>${escapeHtml(doc.documentation_title || "Untitled documentation")}</strong>
+          <small>${escapeHtml(formatAccountDate(doc.created_at))}</small>
+          <div class="account-doc-pills">
+            <span>Soundness ${formatPercentMaybe(doc.soundness)}</span>
+            <span>Validity ${formatPercentMaybe(doc.validity)}</span>
+            <span>Mutation ${formatPercentMaybe(doc.mutation_score)}</span>
+            <span>${invariants.length} invariants</span>
+          </div>
+        </div>
+        <button type="button" class="secondary-button account-doc-view" data-doc-id="${doc.id}">View more</button>
+      </article>
+    `;
+  }).join("");
+}
+
+async function fetchAccountDocs() {
+  if (!getAccessToken()) {
+    renderAccountDocs();
+    return;
+  }
+  if (accountDocsList) accountDocsList.innerHTML = '<p class="placeholder">Loading your documents…</p>';
+  try {
+    const response = await fetch("/documentation/me", { headers: authHeaders({ Accept: "application/json" }) });
+    const data = await response.json().catch(() => []);
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not load documents.");
+    accountDocuments = Array.isArray(data) ? data : [];
+    if (accountDocCount) accountDocCount.textContent = String(accountDocuments.length);
+    renderAccountStats();
+    renderAccountDocs();
+  } catch (error) {
+    if (accountDocsList) accountDocsList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load documents.")}</p>`;
+  }
+}
+
+function showAccountDocDetail(docId) {
+  const doc = accountDocuments.find((item) => String(item.id) === String(docId));
+  if (!doc || !accountDetailModal) return;
+  const invariants = parseStoredInvariants(doc.invariants);
+  const metrics = parseStoredMetrics(doc.hypothesis_tests);
+  accountDetailTitle.textContent = doc.documentation_title || "Document";
+  accountDetailEyebrow.textContent = `Generated ${formatAccountDate(doc.created_at)}`;
+  accountDetailBody.innerHTML = `
+    <section class="account-detail-section">
+      <p class="eyebrow">Overview</p>
+      <dl class="account-detail-meta">
+        <div><dt>Name</dt><dd>${escapeHtml(doc.documentation_title || "—")}</dd></div>
+        <div><dt>Generated</dt><dd>${escapeHtml(formatAccountDate(doc.created_at))}</dd></div>
+        <div><dt>Soundness</dt><dd>${formatPercentMaybe(doc.soundness)}</dd></div>
+        <div><dt>Validity</dt><dd>${formatPercentMaybe(doc.validity)}</dd></div>
+        <div><dt>Mutation</dt><dd>${formatPercentMaybe(doc.mutation_score)}</dd></div>
+      </dl>
+    </section>
+    ${invariants.length ? `
+      <section class="account-detail-section">
+        <p class="eyebrow">Invariants (${invariants.length})</p>
+        <ul class="account-detail-invariants">${invariants.map((inv) => `<li>${escapeHtml(inv)}</li>`).join("")}</ul>
+      </section>
+    ` : ""}
+    ${metrics.length ? `
+      <section class="account-detail-section">
+        <p class="eyebrow">Metrics &amp; tests (${metrics.length})</p>
+        <div class="account-detail-metrics">
+          ${metrics.map((metric, index) => `
+            <details class="account-metric">
+              <summary>
+                <span>Invariant ${index + 1}</span>
+                <span class="account-metric-pills">
+                  <span>Valid ${formatPercentMaybe(metric.validity)}</span>
+                  <span>Sound ${formatPercentMaybe(metric.soundness)}</span>
+                  ${metric.mutation_score === null || metric.mutation_score === undefined ? "" : `<span>Mut ${formatPercentMaybe(metric.mutation_score)}</span>`}
+                </span>
+              </summary>
+              ${metric.invariant ? `<div class="markdown-rendered">${renderMarkdown(String(metric.invariant))}</div>` : ""}
+              ${metric.test_code ? `<pre class="md-code"><code>${escapeHtml(metric.test_code)}</code></pre>` : ""}
+            </details>
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
+    <section class="account-detail-section">
+      <p class="eyebrow">Generated Markdown</p>
+      <div class="markdown-rendered account-detail-markdown">${doc.IBD_generated_md ? renderMarkdown(doc.IBD_generated_md) : '<p class="placeholder">No Markdown stored.</p>'}</div>
+    </section>
+  `;
+  accountDetailModal.classList.remove("is-hidden");
+  document.body.classList.add("account-detail-open");
+  accountDetailClose?.focus();
+}
+
+function closeAccountDocDetail() {
+  accountDetailModal?.classList.add("is-hidden");
+  document.body.classList.remove("account-detail-open");
+}
+
+function showAccountPage() {
+  if (!getAccessToken()) {
+    showLoginPage("login");
+    return;
+  }
+  landingPage?.classList.add("is-hidden");
+  loginPage?.classList.add("is-hidden");
+  appShell?.classList.add("is-hidden");
+  accountPage?.classList.remove("is-hidden");
+  document.body.classList.remove("landing-active", "auth-active", "app-active");
+  document.body.classList.add("account-active");
+  accountMenu?.classList.add("is-hidden");
+  accountMenuButton?.setAttribute("aria-expanded", "false");
+  if (passwordMessage) {
+    passwordMessage.textContent = "";
+    passwordMessage.classList.remove("is-success");
+  }
+  if (deleteMessage) deleteMessage.textContent = "";
+  passwordForm?.reset();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  fetchAccountProfile();
+  fetchAccountDocs();
+}
+
+async function submitPasswordChange(event) {
+  event.preventDefault();
+  if (!passwordMessage) return;
+  passwordMessage.classList.remove("is-success");
+  const current = currentPasswordInput.value;
+  const next = newPasswordInput.value;
+  const confirmValue = confirmPasswordInput.value;
+  if (!current || !next) {
+    passwordMessage.textContent = "Fill in every password field.";
+    return;
+  }
+  if (next !== confirmValue) {
+    passwordMessage.textContent = "New passwords do not match.";
+    return;
+  }
+  passwordSubmit.disabled = true;
+  passwordMessage.textContent = "Updating password...";
+  try {
+    const response = await fetch("/users/me/password", {
+      method: "PUT",
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
+      body: JSON.stringify({ current_password: current, new_password: next })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not update password.");
+    passwordMessage.textContent = "Password updated.";
+    passwordMessage.classList.add("is-success");
+    passwordForm.reset();
+  } catch (error) {
+    passwordMessage.textContent = error.message || "Could not update password.";
+  } finally {
+    passwordSubmit.disabled = false;
+  }
+}
+
+async function deleteAccount() {
+  if (!deleteMessage) return;
+  const confirmed = window.confirm("Delete your account and all saved documentation? This cannot be undone.");
+  if (!confirmed) return;
+  deleteAccountButton.disabled = true;
+  deleteMessage.textContent = "Deleting account...";
+  try {
+    const response = await fetch("/users/me", {
+      method: "DELETE",
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    if (!response.ok && response.status !== 204) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.detail || data.error || "Could not delete account.");
+    }
+    localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
+    savedDocumentation = [];
+    accountDocuments = [];
+    updateAccountMenuLabel();
+    renderSavedDocs();
+    closeAccountDocDetail();
+    showLandingPage();
+  } catch (error) {
+    deleteMessage.textContent = error.message || "Could not delete account.";
+  } finally {
+    deleteAccountButton.disabled = false;
   }
 }
 
@@ -2408,12 +2701,89 @@ generatedDocsButton.addEventListener("click", () => {
   showGeneratedDoc();
 });
 
-if (themeToggle) {
-  themeToggle.addEventListener("click", () => {
+themeToggles.forEach((toggle) => {
+  toggle.addEventListener("click", () => {
     const nextMode = document.body.classList.contains("dark-mode") ? "light" : "dark";
     localStorage.setItem(DARK_MODE_STORAGE_KEY, nextMode);
     applyTheme(nextMode);
   });
+});
+
+const landingExampleSwitch = document.querySelector(".landing-example-switch");
+const landingOriginalDocs = document.querySelector("#landing-original-docs");
+const landingInvariantDocs = document.querySelector("#landing-invariant-docs");
+const landingOriginalTitle = document.querySelector("#landing-original-title");
+const landingInvariantTitle = document.querySelector("#landing-invariant-title");
+const landingExampleCache = new Map();
+let landingExampleRequestId = 0;
+
+async function loadLandingExample(exampleId = "numpy-pad") {
+  if (!landingOriginalDocs || !landingInvariantDocs) return;
+  const example = docsExamples[exampleId] || docsExamples["numpy-pad"];
+  const requestId = (landingExampleRequestId += 1);
+
+  landingExampleSwitch?.querySelectorAll(".landing-example-choice").forEach((button) => {
+    const active = button.dataset.landingExample === exampleId;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  if (landingOriginalTitle) landingOriginalTitle.textContent = `Original ${example.label}`;
+  if (landingInvariantTitle) landingInvariantTitle.textContent = `Invariant-based ${example.label}`;
+
+  const render = ({ original, invariant }) => {
+    if (requestId !== landingExampleRequestId) return;
+    landingOriginalDocs.innerHTML = renderMarkdown(original);
+    landingInvariantDocs.innerHTML = renderMarkdown(invariant);
+  };
+
+  if (landingExampleCache.has(exampleId)) {
+    render(landingExampleCache.get(exampleId));
+    return;
+  }
+
+  landingOriginalDocs.innerHTML = '<p class="placeholder">Loading public documentation…</p>';
+  landingInvariantDocs.innerHTML = '<p class="placeholder">Loading invariant-based documentation…</p>';
+  try {
+    const [originalResponse, invariantResponse] = await Promise.all([
+      fetch(example.originalPath),
+      fetch(example.invariantPath)
+    ]);
+    if (!originalResponse.ok || !invariantResponse.ok) {
+      throw new Error("unavailable");
+    }
+    const payload = {
+      original: await originalResponse.text(),
+      invariant: await invariantResponse.text()
+    };
+    landingExampleCache.set(exampleId, payload);
+    render(payload);
+  } catch {
+    if (requestId !== landingExampleRequestId) return;
+    landingOriginalDocs.innerHTML = `<p class="placeholder">Could not load the ${example.label} example. Launch the app to generate it live.</p>`;
+    landingInvariantDocs.innerHTML = "";
+  }
+}
+
+landingExampleSwitch?.addEventListener("click", (event) => {
+  const button = event.target.closest(".landing-example-choice");
+  if (!button) return;
+  loadLandingExample(button.dataset.landingExample);
+});
+
+loadLandingExample("numpy-pad");
+
+if ("IntersectionObserver" in window) {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-revealed");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll("[data-reveal]").forEach((node) => revealObserver.observe(node));
+} else {
+  document.querySelectorAll("[data-reveal]").forEach((node) => node.classList.add("is-revealed"));
 }
 
 launchAppButtons.forEach((button) => {
@@ -2454,6 +2824,29 @@ logoutButton?.addEventListener("click", () => {
   updateAccountMenuLabel();
   renderSavedDocs();
   setStatus("draft", "Signed out");
+});
+
+accountPageButton?.addEventListener("click", showAccountPage);
+accountBackButton?.addEventListener("click", showAppPage);
+accountDocsRefresh?.addEventListener("click", () => {
+  fetchAccountProfile();
+  fetchAccountDocs();
+});
+passwordForm?.addEventListener("submit", submitPasswordChange);
+deleteAccountButton?.addEventListener("click", deleteAccount);
+
+accountDocsList?.addEventListener("click", (event) => {
+  const button = event.target.closest(".account-doc-view");
+  if (!button) return;
+  showAccountDocDetail(button.dataset.docId);
+});
+
+accountDetailClose?.addEventListener("click", closeAccountDocDetail);
+accountDetailModal?.addEventListener("click", (event) => {
+  if (event.target?.matches?.("[data-close-account-detail]")) closeAccountDocDetail();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !accountDetailModal?.classList.contains("is-hidden")) closeAccountDocDetail();
 });
 
 modelProviderInput?.addEventListener("change", () => {
