@@ -5473,6 +5473,12 @@ body.auth-active {
     linear-gradient(135deg, #fff8ec, #ecf3ef) !important;
 }
 
+body.dark-mode.auth-active {
+  background:
+    radial-gradient(circle at 16% 20%, rgba(239, 159, 109, 0.12), transparent 32%),
+    linear-gradient(135deg, #15121d, #0f1119) !important;
+}
+
 body.landing-active::before,
 body.auth-active::before {
   display: none !important;
@@ -5483,6 +5489,15 @@ body.auth-active .login-page {
   width: min(1180px, calc(100% - 48px));
   max-width: none;
   color: #261f1a;
+}
+
+body.dark-mode.auth-active .login-page {
+  color: var(--ink);
+}
+
+body.dark-mode .auth-panel {
+  border-top-color: rgba(255, 238, 210, 0.16);
+  background: rgba(27, 27, 38, 0.82);
 }
 
 body.landing-active .landing-nav {
@@ -6158,8 +6173,8 @@ body.dark-mode .account-metric summary {
 
 body.dark-mode .account-metric-pills span,
 body.dark-mode .account-doc-pills span {
-  background: rgba(169, 199, 220, 0.18);
-  color: var(--blue);
+  background: rgba(255, 238, 210, 0.08);
+  color: var(--muted);
 }
 
 body.dark-mode .account-detail-md-editor textarea {
