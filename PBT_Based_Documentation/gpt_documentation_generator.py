@@ -143,8 +143,13 @@ def extract_signature(source_code: str, node: ast.FunctionDef | ast.AsyncFunctio
     return " ".join(part.rstrip(":") for part in signature_lines).strip()
 
 
-def response_text(model: str, prompt: str, stream: bool = True, seed: int = OPENAI_SEED) -> str:
-    """Function is an OpenAI Wrapper that calls the model"""
+def response_text(model: str, prompt: str, stream: bool = True, seed: int = OPENAI_SEED, prefer_chat_completions: bool = False) -> str:
+    """Function is an OpenAI Wrapper that calls the model
+
+    ``prefer_chat_completions`` skips the Responses API for OpenAI-compatible
+    gateways (e.g. the CMU AI Gateway) that only implement Chat Completions and
+    return a 404 for ``responses.create``.
+    """
     # Check if user provided an API key via os.environ
     if not os.environ.get("OPENAI_API_KEY"):
         raise SystemExit("Set OPENAI_API_KEY before running GPT stages.")
@@ -155,8 +160,9 @@ def response_text(model: str, prompt: str, stream: bool = True, seed: int = OPEN
         return response_text_with_legacy_openai(model, prompt, stream=stream, seed=seed)
     # We create the openAI client
     client = OpenAI()
-    # Checks if contains responses attribute
-    if hasattr(client, "responses"):
+    # Checks if contains responses attribute. Skip it for gateways that only
+    # speak Chat Completions, otherwise responses.create raises a 404.
+    if not prefer_chat_completions and hasattr(client, "responses"):
         try:
             return response_text_with_responses(client, model, prompt, stream=stream, seed=seed)
         except AttributeError:

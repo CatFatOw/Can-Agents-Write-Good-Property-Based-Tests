@@ -40,6 +40,58 @@ def legacy_error(exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=status_code, content={"error": str(exc)})
 
 
+# The anonymous /api/... generation flow has no logged-in user, but the
+# Documentation table requires an owner. Persist generations under a shared
+# placeholder account so saving works without changing the existing schema.
+ANONYMOUS_OWNER_EMAIL = "anonymous@local"
+
+
+def get_anonymous_owner_id(db: Session) -> int:
+    """Get (or lazily create) the placeholder owner for anonymous generations."""
+    owner = db.query(models.User).filter(models.User.email == ANONYMOUS_OWNER_EMAIL).first()
+    if owner is None:
+        owner = models.User(email=ANONYMOUS_OWNER_EMAIL, password=utils.hash("anonymous"))
+        db.add(owner)
+        db.commit()
+        db.refresh(owner)
+    return owner.id
+
+
+def serialize_invariants(invariants) -> str | None:
+    """Store lists/dicts as JSON text while leaving hand-written strings alone."""
+    if invariants is None:
+        return None
+    if isinstance(invariants, str):
+        return invariants
+    return json.dumps(invariants)
+
+
+def persist_generated_documentation(db: Session, payload: dict, markdown: str):
+    """Save a generated documentation row (markdown + approved invariants).
+
+    Returns the saved row, or None if persistence failed (saving must never
+    break the generation response the frontend is waiting on).
+    """
+    try:
+        doc = models.Documentation(
+            owner_id=get_anonymous_owner_id(db),
+            documentation_title=str(payload.get("api_name") or "api.function"),
+            source_code=str(payload.get("source_code") or payload.get("documentation") or ""),
+            IBD_generated_md=markdown or "",
+            # The generation flow only produces invariant-based docs; keep the
+            # NOT NULL traditional-docs column satisfied with an empty string.
+            TD_md="",
+            invariants=serialize_invariants(payload.get("invariants")),
+        )
+        db.add(doc)
+        db.commit()
+        db.refresh(doc)
+        return doc
+    except Exception:
+        db.rollback()
+        return None
+
+
 @api_router.post("/source")
 async def lookup_source(payload: dict):
     """Drop-in FastAPI replacement for server.py's /api/source endpoint."""
@@ -59,20 +111,33 @@ async def generate_invariants(payload: dict):
 
 
 @api_router.post("/documentation")
-async def generate_documentation(payload: dict):
-    """Generate invariant-based Markdown documentation."""
+async def generate_documentation(payload: dict, db: Session = Depends(get_db)):
+    """Generate invariant-based Markdown documentation and save it."""
     try:
-        return legacy_backend.generate_documentation(payload)
+        result = legacy_backend.generate_documentation(payload)
+        doc = persist_generated_documentation(db, payload, result.get("markdown", ""))
+        if doc is not None:
+            result["documentation_id"] = doc.id
+        return result
     except Exception as exc:
         return legacy_error(exc)
 
 
 @api_router.post("/documentation-stream")
-async def generate_documentation_stream(payload: dict):
-    """Stream generated Markdown so the current frontend can render progressively."""
+async def generate_documentation_stream(payload: dict, db: Session = Depends(get_db)):
+    """Stream generated Markdown, then persist the full document once complete."""
     try:
-        stream = legacy_backend.stream_documentation(payload)
-        return StreamingResponse(stream, media_type="text/plain; charset=utf-8")
+        chunks: list[str] = []
+
+        def streamer():
+            for chunk in legacy_backend.stream_documentation(payload):
+                chunks.append(chunk)
+                yield chunk
+            # Save only after the full markdown has streamed to the client.
+            markdown = legacy_backend.strip_markdown_fences("".join(chunks))
+            persist_generated_documentation(db, payload, markdown)
+
+        return StreamingResponse(streamer(), media_type="text/plain; charset=utf-8")
     except Exception as exc:
         return legacy_error(exc)
 

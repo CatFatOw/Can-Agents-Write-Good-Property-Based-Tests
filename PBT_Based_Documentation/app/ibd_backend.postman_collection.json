@@ -692,7 +692,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"source_code\": \"{{sourceCode}}\"\n}"
+              "raw": "{\n  \"api_name\": \"{{apiName}}\",\n  \"source_code\": \"{{sourceCode}}\",\n  \"invariants\": {{invariantsPayload}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/documentation",
@@ -704,7 +704,7 @@
                 "documentation"
               ]
             },
-            "description": "Generates invariant-based Markdown documentation."
+            "description": "Generates invariant-based Markdown documentation and saves it (markdown + approved invariants) to the database under the anonymous owner. Response includes documentation_id."
           },
           "response": []
         },
@@ -724,7 +724,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"source_code\": \"{{sourceCode}}\"\n}"
+              "raw": "{\n  \"api_name\": \"{{apiName}}\",\n  \"source_code\": \"{{sourceCode}}\",\n  \"invariants\": {{invariantsPayload}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/documentation-stream",
@@ -736,7 +736,7 @@
                 "documentation-stream"
               ]
             },
-            "description": "Streams generated Markdown as text/plain so the frontend can render progressively."
+            "description": "Streams generated Markdown as text/plain so the frontend can render progressively. Once the stream completes, the full document (markdown + approved invariants) is saved to the database under the anonymous owner."
           },
           "response": []
         }
@@ -1146,6 +1146,11 @@
     },
     {
       "key": "objectName",
+      "value": "math.gcd",
+      "type": "string"
+    },
+    {
+      "key": "apiName",
       "value": "math.gcd",
       "type": "string"
     },

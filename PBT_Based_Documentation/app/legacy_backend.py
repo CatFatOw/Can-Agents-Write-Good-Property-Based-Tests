@@ -209,6 +209,18 @@ def anthropic_response_text(model: str, prompt: str, api_key: str, max_tokens: i
     return "".join(chunks)
 
 
+def prefers_chat_completions(config: dict[str, Any]) -> bool:
+    """Whether to call Chat Completions instead of the Responses API.
+
+    OpenAI's native API supports the newer Responses API, but OpenAI-compatible
+    gateways (such as the CMU AI Gateway) generally implement only Chat
+    Completions. Calling ``responses.create`` against them returns a 404, so any
+    provider that is not native OpenAI -- or anything pointed at a custom
+    base_url -- must use Chat Completions.
+    """
+    return config.get("provider") != "openai" or bool(config.get("base_url"))
+
+
 def request_seed(payload: dict[str, Any]) -> int:
     try:
         return int(payload.get("openai_seed", OPENAI_SEED))
@@ -228,7 +240,13 @@ def run_project_gpt(prompt: str, openai_key: str | None, seed: int = OPENAI_SEED
         if active_config["provider"] == "claude":
             text = anthropic_response_text(active_config["model"], prompt, active_config["api_key"])
         else:
-            text = project_response_text(active_config["model"], prompt, stream=False, seed=seed)
+            text = project_response_text(
+                active_config["model"],
+                prompt,
+                stream=False,
+                seed=seed,
+                prefer_chat_completions=prefers_chat_completions(active_config),
+            )
     GPT_CACHE[cache_key] = text
     return text
 
@@ -258,7 +276,7 @@ def stream_project_gpt(prompt: str, openai_key: str | None, seed: int = OPENAI_S
             return
 
         client = OpenAI()
-        if hasattr(client, "responses"):
+        if not prefers_chat_completions(active_config) and hasattr(client, "responses"):
             events = client.responses.create(model=active_config["model"], input=prompt, stream=True)
             for event in events:
                 if getattr(event, "type", "") == "response.output_text.delta":
