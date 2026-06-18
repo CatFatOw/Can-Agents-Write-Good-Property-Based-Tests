@@ -106,6 +106,9 @@ select {
 .landing-nav-link,
 .auth-mode-toggle {
   min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   background: transparent;
   color: var(--muted);

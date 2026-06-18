@@ -3126,23 +3126,21 @@ stepTabs.forEach((tab) => {
 
 renderGeneratedDocsLibrary();
 updateModelProviderControls();
+// Always land on the marketing page so it stays viewable, even when signed in.
+showLandingPage();
+setStage("input");
+updateAccountMenuLabel();
+// Keep the session across refreshes: the stored token is preserved so the user
+// stays logged in. Validate it in the background and only drop it if it has
+// actually expired (401) — a refresh on its own never logs the user out.
 if (getAccessToken()) {
-  // Keep the user signed in across page refreshes by restoring the app view
-  // when a token is present in localStorage.
-  showAppPage();
-  // Verify the stored token is still valid; if it has expired, drop it and fall
-  // back to the landing page instead of leaving failing authenticated requests.
   fetch("/users/me", { headers: authHeaders({ Accept: "application/json" }) })
     .then((response) => {
       if (response.status === 401) {
         localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
         localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
         updateAccountMenuLabel();
-        showLandingPage();
       }
     })
     .catch(() => {});
-} else {
-  showLandingPage();
 }
-setStage("input");
