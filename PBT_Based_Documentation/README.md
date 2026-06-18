@@ -7,6 +7,9 @@
 This folder also includes a browser demo for the source-code-to-documentation
 workflow:
 
+**Use FastAPI for the current website. Do not start the new backend with
+`python3 server.py`; that file is only the old backup server.**
+
 ```bash
 cd /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/PBT_Based_Documentation
 export JWT_KEY="dev-secret-change-me"
