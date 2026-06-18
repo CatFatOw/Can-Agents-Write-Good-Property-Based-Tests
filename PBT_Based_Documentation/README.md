@@ -8,8 +8,19 @@ This folder also includes a browser demo for the source-code-to-documentation
 workflow:
 
 ```bash
-cd PBT_Based_Documentation
-python3 server.py
+cd /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/PBT_Based_Documentation
+export JWT_KEY="dev-secret-change-me"
+export DATABASE_URL="postgresql://postgres:password@localhost/pbt_docs"
+python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8011
+```
+
+For quick local testing without Postgres, omit `DATABASE_URL`; the FastAPI app
+falls back to a local SQLite database:
+
+```bash
+cd /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/PBT_Based_Documentation
+export JWT_KEY="dev-secret-change-me"
+python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8011
 ```
 
 Then open:
@@ -19,9 +30,10 @@ http://127.0.0.1:8011
 ```
 
 The site lets you paste source code on the left, load the exact `numpy.linspace`
-source example, paste an OpenAI API key, click **Run**, review the GPT-generated
-candidate invariants on the right, and then generate a Markdown comparison
-between the original source code and the invariant-based documentation.
+source example, choose a model API provider, paste an API key, click **Run**,
+review generated candidate invariants on the right, and then generate a
+Markdown comparison between the original source code and the invariant-based
+documentation.
 
 You can also try pulling source code from an installed Python object name. The
 site does the local backend equivalent of:
@@ -51,13 +63,28 @@ Backend key check before GPT calls:
 
 ![OpenAI key required demo](./assets/demo-openai-key-required.png)
 
-The web server calls this folder's existing `gpt_documentation_generator.py`
-OpenAI wrapper. The default model is `gpt-5.5`, or set `OPENAI_MODEL` before
-starting the server to override it.
+The FastAPI backend lives in `app/main.py`. It serves the existing static
+frontend and exposes the old `/api/...` endpoints through routers, so the
+browser workflow is still compatible with the previous `server.py` behavior.
+`server.py` is kept as a legacy backup.
+
+Model provider options:
+
+- **GPT / OpenAI**: default. Uses `OPENAI_API_KEY` or the key pasted in the UI.
+- **Claude / Anthropic**: supports invariant and documentation generation with
+  Anthropic's Messages API. Metrics still require GPT/OpenAI or an
+  OpenAI-compatible gateway.
+- **CMU AI Gateway**: uses the key page at
+  `https://ai-gateway.andrew.cmu.edu/ui/?page=api-keys`. Set
+  `CMU_AI_GATEWAY_BASE_URL` or paste the gateway base URL in the UI.
+
+The default documentation model is `gpt-5.5`, or set `OPENAI_MODEL` before
+starting the server to override it. Metrics use `OPENAI_METRICS_MODEL`, default
+`gpt-5.4-mini`.
 
 Note: viewing the files on GitHub or hosting only the static files will not run
-GPT. Real generation requires this Python backend, or another server host that
-can run `server.py`.
+model generation. Real generation requires this Python backend, or another
+server host that can run the FastAPI app.
 
 
 This directory contains a prototype workflow for reconstructing API

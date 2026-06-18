@@ -417,6 +417,10 @@ select {
   grid-column: 1 / -1;
 }
 
+.model-base-url-field {
+  grid-column: 1 / -1;
+}
+
 .mutation-auto-install {
   grid-column: 1 / -1;
   justify-content: flex-start;

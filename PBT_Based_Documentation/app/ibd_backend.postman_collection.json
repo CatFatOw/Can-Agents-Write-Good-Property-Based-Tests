@@ -1,0 +1,680 @@
+{
+  "info": {
+    "_postman_id": "3f209098-2f8f-4c13-bcf7-4b74bd148fc0",
+    "name": "ibd_backend",
+    "description": "Postman collection for the FastAPI backend routes in PBT_Based_Documentation/app.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set(\"userId\", response.id);",
+                  "}",
+                  "if (response.email) {",
+                  "    pm.collectionVariables.set(\"email\", response.email);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                ""
+              ]
+            },
+            "description": "Creates a user with the UserModel schema: email and password."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Gets one user by id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Documentation",
+      "item": [
+        {
+          "name": "Create IBD Documentation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"IBD documentation created\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set(\"documentationId\", response.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentation_title\": \"{{documentationTitle}}\",\n  \"source_code\": \"{{sourceCode}}\",\n  \"IBD_generated_md\": \"{{ibdMarkdown}}\",\n  \"TD_md\": \"{{tdMarkdown}}\",\n  \"hypothesis_tests\": \"{{hypothesisTests}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/documentation/create_ibd",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "create_ibd"
+              ]
+            },
+            "description": "Creates documentation owned by the logged-in user. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Update IBD Documentation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"IBD documentation updated\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set(\"documentationId\", response.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentation_title\": \"{{documentationTitle}}\",\n  \"source_code\": \"{{sourceCode}}\",\n  \"IBD_generated_md\": \"{{ibdMarkdown}}\",\n  \"TD_md\": \"{{tdMarkdown}}\",\n  \"hypothesis_tests\": \"{{hypothesisTests}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/documentation/update_ibd/{{documentationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "update_ibd",
+                "{{documentationId}}"
+              ]
+            },
+            "description": "Updates one documentation record by id. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Documentation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Documentation deleted\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/delete/{{documentationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "delete",
+                "{{documentationId}}"
+              ]
+            },
+            "description": "Deletes one documentation record by id."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Documentation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                ""
+              ]
+            },
+            "description": "Gets every documentation record."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Documentation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "me"
+              ]
+            },
+            "description": "Gets documentation records owned by the logged-in user. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My IBD Markdown",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User IBD markdown response returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json()).to.have.property(\"user_ibd\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/me/ibd",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "me",
+                "ibd"
+              ]
+            },
+            "description": "Gets IBD_generated_md values for documentation owned by the logged-in user. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My TD Markdown",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User TD markdown response returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json()).to.have.property(\"user_td\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/me/td",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "me",
+                "td"
+              ]
+            },
+            "description": "Gets TD_md values for documentation owned by the logged-in user. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Documentation By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/{{documentationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "{{documentationId}}"
+              ]
+            },
+            "description": "Gets one documentation record by documentation id."
+          },
+          "response": []
+        },
+        {
+          "name": "Get IBD Markdown By Documentation ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"IBD markdown response returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json()).to.have.property(\"post_IBD\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/{{documentationId}}/ibd",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "{{documentationId}}",
+                "ibd"
+              ]
+            },
+            "description": "Gets only the IBD_generated_md field for one documentation id. Response shape: { \"post_IBD\": \"...\" }."
+          },
+          "response": []
+        },
+        {
+          "name": "Get TD Markdown By Documentation ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TD markdown response returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json()).to.have.property(\"post_TD\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/{{documentationId}}/td",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "{{documentationId}}",
+                "td"
+              ]
+            },
+            "description": "Gets only the TD_md field for one documentation id. Response shape: { \"post_TD\": \"...\" }."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login succeeded\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.access_token) {",
+                  "    pm.collectionVariables.set(\"accessToken\", response.access_token);",
+                  "    pm.collectionVariables.set(\"tokenType\", response.token_type || \"bearer\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{email}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login",
+                ""
+              ]
+            },
+            "description": "Logs in with OAuth2PasswordRequestForm fields. The route is declared as POST in app/routers/auth.py."
+          },
+          "response": []
+        },
+        {
+          "name": "Authorized Request Template",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Duplicate this request for routes that require Authorization: Bearer {{accessToken}}."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "example@rice.edu",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "password123",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "documentationId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "documentationTitle",
+      "value": "Example Documentation",
+      "type": "string"
+    },
+    {
+      "key": "sourceCode",
+      "value": "def add(a, b):\\n    return a + b",
+      "type": "string"
+    },
+    {
+      "key": "ibdMarkdown",
+      "value": "# IBD Example\\n\\nGenerated IBD markdown content.",
+      "type": "string"
+    },
+    {
+      "key": "tdMarkdown",
+      "value": "# TD Example\\n\\nGenerated TD markdown content.",
+      "type": "string"
+    },
+    {
+      "key": "hypothesisTests",
+      "value": "from hypothesis import given\\n\\n# Generated Hypothesis tests go here.",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenType",
+      "value": "bearer",
+      "type": "string"
+    }
+  ]
+}

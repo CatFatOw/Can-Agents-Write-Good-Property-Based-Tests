@@ -5,7 +5,11 @@ const sourceObjectInput = document.querySelector("#source-object");
 const lookupButton = document.querySelector("#lookup-button");
 const themeToggle = document.querySelector("#theme-toggle");
 const toneInput = document.querySelector("#tone");
+const modelProviderInput = document.querySelector("#model-provider");
 const openaiKeyInput = document.querySelector("#openai-key");
+const apiKeyLabel = document.querySelector("#api-key-label");
+const modelBaseUrlField = document.querySelector("#model-base-url-field");
+const modelBaseUrlInput = document.querySelector("#model-base-url");
 const openaiSeedInput = document.querySelector("#openai-seed");
 const assessMetricsInput = document.querySelector("#assess-metrics");
 const showMutationTestingInput = document.querySelector("#show-mutation-testing");
@@ -110,6 +114,35 @@ let inactivityTimer = 0;
 const requestCache = new Map();
 const GENERATED_DOCS_TTL_MS = 10 * 60 * 1000;
 const DARK_MODE_STORAGE_KEY = "invariant-docs-dark-mode";
+
+const MODEL_PROVIDER_META = {
+  openai: {
+    keyLabel: "OpenAI key",
+    keyPlaceholder: "sk-...",
+    showBaseUrl: false
+  },
+  claude: {
+    keyLabel: "Anthropic key",
+    keyPlaceholder: "sk-ant-...",
+    showBaseUrl: false
+  },
+  cmu_gateway: {
+    keyLabel: "Gateway key",
+    keyPlaceholder: "Paste gateway key",
+    showBaseUrl: true
+  }
+};
+
+function currentModelProvider() {
+  return modelProviderInput?.value || "openai";
+}
+
+function updateModelProviderControls() {
+  const meta = MODEL_PROVIDER_META[currentModelProvider()] || MODEL_PROVIDER_META.openai;
+  if (apiKeyLabel) apiKeyLabel.textContent = meta.keyLabel;
+  if (openaiKeyInput) openaiKeyInput.placeholder = meta.keyPlaceholder;
+  modelBaseUrlField?.classList.toggle("is-hidden", !meta.showBaseUrl);
+}
 
 const exampleDocs = {
   "numpy-linspace": {
@@ -504,6 +537,9 @@ async function postJson(path, payload, options = {}) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       ...payload,
+      model_provider: currentModelProvider(),
+      model_api_key: openaiKeyInput.value.trim(),
+      base_url: modelBaseUrlInput?.value.trim() || "",
       openai_key: openaiKeyInput.value.trim(),
       openai_seed: Number(openaiSeedInput.value || 42)
     })
@@ -524,6 +560,9 @@ async function postTextStream(path, payload, onChunk) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       ...payload,
+      model_provider: currentModelProvider(),
+      model_api_key: openaiKeyInput.value.trim(),
+      base_url: modelBaseUrlInput?.value.trim() || "",
       openai_key: openaiKeyInput.value.trim(),
       openai_seed: Number(openaiSeedInput.value || 42)
     })
@@ -2077,6 +2116,11 @@ if (themeToggle) {
   });
 }
 
+modelProviderInput?.addEventListener("change", () => {
+  updateModelProviderControls();
+  requestCache.clear();
+});
+
 generatedDocsPanel.addEventListener("click", (event) => {
   const button = event.target.closest(".generated-doc-tab");
   if (!button) return;
@@ -2143,4 +2187,5 @@ stepTabs.forEach((tab) => {
 });
 
 renderGeneratedDocsLibrary();
+updateModelProviderControls();
 setStage("input");

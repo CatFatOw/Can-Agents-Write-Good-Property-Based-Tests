@@ -89,9 +89,23 @@
               </select>
             </label>
 
+            <label class="field" for="model-provider">
+              <span>Model API</span>
+              <select id="model-provider" name="model_provider">
+                <option value="openai" selected>GPT / OpenAI</option>
+                <option value="claude">Claude / Anthropic</option>
+                <option value="cmu_gateway">CMU AI Gateway</option>
+              </select>
+            </label>
+
             <label class="field" for="openai-key">
-              <span>OpenAI key</span>
+              <span id="api-key-label">OpenAI key</span>
               <input id="openai-key" name="openai_key" type="password" placeholder="sk-..." autocomplete="off">
+            </label>
+
+            <label class="field model-base-url-field is-hidden" id="model-base-url-field" for="model-base-url">
+              <span>Gateway base URL</span>
+              <input id="model-base-url" name="base_url" type="url" placeholder="Set CMU_AI_GATEWAY_BASE_URL or paste API base URL">
             </label>
 
             <label class="field" for="openai-seed">
