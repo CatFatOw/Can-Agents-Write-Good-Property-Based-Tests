@@ -5,7 +5,9 @@ from __future__ import annotations
 import os
 
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import text
 
+import database
 from schemas import ModelProviderResponse, ModelProviderSelection
 
 router = APIRouter(prefix="/model-api", tags=["model api"])
@@ -93,3 +95,30 @@ async def get_legacy_model_providers():
 async def select_legacy_model_provider(selection: ModelProviderSelection):
     """Frontend-friendly alias for provider validation."""
     return await select_model_provider(selection)
+
+
+@api_router.get("/status")
+async def get_runtime_status():
+    """Report the active database connection for the logged-in app status bar."""
+    url = database.engine.url
+    try:
+        # A lightweight ping makes the UI reflect the real DB state, not just the
+        # configured URL. This catches Postgres being down while sqlite fallback works.
+        with database.engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        return {
+            "database": {
+                "connected": True,
+                "backend": url.get_backend_name(),
+                "name": url.database or "default",
+            }
+        }
+    except Exception as exc:
+        return {
+            "database": {
+                "connected": False,
+                "backend": url.get_backend_name(),
+                "name": url.database or "default",
+                "error": str(exc),
+            }
+        }

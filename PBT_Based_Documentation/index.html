@@ -8,7 +8,154 @@
     <link rel="stylesheet" href="styles.css?v=coverage-stage-19">
   </head>
   <body class="stage-review">
-    <main class="app-shell">
+    <section class="landing-page" id="landing-page" aria-labelledby="landing-title">
+      <nav class="landing-nav" aria-label="Main">
+        <a class="landing-brand" href="#landing-page" aria-label="Invariant-Based Documentation Generator">IBD Generator</a>
+        <div class="landing-nav-actions">
+          <a href="#examples" class="landing-nav-link">Examples</a>
+          <button type="button" class="landing-nav-link login-open-button" data-auth-mode="login">Login</button>
+          <button type="button" class="landing-primary-button launch-app-button">Launch app</button>
+        </div>
+      </nav>
+
+      <div class="landing-hero">
+        <div class="landing-copy">
+          <p class="eyebrow">Human-in-the-loop process to IBD</p>
+          <h1 id="landing-title">Invariant-Based Documentation Generator</h1>
+          <p class="landing-subtitle">
+            Human-in-the-loop documentation generation that turns source code into reviewed semantic guarantees, edge cases, and publishable Markdown.
+          </p>
+          <div class="landing-actions">
+            <button type="button" class="landing-primary-button launch-app-button">Start generating</button>
+            <button type="button" class="landing-secondary-button login-open-button" data-auth-mode="signup">Create account</button>
+          </div>
+          <div class="landing-stats" aria-label="Workflow highlights">
+            <span><strong>01</strong> Tool extracts invariants</span>
+            <span><strong>02</strong> Human reviews claims</span>
+            <span><strong>03</strong> IBD Markdown ships</span>
+          </div>
+          <div class="process-rail" aria-label="Human in the loop process to invariant-based documentation">
+            <span>Source</span>
+            <span>Tool pass</span>
+            <span>Human review</span>
+            <span>IBD Markdown</span>
+          </div>
+        </div>
+
+        <div class="terminal-wave" aria-label="Invariant generation preview">
+          <div class="terminal-topline">
+            <span></span><span></span><span></span>
+            <p>tool-process / source to IBD</p>
+          </div>
+          <pre><code><span class="terminal-muted">$ inspect numpy.linspace</span>
+<span class="terminal-accent">source</span> loaded: 141 lines
+<span class="terminal-muted">$ generate semantic guarantees</span>
+<span class="terminal-wave-line">▁▂▃▄▅▆▇█▇▆▅▄▃▂▁▂▃▄▅▆▇</span>
+✓ endpoint behavior verified
+✓ dtype edge cases surfaced
+✓ retstep contract mapped
+<span class="terminal-accent">markdown</span> ready for human review</code></pre>
+        </div>
+      </div>
+
+      <div class="landing-process" aria-label="Documentation workflow">
+        <article>
+          <span>Tool process</span>
+          <h2>Extract source-backed invariants</h2>
+          <p>Load Python source with inspect or paste a function body directly into the studio.</p>
+        </article>
+        <article>
+          <span>Human process</span>
+          <h2>Keep humans in control</h2>
+          <p>Approve only the invariants that are supported by code and useful to readers.</p>
+        </article>
+        <article>
+          <span>IBD output</span>
+          <h2>Generate sharper documentation</h2>
+          <p>Produce Markdown with semantic guarantees, preconditions, examples, and source coverage.</p>
+        </article>
+      </div>
+
+      <section class="landing-examples" id="examples" aria-labelledby="examples-title">
+        <div class="examples-heading">
+          <p class="eyebrow">Example comparison</p>
+          <h2 id="examples-title">Original docs vs invariant-backed docs</h2>
+        </div>
+        <div class="landing-doc-compare">
+          <article class="landing-doc-panel">
+            <p class="eyebrow">Original documentation</p>
+            <h3>np.pad</h3>
+            <p>Describes parameters and modes, but many behavioral details are spread across prose and examples.</p>
+            <ul>
+              <li>Mode options are listed broadly.</li>
+              <li>Edge cases require careful reading.</li>
+              <li>Source-level guarantees are implicit.</li>
+            </ul>
+          </article>
+          <article class="landing-doc-panel invariant-panel">
+            <p class="eyebrow">Invariant-based documentation</p>
+            <h3>np.pad</h3>
+            <p>Promotes reviewed source-backed claims into explicit contracts and edge-case guarantees.</p>
+            <ul>
+              <li>Preconditions are separated from behavior.</li>
+              <li>Mode-specific guarantees are easier to scan.</li>
+              <li>Coverage maps claims back to source evidence.</li>
+            </ul>
+          </article>
+        </div>
+        <button type="button" class="landing-secondary-button launch-app-button">Open the generator</button>
+      </section>
+    </section>
+
+    <section class="login-page is-hidden" id="login-page" aria-labelledby="login-title">
+      <div class="auth-shell">
+        <button type="button" class="landing-nav-link auth-back-button">Back</button>
+        <div class="auth-panel">
+          <p class="eyebrow">Workspace access</p>
+          <h1 id="login-title">Log in to your documentation lab</h1>
+          <form class="auth-form" id="auth-form">
+            <label class="field" for="auth-email">
+              <span>Email</span>
+              <input id="auth-email" name="email" type="email" autocomplete="email" required>
+            </label>
+            <label class="field" for="auth-password">
+              <span>Password</span>
+              <input id="auth-password" name="password" type="password" autocomplete="current-password" required>
+            </label>
+            <p class="auth-message" id="auth-message" role="status"></p>
+            <button type="submit" class="landing-primary-button" id="auth-submit-button">Login</button>
+          </form>
+          <button type="button" class="auth-mode-toggle" id="auth-mode-toggle">Need an account? Create one</button>
+        </div>
+      </div>
+    </section>
+
+    <main class="app-shell is-hidden" id="app-shell">
+      <div class="app-status-bar" id="app-status-bar">
+        <div class="database-status" id="database-status" data-state="checking">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="database-status-text">Checking database...</span>
+        </div>
+        <div class="account-menu-shell">
+          <button type="button" class="account-menu-button" id="account-menu-button" aria-expanded="false">
+            <span id="account-menu-label">Guest</span>
+            <span aria-hidden="true">⌄</span>
+          </button>
+          <div class="account-menu is-hidden" id="account-menu">
+            <label class="field compact-field" for="saved-doc-search">
+              <span>Search saved Markdown</span>
+              <input id="saved-doc-search" type="search" placeholder="np.pad, invariant, edge case">
+            </label>
+            <div class="account-menu-actions">
+              <button type="button" class="secondary-button" id="saved-doc-refresh">Refresh saved docs</button>
+              <button type="button" class="secondary-button" id="logout-button">Log out</button>
+            </div>
+            <div class="saved-doc-list" id="saved-doc-list">
+              <p class="placeholder">Login to view saved Markdown from previous human review runs.</p>
+            </div>
+          </div>
+        </div>
+      </div>
       <section class="workspace" aria-labelledby="page-title">
         <div class="masthead">
           <div>

@@ -135,7 +135,8 @@ async def generate_documentation_stream(payload: dict, db: Session = Depends(get
                 yield chunk
             # Save only after the full markdown has streamed to the client.
             markdown = legacy_backend.strip_markdown_fences("".join(chunks))
-            persist_generated_documentation(db, payload, markdown)
+            if not payload.get("skip_anonymous_save"):
+                persist_generated_documentation(db, payload, markdown)
 
         return StreamingResponse(streamer(), media_type="text/plain; charset=utf-8")
     except Exception as exc:

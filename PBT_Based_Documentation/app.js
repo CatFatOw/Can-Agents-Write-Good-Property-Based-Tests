@@ -1,4 +1,25 @@
 const form = document.querySelector("#documentation-form");
+const landingPage = document.querySelector("#landing-page");
+const loginPage = document.querySelector("#login-page");
+const appShell = document.querySelector("#app-shell");
+const launchAppButtons = Array.from(document.querySelectorAll(".launch-app-button"));
+const loginOpenButtons = Array.from(document.querySelectorAll(".login-open-button"));
+const authBackButton = document.querySelector(".auth-back-button");
+const authForm = document.querySelector("#auth-form");
+const authEmailInput = document.querySelector("#auth-email");
+const authPasswordInput = document.querySelector("#auth-password");
+const authMessage = document.querySelector("#auth-message");
+const authSubmitButton = document.querySelector("#auth-submit-button");
+const authModeToggle = document.querySelector("#auth-mode-toggle");
+const databaseStatus = document.querySelector("#database-status");
+const databaseStatusText = document.querySelector("#database-status-text");
+const accountMenuButton = document.querySelector("#account-menu-button");
+const accountMenuLabel = document.querySelector("#account-menu-label");
+const accountMenu = document.querySelector("#account-menu");
+const savedDocSearchInput = document.querySelector("#saved-doc-search");
+const savedDocRefreshButton = document.querySelector("#saved-doc-refresh");
+const savedDocList = document.querySelector("#saved-doc-list");
+const logoutButton = document.querySelector("#logout-button");
 const documentationInput = document.querySelector("#documentation");
 const apiNameInput = document.querySelector("#api-name");
 const sourceObjectInput = document.querySelector("#source-object");
@@ -116,6 +137,125 @@ let inactivityTimer = 0;
 const requestCache = new Map();
 const GENERATED_DOCS_TTL_MS = 10 * 60 * 1000;
 const DARK_MODE_STORAGE_KEY = "invariant-docs-dark-mode";
+const ACCESS_TOKEN_STORAGE_KEY = "ibd-access-token";
+const USER_EMAIL_STORAGE_KEY = "ibd-user-email";
+let authMode = "login";
+let savedDocumentation = [];
+
+function showLandingPage() {
+  landingPage?.classList.remove("is-hidden");
+  loginPage?.classList.add("is-hidden");
+  appShell?.classList.add("is-hidden");
+  document.body.classList.remove("app-active", "auth-active");
+  document.body.classList.add("landing-active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function showAppPage() {
+  landingPage?.classList.add("is-hidden");
+  loginPage?.classList.add("is-hidden");
+  appShell?.classList.remove("is-hidden");
+  document.body.classList.remove("landing-active", "auth-active");
+  document.body.classList.add("app-active");
+  updateAccountMenuLabel();
+  refreshDatabaseStatus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function getAccessToken() {
+  return localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || "";
+}
+
+function getSavedUserEmail() {
+  return localStorage.getItem(USER_EMAIL_STORAGE_KEY) || "";
+}
+
+function authHeaders(extra = {}) {
+  const token = getAccessToken();
+  return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+}
+
+function updateAccountMenuLabel() {
+  if (!accountMenuLabel) return;
+  accountMenuLabel.textContent = getSavedUserEmail() || "Guest";
+}
+
+async function refreshDatabaseStatus() {
+  if (!databaseStatus || !databaseStatusText) return;
+  databaseStatus.dataset.state = "checking";
+  databaseStatusText.textContent = "Checking database...";
+  try {
+    const response = await fetch("/api/status");
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.database?.connected) {
+      throw new Error(data.database?.error || "Database unavailable");
+    }
+    const database = data.database;
+    databaseStatus.dataset.state = "connected";
+    databaseStatusText.textContent = `${database.backend || "database"} connected: ${database.name || "default"}`;
+  } catch (error) {
+    databaseStatus.dataset.state = "error";
+    databaseStatusText.textContent = error.message || "Database unavailable";
+  }
+}
+
+function setAuthMode(nextMode) {
+  authMode = nextMode === "signup" ? "signup" : "login";
+  if (authSubmitButton) authSubmitButton.textContent = authMode === "signup" ? "Create account" : "Login";
+  if (authModeToggle) authModeToggle.textContent = authMode === "signup" ? "Already have an account? Login" : "Need an account? Create one";
+  if (authMessage) authMessage.textContent = "";
+}
+
+function showLoginPage(nextMode = "login") {
+  setAuthMode(nextMode);
+  landingPage?.classList.add("is-hidden");
+  loginPage?.classList.remove("is-hidden");
+  appShell?.classList.add("is-hidden");
+  document.body.classList.remove("landing-active", "app-active");
+  document.body.classList.add("auth-active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.setTimeout(() => authEmailInput?.focus(), 120);
+}
+
+async function submitAuth(event) {
+  event.preventDefault();
+  if (!authEmailInput?.value.trim() || !authPasswordInput?.value) return;
+  if (authMessage) authMessage.textContent = authMode === "signup" ? "Creating account..." : "Logging in...";
+  if (authSubmitButton) authSubmitButton.disabled = true;
+  try {
+    if (authMode === "signup") {
+      const createResponse = await fetch("/users/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: authEmailInput.value.trim(), password: authPasswordInput.value })
+      });
+      if (!createResponse.ok) {
+        const data = await createResponse.json().catch(() => ({}));
+        throw new Error(data.detail || data.error || "Could not create account.");
+      }
+    }
+
+    const credentials = new URLSearchParams();
+    credentials.set("username", authEmailInput.value.trim());
+    credentials.set("password", authPasswordInput.value);
+    const loginResponse = await fetch("/login/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: credentials
+    });
+    const data = await loginResponse.json().catch(() => ({}));
+    if (!loginResponse.ok) throw new Error(data.detail || data.error || "Invalid credentials.");
+    localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, data.access_token || "");
+    localStorage.setItem(USER_EMAIL_STORAGE_KEY, authEmailInput.value.trim());
+    if (authMessage) authMessage.textContent = "Signed in.";
+    updateAccountMenuLabel();
+    showAppPage();
+  } catch (error) {
+    if (authMessage) authMessage.textContent = error.message || "Authentication failed.";
+  } finally {
+    if (authSubmitButton) authSubmitButton.disabled = false;
+  }
+}
 
 const MODEL_PROVIDER_META = {
   openai: {
@@ -506,6 +646,133 @@ function showGeneratedDoc(docId = activeGeneratedDocId || generatedDocs[0]?.id |
     ${renderMarkdown(doc.markdown)}
   `;
   syncMarkdownActions();
+}
+
+function parseStoredInvariants(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value !== "string") return [String(value)];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed.map((item) => typeof item === "string" ? item : JSON.stringify(item));
+    return [String(parsed)];
+  } catch {
+    return value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+  }
+}
+
+function addSavedDocToSession(doc) {
+  const createdAt = doc.created_at ? new Date(doc.created_at) : new Date();
+  const apiName = doc.documentation_title || "Saved documentation";
+  const markdown = doc.IBD_generated_md || "";
+  const savedDoc = {
+    id: `saved-${doc.id}`,
+    apiName,
+    title: apiName,
+    markdown,
+    invariants: parseStoredInvariants(doc.invariants),
+    createdAt,
+    filename: `${slugify(apiName)}-${createdAt.toISOString().slice(0, 19).replace(/[:T]/g, "-")}.md`
+  };
+  generatedDocs = [savedDoc, ...generatedDocs.filter((item) => item.id !== savedDoc.id)].slice(0, 12);
+  activeGeneratedDocId = savedDoc.id;
+  renderGeneratedDocsLibrary();
+  resetGeneratedDocsInactivityTimer();
+  showGeneratedDoc(savedDoc.id);
+}
+
+function renderSavedDocs() {
+  if (!savedDocList) return;
+  if (!getAccessToken()) {
+    savedDocumentation = [];
+    savedDocList.innerHTML = '<p class="placeholder">Login to view saved Markdown from previous human review runs.</p>';
+    return;
+  }
+
+  const query = (savedDocSearchInput?.value || "").trim().toLowerCase();
+  const filtered = savedDocumentation.filter((doc) => {
+    const haystack = [
+      doc.documentation_title,
+      doc.IBD_generated_md,
+      doc.invariants
+    ].join(" ").toLowerCase();
+    return !query || haystack.includes(query);
+  });
+
+  if (!filtered.length) {
+    savedDocList.innerHTML = '<p class="placeholder">No saved Markdown matches this search yet.</p>';
+    return;
+  }
+
+  savedDocList.innerHTML = filtered.map((doc) => {
+    const createdAt = doc.created_at ? new Date(doc.created_at) : null;
+    const dateLabel = createdAt && !Number.isNaN(createdAt.valueOf())
+      ? createdAt.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
+      : "Saved Markdown";
+    return `
+      <button type="button" class="saved-doc-card" data-saved-doc-id="${doc.id}">
+        <strong>${escapeHtml(doc.documentation_title || "Saved documentation")}</strong>
+        <small>${escapeHtml(dateLabel)}</small>
+      </button>
+    `;
+  }).join("");
+}
+
+async function fetchSavedDocs() {
+  if (!getAccessToken()) {
+    renderSavedDocs();
+    return;
+  }
+  if (savedDocList) savedDocList.innerHTML = '<p class="placeholder">Loading saved Markdown...</p>';
+  try {
+    const response = await fetch("/documentation/me", {
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    const data = await response.json().catch(() => []);
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not load saved Markdown.");
+    savedDocumentation = Array.isArray(data) ? data : [];
+    renderSavedDocs();
+  } catch (error) {
+    if (savedDocList) savedDocList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load saved Markdown.")}</p>`;
+  }
+}
+
+function averageMetric(field) {
+  const values = currentMetrics
+    .map((metric) => Number(metric?.[field]))
+    .filter((value) => Number.isFinite(value));
+  if (!values.length) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+async function saveCompletedDocumentation(acceptedInvariants) {
+  const token = getAccessToken();
+  if (!token || !currentMarkdown.trim()) return null;
+  const payload = {
+    documentation_title: apiNameInput.value.trim() || "api.function",
+    source_code: currentSource || documentationInput.value.trim(),
+    IBD_generated_md: currentMarkdown,
+    TD_md: "",
+    invariants: JSON.stringify(acceptedInvariants),
+    soundness: averageMetric("soundness"),
+    validity: averageMetric("validity"),
+    mutation_score: averageMetric("mutation_score"),
+    mutation_summary: "",
+    hypothesis_tests: currentMetrics.length ? JSON.stringify(currentMetrics) : null
+  };
+
+  // The streaming route cannot easily return a saved row id, so logged-in users
+  // get a second authenticated save once the human-reviewed Markdown is complete.
+  const response = await fetch("/documentation/create_ibd", {
+    method: "POST",
+    headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.detail || data.error || "Could not save generated Markdown.");
+  savedDocumentation = [data, ...savedDocumentation.filter((doc) => doc.id !== data.id)];
+  renderSavedDocs();
+  return data;
 }
 
 async function writeClipboardText(text) {
@@ -1904,19 +2171,27 @@ async function generateMarkdownFromReview() {
     generatedDoc.classList.add("is-streaming");
     const writer = createTypewriter(generatedDoc);
 
-    const streamedMarkdown = await postTextStream("/api/documentation-stream", {
-      api_name: apiName,
-      source_code: currentSource,
-      invariants: accepted,
-      tone: toneInput.value
-    }, (_chunk, fullText) => {
-      writer.push(fullText);
-    });
+	    const streamedMarkdown = await postTextStream("/api/documentation-stream", {
+	      api_name: apiName,
+	      source_code: currentSource,
+	      invariants: accepted,
+	      tone: toneInput.value,
+	      skip_anonymous_save: Boolean(getAccessToken())
+	    }, (_chunk, fullText) => {
+	      writer.push(fullText);
+	    });
     currentMarkdown = await writer.finish(streamedMarkdown);
     generatedDoc.classList.remove("is-streaming");
-    generatedDoc.innerHTML = renderMarkdown(currentMarkdown);
-    addGeneratedDoc(currentMarkdown, accepted);
-    fillCoverageDocsFromCurrent(true);
+	    generatedDoc.innerHTML = renderMarkdown(currentMarkdown);
+	    addGeneratedDoc(currentMarkdown, accepted);
+	    try {
+	      const savedDoc = await saveCompletedDocumentation(accepted);
+	      if (savedDoc) setStatus("ready", "Saved to DB");
+	    } catch (saveError) {
+	      setStatus("ready", "Generated, save failed");
+	      console.warn("Could not save generated documentation", saveError);
+	    }
+	    fillCoverageDocsFromCurrent(true);
     syncMarkdownActions();
     showCompareStage();
   } catch (error) {
@@ -2141,6 +2416,46 @@ if (themeToggle) {
   });
 }
 
+launchAppButtons.forEach((button) => {
+  button.addEventListener("click", showAppPage);
+});
+
+loginOpenButtons.forEach((button) => {
+  button.addEventListener("click", () => showLoginPage(button.dataset.authMode || "login"));
+});
+
+authBackButton?.addEventListener("click", showLandingPage);
+authModeToggle?.addEventListener("click", () => setAuthMode(authMode === "signup" ? "login" : "signup"));
+authForm?.addEventListener("submit", submitAuth);
+
+accountMenuButton?.addEventListener("click", () => {
+  const isHidden = accountMenu?.classList.toggle("is-hidden");
+  accountMenuButton.setAttribute("aria-expanded", String(!isHidden));
+  if (!isHidden) fetchSavedDocs();
+});
+
+savedDocRefreshButton?.addEventListener("click", fetchSavedDocs);
+savedDocSearchInput?.addEventListener("input", renderSavedDocs);
+
+savedDocList?.addEventListener("click", (event) => {
+  const button = event.target.closest(".saved-doc-card");
+  if (!button) return;
+  const doc = savedDocumentation.find((item) => String(item.id) === String(button.dataset.savedDocId));
+  if (!doc) return;
+  addSavedDocToSession(doc);
+  accountMenu?.classList.add("is-hidden");
+  accountMenuButton?.setAttribute("aria-expanded", "false");
+});
+
+logoutButton?.addEventListener("click", () => {
+  localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+  localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
+  savedDocumentation = [];
+  updateAccountMenuLabel();
+  renderSavedDocs();
+  setStatus("draft", "Signed out");
+});
+
 modelProviderInput?.addEventListener("change", () => {
   updateModelProviderControls();
   requestCache.clear();
@@ -2213,4 +2528,5 @@ stepTabs.forEach((tab) => {
 
 renderGeneratedDocsLibrary();
 updateModelProviderControls();
+showLandingPage();
 setStage("input");
