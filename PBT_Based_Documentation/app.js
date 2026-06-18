@@ -133,6 +133,8 @@ const MODEL_PROVIDER_META = {
   }
 };
 
+const DEFAULT_CMU_GATEWAY_BASE_URL = "https://ai-gateway.andrew.cmu.edu/v1";
+
 function currentModelProvider() {
   return modelProviderInput?.value || "openai";
 }
@@ -539,7 +541,7 @@ async function postJson(path, payload, options = {}) {
       ...payload,
       model_provider: currentModelProvider(),
       model_api_key: openaiKeyInput.value.trim(),
-      base_url: modelBaseUrlInput?.value.trim() || "",
+      base_url: modelBaseUrlInput?.value.trim() || (currentModelProvider() === "cmu_gateway" ? DEFAULT_CMU_GATEWAY_BASE_URL : ""),
       openai_key: openaiKeyInput.value.trim(),
       openai_seed: Number(openaiSeedInput.value || 42)
     })
@@ -562,7 +564,7 @@ async function postTextStream(path, payload, onChunk) {
       ...payload,
       model_provider: currentModelProvider(),
       model_api_key: openaiKeyInput.value.trim(),
-      base_url: modelBaseUrlInput?.value.trim() || "",
+      base_url: modelBaseUrlInput?.value.trim() || (currentModelProvider() === "cmu_gateway" ? DEFAULT_CMU_GATEWAY_BASE_URL : ""),
       openai_key: openaiKeyInput.value.trim(),
       openai_seed: Number(openaiSeedInput.value || 42)
     })

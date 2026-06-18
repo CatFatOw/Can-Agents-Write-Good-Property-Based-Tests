@@ -78,8 +78,10 @@ Model provider options:
   Anthropic's Messages API. Metrics still require GPT/OpenAI or an
   OpenAI-compatible gateway.
 - **CMU AI Gateway**: uses the key page at
-  `https://ai-gateway.andrew.cmu.edu/ui/?page=api-keys`. Set
-  `CMU_AI_GATEWAY_BASE_URL` or paste the gateway base URL in the UI.
+  `https://ai-gateway.andrew.cmu.edu/ui/?page=api-keys`. Paste the key from
+  that dashboard into the key field, not the dashboard URL. The app defaults to
+  the OpenAI-compatible gateway base URL `https://ai-gateway.andrew.cmu.edu/v1`;
+  override `CMU_AI_GATEWAY_BASE_URL` only if CMU documents a different API URL.
 
 The default documentation model is `gpt-5.5`, or set `OPENAI_MODEL` before
 starting the server to override it. Metrics use `OPENAI_METRICS_MODEL`, default

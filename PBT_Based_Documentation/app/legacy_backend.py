@@ -21,13 +21,16 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-ROOT = Path(__file__).resolve().parents[1]
+APP_DIR = Path(__file__).resolve().parent
+ROOT = APP_DIR.parent
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from gpt_documentation_generator import response_text as project_response_text
 from gpt_documentation_generator import strip_markdown_fences
-from routers.model_api import PROVIDERS
+from routers.model_api import DEFAULT_CMU_GATEWAY_BASE_URL, PROVIDERS
 
 
 def _load_root_module(module_name: str, filename: str):
@@ -105,7 +108,16 @@ def model_provider_config(
 
     if provider == "cmu_gateway":
         config["api_key"] = config["api_key"] or os.environ.get("CMU_AI_GATEWAY_API_KEY", "")
-        config["base_url"] = config["base_url"] or os.environ.get("CMU_AI_GATEWAY_BASE_URL", "")
+        config["base_url"] = (
+            config["base_url"]
+            or os.environ.get("CMU_AI_GATEWAY_BASE_URL", "")
+            or DEFAULT_CMU_GATEWAY_BASE_URL
+        )
+        if "/ui/" in config["base_url"] or "login=" in config["base_url"]:
+            raise ValueError(
+                "CMU AI Gateway base_url must be the API endpoint, not the dashboard URL. "
+                f"Use {DEFAULT_CMU_GATEWAY_BASE_URL} unless CMU lists a different OpenAI-compatible base URL."
+            )
     elif provider == "claude":
         config["api_key"] = config["api_key"] or os.environ.get("ANTHROPIC_API_KEY", "")
         config["model"] = config["model"] or os.environ.get("ANTHROPIC_MODEL", "")

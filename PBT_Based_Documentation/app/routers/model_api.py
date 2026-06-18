@@ -11,6 +11,8 @@ from schemas import ModelProviderResponse, ModelProviderSelection
 router = APIRouter(prefix="/model-api", tags=["model api"])
 api_router = APIRouter(prefix="/api", tags=["legacy model api"])
 
+DEFAULT_CMU_GATEWAY_BASE_URL = "https://ai-gateway.andrew.cmu.edu/v1"
+
 
 PROVIDERS: dict[str, dict[str, object]] = {
     "openai": {
@@ -40,9 +42,9 @@ PROVIDERS: dict[str, dict[str, object]] = {
         "key_placeholder": "Paste gateway key",
         "default_model": os.environ.get("CMU_AI_GATEWAY_MODEL") or os.environ.get("OPENAI_MODEL", "gpt-5.5"),
         "key_url": "https://ai-gateway.andrew.cmu.edu/ui/?page=api-keys",
-        # The key UI URL is known, but the API base URL can vary by gateway setup.
-        # Set CMU_AI_GATEWAY_BASE_URL or pass base_url in requests when using it.
-        "requires_base_url": True,
+        # Dashboard URLs are for key management. The OpenAI-compatible API base
+        # URL should point at /v1 unless CMU changes the gateway deployment.
+        "requires_base_url": False,
         "openai_compatible": True,
     },
 }
