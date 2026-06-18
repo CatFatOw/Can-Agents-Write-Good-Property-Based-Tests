@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invariant-Based Documentation generator</title>
     <link rel="icon" type="image/png" href="logo_new.png">
-    <link rel="stylesheet" href="styles.css?v=account-page-3">
+    <link rel="stylesheet" href="styles.css?v=account-page-4">
   </head>
   <body class="stage-review">
     <section class="landing-page" id="landing-page" aria-labelledby="landing-title">
@@ -473,6 +473,16 @@
               <p>Permanently remove your account and all saved documentation. This cannot be undone.</p>
               <p class="account-message" id="delete-message" role="status"></p>
               <button type="button" class="danger-button" id="delete-account-button">Delete my account</button>
+              <div class="account-delete-confirm is-hidden" id="account-delete-confirm">
+                <label class="field" for="delete-confirm-input">
+                  <span>Type <strong id="delete-confirm-phrase">your email</strong> to confirm</span>
+                  <input id="delete-confirm-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+                </label>
+                <div class="account-delete-confirm-actions">
+                  <button type="button" class="danger-button" id="delete-confirm-button" disabled>Permanently delete</button>
+                  <button type="button" class="secondary-button" id="delete-cancel-button">Cancel</button>
+                </div>
+              </div>
             </div>
           </article>
         </div>
@@ -483,7 +493,19 @@
               <p class="eyebrow">Generated documentation</p>
               <h2 id="account-docs-title">Your documents</h2>
             </div>
-            <button type="button" class="secondary-button" id="account-docs-refresh">Refresh</button>
+            <div class="account-docs-controls">
+              <label class="field compact-field" for="account-docs-sort">
+                <span>Sort by</span>
+                <select id="account-docs-sort">
+                  <option value="created-desc">Newest first</option>
+                  <option value="created-asc">Oldest first</option>
+                  <option value="name-asc">Name (A–Z)</option>
+                  <option value="name-desc">Name (Z–A)</option>
+                  <option value="library-asc">Library (A–Z)</option>
+                </select>
+              </label>
+              <button type="button" class="secondary-button" id="account-docs-refresh">Refresh</button>
+            </div>
           </div>
           <div class="account-docs-list" id="account-docs-list">
             <p class="placeholder">Loading your documents…</p>
@@ -542,6 +564,6 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=account-page-3"></script>
+    <script src="app.js?v=account-page-4"></script>
   </body>
 </html>

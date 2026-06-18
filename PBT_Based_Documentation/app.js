@@ -38,6 +38,12 @@ const passwordMessage = document.querySelector("#password-message");
 const passwordSubmit = document.querySelector("#password-submit");
 const deleteAccountButton = document.querySelector("#delete-account-button");
 const deleteMessage = document.querySelector("#delete-message");
+const accountDeleteConfirm = document.querySelector("#account-delete-confirm");
+const deleteConfirmInput = document.querySelector("#delete-confirm-input");
+const deleteConfirmButton = document.querySelector("#delete-confirm-button");
+const deleteCancelButton = document.querySelector("#delete-cancel-button");
+const deleteConfirmPhrase = document.querySelector("#delete-confirm-phrase");
+const accountDocsSort = document.querySelector("#account-docs-sort");
 const accountDetailModal = document.querySelector("#account-detail-modal");
 const accountDetailClose = document.querySelector("#account-detail-close");
 const accountDetailTitle = document.querySelector("#account-detail-title");
@@ -767,6 +773,8 @@ async function fetchSavedDocs() {
 // ----- Account page -----
 let accountDocuments = [];
 let activeAccountDoc = null;
+let accountSort = "created-desc";
+let accountConfirmPhrase = "";
 
 function formatAccountDate(value) {
   if (!value) return "—";
@@ -816,11 +824,19 @@ function renderAccountStats() {
   `).join("");
 }
 
+function setDeleteConfirmPhrase(email) {
+  accountConfirmPhrase = (email || "").trim();
+  if (deleteConfirmPhrase) deleteConfirmPhrase.textContent = accountConfirmPhrase || "your email";
+  if (deleteConfirmInput) deleteConfirmInput.placeholder = accountConfirmPhrase || "";
+  updateDeleteConfirmState();
+}
+
 async function fetchAccountProfile() {
   if (!getAccessToken() || !accountEmail) return;
   accountEmail.textContent = getSavedUserEmail() || "—";
   accountCreated.textContent = "—";
   accountId.textContent = "—";
+  setDeleteConfirmPhrase(getSavedUserEmail());
   try {
     const response = await fetch("/users/me", { headers: authHeaders({ Accept: "application/json" }) });
     const data = await response.json().catch(() => ({}));
@@ -828,9 +844,45 @@ async function fetchAccountProfile() {
     accountEmail.textContent = data.email || getSavedUserEmail() || "—";
     accountCreated.textContent = formatAccountDate(data.created_at);
     accountId.textContent = data.id != null ? `#${data.id}` : "—";
+    setDeleteConfirmPhrase(data.email || getSavedUserEmail());
   } catch {
     // Keep the cached email even when the profile lookup fails.
   }
+}
+
+function accountDocLibrary(doc) {
+  const title = (doc?.documentation_title || "").trim();
+  if (!title) return "";
+  // Treat the leading namespace (before the first dot/space) as the library,
+  // e.g. "numpy.linspace" -> "numpy", "torch.nn.relu" -> "torch".
+  const match = title.match(/^[^.\s]+/);
+  return (match ? match[0] : title).toLowerCase();
+}
+
+function sortedAccountDocuments() {
+  const docs = [...accountDocuments];
+  const byDate = (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0);
+  const byName = (a, b) =>
+    (a.documentation_title || "").localeCompare(b.documentation_title || "", undefined, { sensitivity: "base" });
+  switch (accountSort) {
+    case "created-asc":
+      docs.sort(byDate);
+      break;
+    case "name-asc":
+      docs.sort(byName);
+      break;
+    case "name-desc":
+      docs.sort((a, b) => byName(b, a));
+      break;
+    case "library-asc":
+      docs.sort((a, b) => accountDocLibrary(a).localeCompare(accountDocLibrary(b)) || byName(a, b));
+      break;
+    case "created-desc":
+    default:
+      docs.sort((a, b) => byDate(b, a));
+      break;
+  }
+  return docs;
 }
 
 function renderAccountDocs() {
@@ -843,7 +895,7 @@ function renderAccountDocs() {
     accountDocsList.innerHTML = '<p class="placeholder">No generated documents yet. Run the generator to create one.</p>';
     return;
   }
-  accountDocsList.innerHTML = accountDocuments.map((doc) => {
+  accountDocsList.innerHTML = sortedAccountDocuments().map((doc) => {
     const invariants = parseStoredInvariants(doc.invariants);
     return `
       <article class="account-doc-card">
@@ -1054,8 +1106,9 @@ function showAccountPage() {
     passwordMessage.textContent = "";
     passwordMessage.classList.remove("is-success");
   }
-  if (deleteMessage) deleteMessage.textContent = "";
+  hideDeleteConfirm();
   passwordForm?.reset();
+  if (accountDocsSort) accountDocsSort.value = accountSort;
   window.scrollTo({ top: 0, behavior: "smooth" });
   fetchAccountProfile();
   fetchAccountDocs();
@@ -1096,11 +1149,41 @@ async function submitPasswordChange(event) {
   }
 }
 
+function deleteConfirmMatches() {
+  const typed = (deleteConfirmInput?.value || "").trim().toLowerCase();
+  const target = (accountConfirmPhrase || "").trim().toLowerCase();
+  return Boolean(target) && typed === target;
+}
+
+function updateDeleteConfirmState() {
+  if (deleteConfirmButton) deleteConfirmButton.disabled = !deleteConfirmMatches();
+}
+
+function revealDeleteConfirm() {
+  if (!accountDeleteConfirm) return;
+  accountDeleteConfirm.classList.remove("is-hidden");
+  deleteAccountButton?.classList.add("is-hidden");
+  if (deleteMessage) deleteMessage.textContent = "";
+  if (deleteConfirmInput) deleteConfirmInput.value = "";
+  updateDeleteConfirmState();
+  deleteConfirmInput?.focus();
+}
+
+function hideDeleteConfirm() {
+  accountDeleteConfirm?.classList.add("is-hidden");
+  deleteAccountButton?.classList.remove("is-hidden");
+  if (deleteConfirmInput) deleteConfirmInput.value = "";
+  if (deleteMessage) deleteMessage.textContent = "";
+  updateDeleteConfirmState();
+}
+
 async function deleteAccount() {
   if (!deleteMessage) return;
-  const confirmed = window.confirm("Delete your account and all saved documentation? This cannot be undone.");
-  if (!confirmed) return;
-  deleteAccountButton.disabled = true;
+  if (!deleteConfirmMatches()) {
+    deleteMessage.textContent = "Type your email exactly to confirm deletion.";
+    return;
+  }
+  if (deleteConfirmButton) deleteConfirmButton.disabled = true;
   deleteMessage.textContent = "Deleting account...";
   try {
     const response = await fetch("/users/me", {
@@ -1118,11 +1201,11 @@ async function deleteAccount() {
     updateAccountMenuLabel();
     renderSavedDocs();
     closeAccountDocDetail();
+    hideDeleteConfirm();
     showLandingPage();
   } catch (error) {
     deleteMessage.textContent = error.message || "Could not delete account.";
-  } finally {
-    deleteAccountButton.disabled = false;
+    updateDeleteConfirmState();
   }
 }
 
@@ -2929,7 +3012,14 @@ accountDocsRefresh?.addEventListener("click", () => {
   fetchAccountDocs();
 });
 passwordForm?.addEventListener("submit", submitPasswordChange);
-deleteAccountButton?.addEventListener("click", deleteAccount);
+deleteAccountButton?.addEventListener("click", revealDeleteConfirm);
+deleteCancelButton?.addEventListener("click", hideDeleteConfirm);
+deleteConfirmInput?.addEventListener("input", updateDeleteConfirmState);
+deleteConfirmButton?.addEventListener("click", deleteAccount);
+accountDocsSort?.addEventListener("change", () => {
+  accountSort = accountDocsSort.value;
+  renderAccountDocs();
+});
 
 accountDocsList?.addEventListener("click", (event) => {
   const button = event.target.closest(".account-doc-view");
