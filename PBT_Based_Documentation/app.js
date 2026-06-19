@@ -2004,6 +2004,9 @@ function mutationScoreMarkup(metric, index) {
   }
   const mutationError = metric.mutation_error ? ` title="${escapeHtml(metric.mutation_error)}"` : "";
   if (metric.mutation_score === null || metric.mutation_score === undefined || metric.mutation_score === "") {
+    if (metric.mutation_error) {
+      return `<span class="mutation-pill mutation-low"${mutationError}>Mutation failed</span>`;
+    }
     if (metric.test_code) {
       return `
         <button type="button" class="mutation-pill mutation-medium mutation-analysis-button" data-mutation-index="${index}">
@@ -2673,6 +2676,7 @@ async function assessMetricsForReview() {
     // Honor the mutation toggle here so mutation scores are available in
     // the review table when the user asks for them.
     show_mutation_tests: showMutationTestingInput.checked,
+    run_mutation_in_overall: showMutationTestingInput.checked,
     mutation_packages: mutationPackagesInput.value.trim(),
     mutation_auto_install: mutationAutoInstallInput.checked
   });

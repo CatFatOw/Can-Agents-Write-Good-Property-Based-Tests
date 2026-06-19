@@ -510,10 +510,10 @@ def generate_metrics(payload: dict[str, Any]) -> dict[str, Any]:
     if not source_code.strip() or not isinstance(invariants, list):
         raise ValueError("Source code and invariants are required.")
 
-    # Keep the overall metrics endpoint responsive. Mutation testing is much
-    # slower because it shells out to pytest/mutmut per invariant, so only run it
-    # here when a caller explicitly opts into the expensive legacy behavior.
-    show_mutation_tests = bool(payload.get("run_mutation_in_overall") and payload.get("show_mutation_tests"))
+    # Mutation testing is slower because it shells out to pytest/mutmut per
+    # invariant. The frontend checkbox is the source of truth; the legacy
+    # run_mutation_in_overall flag is still accepted for old callers.
+    show_mutation_tests = bool(payload.get("show_mutation_tests") or payload.get("run_mutation_in_overall"))
     mutation_packages = str(payload.get("mutation_packages") or "")
     mutation_auto_install = bool(payload.get("mutation_auto_install", True))
     seed = request_seed(payload)

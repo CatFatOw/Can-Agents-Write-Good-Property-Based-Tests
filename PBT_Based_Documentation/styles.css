@@ -6582,3 +6582,14 @@ body.dark-mode .account-detail-markdown,
 body.dark-mode .account-detail-markdown * {
   color: #f5eadc;
 }
+
+/* Final masthead title fix: keep the app tool name compact inside the workspace. */
+body.app-active #page-title.app-title,
+body.dark-mode.app-active #page-title.app-title {
+  max-width: min(720px, 100%) !important;
+  font-size: clamp(2.2rem, 3.2vw, 3.8rem) !important;
+  line-height: 1.02 !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  white-space: normal !important;
+}
