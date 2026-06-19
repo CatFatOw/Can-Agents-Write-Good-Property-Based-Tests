@@ -489,6 +489,27 @@ Output exactly this Markdown structure:
 ## Notes"""
 
 
+def traditional_markdown_prompt(api_name: str, source_code: str, traditional_docs: str) -> str:
+    return f"""You are a professional Python API documentation editor.
+
+Convert the provided traditional/reference documentation for {api_name} into clean, publishable Markdown.
+
+Source code for context:
+{source_code}
+
+Traditional/reference documentation to convert:
+{traditional_docs}
+
+Important:
+- Preserve the factual content from the provided traditional/reference documentation.
+- Do not add invariant-based claims, testing methodology, Elo scores, arena labels, GPT wording, or research-study wording.
+- Do not invent behavior not present in the provided documentation or source code.
+- Remove source URLs and navigation clutter.
+- Keep the result useful as the baseline/original documentation side of a blind comparison.
+
+Output Markdown only."""
+
+
 def generate_invariants(payload: dict[str, Any]) -> dict[str, Any]:
     api_name = str(payload.get("api_name") or "api.function")
     source_code = str(payload.get("source_code") or payload.get("documentation") or "")
@@ -620,6 +641,23 @@ def generate_documentation(payload: dict[str, Any]) -> dict[str, Any]:
     markdown = strip_markdown_fences(
         run_project_gpt(
             documentation_prompt(api_name, source_code, invariants, str(payload.get("tone") or "contract")),
+            str(payload.get("openai_key") or ""),
+            seed=request_seed(payload),
+            payload=payload,
+        )
+    )
+    return {"markdown": markdown, "model": model_provider_config(payload, model_field="markdown_model")["model"]}
+
+
+def generate_traditional_markdown(payload: dict[str, Any]) -> dict[str, Any]:
+    api_name = str(payload.get("api_name") or "api.function")
+    source_code = str(payload.get("source_code") or payload.get("documentation") or "")
+    traditional_docs = str(payload.get("td_text") or payload.get("traditional_docs") or payload.get("TD_md") or "")
+    if not traditional_docs.strip():
+        raise ValueError("Traditional documentation text is required.")
+    markdown = strip_markdown_fences(
+        run_project_gpt(
+            traditional_markdown_prompt(api_name, source_code, traditional_docs),
             str(payload.get("openai_key") or ""),
             seed=request_seed(payload),
             payload=payload,

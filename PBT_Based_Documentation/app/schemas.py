@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Any, Optional
 from datetime import datetime
+from typing import Literal
 
 # --------------------------INPUT MODELS----------------------
 # Documentation
@@ -44,6 +45,11 @@ class ModelProviderSelection(BaseModel):
     base_url: str | None = None
     model: str | None = None
 
+class ComparisonRequest(BaseModel):
+    documentation_id:int
+    winner: Literal["TD", "IBD"]
+    comments:str
+
 
 # --------------------------RESPONSE MODELS--------------------
 
@@ -61,6 +67,17 @@ class DocumentationResponse(BaseModel):
     validity: float | None = None
     mutation_score: float | None = None
     mutation_summary: str | None = None
+
+    ibd_doc_elo_rating: int | None = None
+    td_doc_elo_rating: int | None = None
+    bt_ibd_rating: float | None = None
+    bt_td_rating: float | None = None
+    bt_ibd_win_prob: float | None = None
+    bt_ibd_win_prob_ci_lower: float | None = None
+    bt_ibd_win_prob_ci_upper: float | None = None
+    comparison_count: int = 0
+    ibd_wins: int = 0
+    td_wins: int = 0
 
     owner_id: int
     created_at: datetime
@@ -105,3 +122,68 @@ class ModelProviderResponse(BaseModel):
     key_url: str | None = None
     requires_base_url: bool = False
     openai_compatible: bool = False
+
+# Comparison
+
+class RandomComparisonResponse(BaseModel):
+    documentation_id: int
+    documentation_title: str
+
+    td_doc: str
+    ibd_doc: str
+
+    # Elo
+    ibd_doc_elo_rating: int
+    td_doc_elo_rating: int
+
+    # Bradley-Terry
+    bt_ibd_rating: Optional[float] = None
+    bt_td_rating: Optional[float] = None
+    bt_ibd_win_prob: Optional[float] = None
+    bt_ibd_win_prob_ci_lower: Optional[float] = None
+    bt_ibd_win_prob_ci_upper: Optional[float] = None
+    bt_ibd_win_prob_ci_lower: Optional[float] = None
+
+    # Research Statistics
+    comparison_count: int = 0
+    IBD_wins: int = 0
+    TD_wins: int = 0
+
+    # Percentages
+    IBD_win_percentage: float = 0
+    TD_win_percentage: float = 0
+
+    created_at: datetime
+
+
+class ComparisonResponse(BaseModel):
+    id: int
+    documentation_id: int
+    winner: Literal["TD", "IBD"]
+
+    # Elo
+    ibd_doc_elo_rating: int
+    td_doc_elo_rating: int
+
+    # Bradley-Terry
+    bt_ibd_rating: Optional[float] = None
+    bt_td_rating: Optional[float] = None
+    bt_ibd_win_prob: Optional[float] = None
+    bt_ibd_win_prob_ci_lower: Optional[float] = None
+    bt_ibd_win_prob_ci_upper: Optional[float] = None
+
+    # Research Statistics
+    comparison_count: int = 0
+    IBD_wins: int = 0
+    TD_wins: int = 0
+
+    # Percentages
+    IBD_win_percentage: float = 0
+    TD_win_percentage: float = 0
+
+    comments: str
+    created_at: datetime
+    user_id: int
+
+    class Config:
+        orm_mode = True

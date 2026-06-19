@@ -1,9 +1,32 @@
 const form = document.querySelector("#documentation-form");
 const landingPage = document.querySelector("#landing-page");
 const loginPage = document.querySelector("#login-page");
+const areaPage = document.querySelector("#area-page");
 const appShell = document.querySelector("#app-shell");
 const launchAppButtons = Array.from(document.querySelectorAll(".launch-app-button"));
 const loginOpenButtons = Array.from(document.querySelectorAll(".login-open-button"));
+const areaOpenButtons = Array.from(document.querySelectorAll(".area-open-button"));
+const homeButton = document.querySelector("#home-button");
+const areaBackButton = document.querySelector(".area-back-button");
+const areaNextButton = document.querySelector("#area-next-button");
+const areaVoteButton = document.querySelector("#area-vote-button");
+const areaVoteMessage = document.querySelector("#area-vote-message");
+const areaCommentInput = document.querySelector("#area-comment-input");
+const areaRankCount = document.querySelector("#area-rank-count");
+const areaRankLimitInput = document.querySelector("#area-rank-limit");
+const areaLimitMessage = document.querySelector("#area-limit-message");
+const areaTitle = document.querySelector("#area-battle-title");
+const areaTdTitle = document.querySelector("#area-td-title");
+const areaIbdTitle = document.querySelector("#area-ibd-title");
+const areaTdDoc = document.querySelector("#area-td-doc");
+const areaIbdDoc = document.querySelector("#area-ibd-doc");
+const areaSidebar = document.querySelector("#area-sidebar");
+const areaStudyView = document.querySelector("#area-study-view");
+const areaStudyTab = document.querySelector("#area-study-tab");
+const areaResultsTab = document.querySelector("#area-results-tab");
+const areaLeaderboardList = document.querySelector("#area-leaderboard-list");
+const landingLeaderboardList = document.querySelector("#landing-leaderboard-list");
+const areaChoices = Array.from(document.querySelectorAll(".area-choice"));
 const authBackButton = document.querySelector(".auth-back-button");
 const authForm = document.querySelector("#auth-form");
 const authEmailInput = document.querySelector("#auth-email");
@@ -11,6 +34,16 @@ const authPasswordInput = document.querySelector("#auth-password");
 const authMessage = document.querySelector("#auth-message");
 const authSubmitButton = document.querySelector("#auth-submit-button");
 const authModeToggle = document.querySelector("#auth-mode-toggle");
+const researchModal = document.querySelector("#research-modal");
+const researchPhraseInput = document.querySelector("#research-phrase");
+const researchLimitInput = document.querySelector("#research-limit");
+const researchMessage = document.querySelector("#research-message");
+const researchConfirmButton = document.querySelector("#research-confirm-button");
+const researchCancelButton = document.querySelector("#research-cancel-button");
+const researchCurrentPhraseInput = document.querySelector("#research-current-phrase");
+const researchNewPhraseInput = document.querySelector("#research-new-phrase");
+const researchChangePhraseButton = document.querySelector("#research-change-phrase-button");
+const researchPhraseMessage = document.querySelector("#research-phrase-message");
 const landingAccountButton = document.querySelector("#landing-account-button");
 const databaseStatus = document.querySelector("#database-status");
 const databaseStatusText = document.querySelector("#database-status-text");
@@ -101,6 +134,12 @@ const invariantExampleDocs = document.querySelector("#invariant-example-docs");
 const publicExampleTitle = document.querySelector("#public-example-title");
 const invariantExampleTitle = document.querySelector("#invariant-example-title");
 const generatedDoc = document.querySelector("#generated-doc");
+const tdPanel = document.querySelector("#td-panel");
+const tdSourceInput = document.querySelector("#td-source-input");
+const tdFormatButton = document.querySelector("#td-format-button");
+const tdSaveButton = document.querySelector("#td-save-button");
+const tdPreview = document.querySelector("#td-preview");
+const tdMessage = document.querySelector("#td-message");
 const outputTitle = document.querySelector("#output-title");
 const outputEyebrow = document.querySelector("#output-eyebrow");
 const flowStatus = document.querySelector("#flow-status");
@@ -171,30 +210,214 @@ const GENERATED_DOCS_TTL_MS = 10 * 60 * 1000;
 const DARK_MODE_STORAGE_KEY = "invariant-docs-dark-mode";
 const ACCESS_TOKEN_STORAGE_KEY = "ibd-access-token";
 const USER_EMAIL_STORAGE_KEY = "ibd-user-email";
+const ARENA_RANK_COUNT_STORAGE_KEY = "ibd-arena-rank-count";
+const ARENA_RANK_LIMIT_STORAGE_KEY = "ibd-arena-rank-limit";
+const RESEARCH_MODE_STORAGE_KEY = "ibd-research-mode";
+const RESEARCH_PHRASE_STORAGE_KEY = "ibd-research-phrase";
+const API_BASE_URL = window.location.protocol === "file:" ? "http://127.0.0.1:8011" : "";
 let authMode = "login";
+let researchModalMode = "enter";
 let savedDocumentation = [];
+let activeSavedDocumentation = null;
+let comparisonLeaderboardRows = [];
+let activeAreaIndex = 0;
+let selectedAreaWinner = null;
+let activeAreaSides = { A: "TD", B: "IBD" };
+let areaVoteSubmitted = false;
+let areaLoading = false;
+let currentAreaPost = null;
+const areaFallbackPosts = [
+  {
+    title: "Anonymous np.pad documentation comparison",
+    label: "np.pad",
+    originalPath: "examples/numpy_pad_original_docs.md",
+    invariantPath: "examples/numpy_pad_invariant_docs.md",
+    tdDoc: "",
+    ibdDoc: "",
+    ibdElo: 1248,
+    tdElo: 1189,
+    ibdWins: 26,
+    tdWins: 16,
+    bt: 0.62
+  },
+  {
+    title: "Anonymous np.linspace documentation comparison",
+    label: "np.linspace",
+    originalPath: "examples/numpy_linspace_original_docs.md",
+    invariantPath: "examples/numpy_linspace_invariant_docs.md",
+    tdDoc: "",
+    ibdDoc: "",
+    ibdElo: 1312,
+    tdElo: 1166,
+    ibdWins: 34,
+    tdWins: 13,
+    bt: 0.71
+  }
+];
 
 function showLandingPage() {
+  if (isResearchModeActive()) {
+    showAreaPage();
+    return;
+  }
   landingPage?.classList.remove("is-hidden");
   loginPage?.classList.add("is-hidden");
+  areaPage?.classList.add("is-hidden");
   appShell?.classList.add("is-hidden");
   accountPage?.classList.add("is-hidden");
-  document.body.classList.remove("app-active", "auth-active", "account-active");
+  document.body.classList.remove("app-active", "auth-active", "account-active", "area-active");
   document.body.classList.add("landing-active");
   updateAccountMenuLabel();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function showAppPage() {
+  if (isResearchModeActive()) {
+    showAreaPage();
+    return;
+  }
   landingPage?.classList.add("is-hidden");
   loginPage?.classList.add("is-hidden");
+  areaPage?.classList.add("is-hidden");
   appShell?.classList.remove("is-hidden");
   accountPage?.classList.add("is-hidden");
-  document.body.classList.remove("landing-active", "auth-active", "account-active");
+  document.body.classList.remove("landing-active", "auth-active", "account-active", "area-active");
   document.body.classList.add("app-active");
   updateAccountMenuLabel();
   refreshDatabaseStatus();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function showAreaPage() {
+  landingPage?.classList.add("is-hidden");
+  loginPage?.classList.add("is-hidden");
+  appShell?.classList.add("is-hidden");
+  accountPage?.classList.add("is-hidden");
+  areaPage?.classList.remove("is-hidden");
+  document.body.classList.remove("landing-active", "auth-active", "app-active", "account-active");
+  document.body.classList.add("area-active");
+  document.body.classList.toggle("research-mode", isResearchModeActive());
+  accountMenu?.classList.add("is-hidden");
+  accountMenuButton?.setAttribute("aria-expanded", "false");
+  updateAreaSessionUI();
+  await loadAreaComparison();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function isResearchModeActive() {
+  return localStorage.getItem(RESEARCH_MODE_STORAGE_KEY) === "true";
+}
+
+function researchPhrase() {
+  return localStorage.getItem(RESEARCH_PHRASE_STORAGE_KEY) || "rice";
+}
+
+function openResearchModal(mode = isResearchModeActive() ? "exit" : "enter") {
+  researchModalMode = mode;
+  researchModal?.classList.remove("is-hidden");
+  document.body.classList.add("research-modal-open");
+  if (researchMessage) researchMessage.textContent = "";
+  if (researchPhraseMessage) researchPhraseMessage.textContent = "";
+  if (researchPhraseInput) researchPhraseInput.value = "";
+  if (researchCurrentPhraseInput) researchCurrentPhraseInput.value = "";
+  if (researchNewPhraseInput) researchNewPhraseInput.value = "";
+  if (researchLimitInput) {
+    researchLimitInput.value = mode === "enter" ? String(areaRankLimitValue() || 10) : "";
+    researchLimitInput.closest(".field")?.classList.toggle("is-hidden", mode === "exit");
+  }
+  if (researchConfirmButton) {
+    researchConfirmButton.textContent = mode === "exit" ? "Exit research mode" : "Enter research mode";
+  }
+  researchPhraseInput?.focus();
+}
+
+function closeResearchModal() {
+  researchModal?.classList.add("is-hidden");
+  document.body.classList.remove("research-modal-open");
+}
+
+function toggleResearchMode() {
+  const active = isResearchModeActive();
+  openResearchModal(active ? "exit" : "enter");
+}
+
+function confirmResearchMode() {
+  if (researchPhraseInput?.value !== researchPhrase()) {
+    if (researchMessage) researchMessage.textContent = "Incorrect phrase.";
+    researchPhraseInput?.focus();
+    return;
+  }
+  if (researchModalMode === "enter") {
+    const limit = Number(researchLimitInput?.value || 10);
+    if (!limit || limit < 1) {
+      if (researchMessage) researchMessage.textContent = "Set a ranking limit for research mode.";
+      researchLimitInput?.focus();
+      return;
+    }
+    localStorage.setItem(ARENA_RANK_LIMIT_STORAGE_KEY, String(limit));
+    localStorage.setItem(ARENA_RANK_COUNT_STORAGE_KEY, "0");
+    localStorage.setItem(RESEARCH_MODE_STORAGE_KEY, "true");
+    document.body.classList.add("research-mode");
+    closeResearchModal();
+    showAreaPage();
+  } else {
+    localStorage.setItem(RESEARCH_MODE_STORAGE_KEY, "false");
+    localStorage.removeItem(ARENA_RANK_LIMIT_STORAGE_KEY);
+    document.body.classList.remove("research-mode");
+    closeResearchModal();
+    showLandingPage();
+  }
+}
+
+function changeResearchPhrase() {
+  if (researchCurrentPhraseInput?.value !== researchPhrase()) {
+    if (researchPhraseMessage) researchPhraseMessage.textContent = "Current phrase is incorrect.";
+    researchCurrentPhraseInput?.focus();
+    return;
+  }
+  const nextPhrase = (researchNewPhraseInput?.value || "").trim();
+  if (nextPhrase.length < 3) {
+    if (researchPhraseMessage) researchPhraseMessage.textContent = "Use at least 3 characters.";
+    researchNewPhraseInput?.focus();
+    return;
+  }
+  localStorage.setItem(RESEARCH_PHRASE_STORAGE_KEY, nextPhrase);
+  if (researchPhraseMessage) researchPhraseMessage.textContent = "Research phrase updated.";
+  if (researchCurrentPhraseInput) researchCurrentPhraseInput.value = "";
+  if (researchNewPhraseInput) researchNewPhraseInput.value = "";
+}
+
+function areaRankCountValue() {
+  return Number(localStorage.getItem(ARENA_RANK_COUNT_STORAGE_KEY) || 0);
+}
+
+function areaRankLimitValue() {
+  if (!isResearchModeActive()) return 0;
+  return Number(localStorage.getItem(ARENA_RANK_LIMIT_STORAGE_KEY) || 0);
+}
+
+function updateAreaSessionUI() {
+  const count = areaRankCountValue();
+  const limit = areaRankLimitValue();
+  if (areaRankCount) {
+    areaRankCount.textContent = limit ? `${count} / ${limit} ranked` : `${count} ranked`;
+  }
+  if (areaRankLimitInput) {
+    areaRankLimitInput.value = limit ? String(limit) : "";
+  }
+  if (areaLimitMessage) {
+    areaLimitMessage.textContent = isResearchModeActive()
+      ? (limit && count >= limit ? "Research limit reached. Enter the phrase to exit or increase the limit." : "Research mode limit is enforced.")
+      : "Normal mode is unlimited.";
+  }
+  if (areaVoteButton) {
+    areaVoteButton.disabled = Boolean((limit && count >= limit) || !selectedAreaWinner);
+  }
+}
+
+function incrementAreaRankCount() {
+  localStorage.setItem(ARENA_RANK_COUNT_STORAGE_KEY, String(areaRankCountValue() + 1));
+  updateAreaSessionUI();
 }
 
 function getAccessToken() {
@@ -208,6 +431,451 @@ function getSavedUserEmail() {
 function authHeaders(extra = {}) {
   const token = getAccessToken();
   return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+}
+
+function apiUrl(path) {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function areaPostVoteCount(post) {
+  return (post.ibdWins || 0) + (post.tdWins || 0);
+}
+
+function normalizeAreaPost(data) {
+  return {
+    id: data.documentation_id,
+    title: data.documentation_title || "Documentation comparison",
+    label: data.documentation_title || "Documentation sample",
+    tdDoc: data.td_doc || "",
+    ibdDoc: data.ibd_doc || "",
+    ibdElo: Number(data.ibd_doc_elo_rating || 1000),
+    tdElo: Number(data.td_doc_elo_rating || 1000),
+    ibdWins: Number(data.IBD_wins || 0),
+    tdWins: Number(data.TD_wins || 0),
+    ibdWinPercentage: Number(data.IBD_win_percentage || 0),
+    tdWinPercentage: Number(data.TD_win_percentage || 0),
+    bt: Number(data.bt_ibd_win_prob || 0)
+  };
+}
+
+async function hydrateAreaPostDocs(post) {
+  if (!post || post.docsLoaded || (!post.originalPath && !post.invariantPath)) return post;
+  const [originalResponse, invariantResponse] = await Promise.all([
+    fetch(post.originalPath),
+    fetch(post.invariantPath)
+  ]);
+  if (!originalResponse.ok || !invariantResponse.ok) {
+    throw new Error("Could not load bundled documentation examples.");
+  }
+  post.tdDoc = await originalResponse.text();
+  post.ibdDoc = await invariantResponse.text();
+  post.docsLoaded = true;
+  return post;
+}
+
+async function loadAreaComparison() {
+  if (areaLoading) return;
+  areaLoading = true;
+  areaVoteSubmitted = false;
+  randomizeAreaSides();
+  if (areaVoteMessage) areaVoteMessage.textContent = "Loading anonymous documentation samples...";
+  if (areaVoteButton) areaVoteButton.disabled = true;
+  try {
+    const response = await fetch(apiUrl("/comparison/random"));
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || "No comparison documents are available yet.");
+    currentAreaPost = normalizeAreaPost(data);
+  } catch (error) {
+    currentAreaPost = areaFallbackPosts[activeAreaIndex] || areaFallbackPosts[0];
+    await hydrateAreaPostDocs(currentAreaPost).catch((fallbackError) => {
+      if (areaVoteMessage) areaVoteMessage.textContent = fallbackError.message;
+    });
+    if (areaVoteMessage) {
+      areaVoteMessage.textContent = `${error.message || "Could not load a saved comparison."} Showing bundled examples.`;
+    }
+  } finally {
+    areaLoading = false;
+    if (areaVoteButton) areaVoteButton.disabled = false;
+    renderAreaPost();
+    updateAreaSessionUI();
+  }
+}
+
+function anonymizeAreaDocument(markdown, label) {
+  const candidate = `Candidate ${label}`;
+  return String(markdown || "")
+    .split(/\r?\n/)
+    .map((line) => {
+      // Blind-study anonymization: keep the documentation itself intact, while
+      // removing labels, source lines, and URLs that reveal the generation path.
+      if (/^\s*(?:>\s*)?(?:source|url|original source|reference source)\s*:/i.test(line)) {
+        return "";
+      }
+      if (/^\s{0,3}#{1,6}\s+.*\b(original|ibd|td|traditional|invariant[-\s]?based|baseline|generated)\b/i.test(line)) {
+        const depth = line.match(/^\s{0,3}(#{1,6})/)?.[1] || "##";
+        return `${depth} ${candidate}`;
+      }
+      return line
+        .replace(/\[[^\]]+\]\((?:https?:\/\/|www\.)[^)]+\)/gi, "reference")
+        .replace(/https?:\/\/\S+|www\.\S+/gi, "")
+        .replace(/\b(?:public|official|original)?\s*(?:NumPy\s+)?reference documentation\b/gi, "reference documentation")
+        .replace(/\b(IBD_generated_md|TD_md|ibd_doc|td_doc|post_IBD|post_TD)\b/gi, candidate)
+        .replace(/\b(?:original|traditional|baseline)\s+documentation\b/gi, `${candidate} documentation`)
+        .replace(/\binvariant[-\s]?based documentation\b/gi, `${candidate} documentation`)
+        .replace(/\b(?:IBD|TD)\b/gi, candidate);
+    })
+    .join("\n");
+}
+
+function getAreaCandidateDocument(post, label) {
+  const type = activeAreaSides[label];
+  const sourceDoc = type === "IBD" ? post.ibdDoc : post.tdDoc;
+  const text = anonymizeAreaDocument(sourceDoc, label).trim();
+  return text || "No documentation text is available for this candidate.";
+}
+
+function areaCandidateLabelForWinner(winner) {
+  return activeAreaSides.A === winner ? "Candidate A" : "Candidate B";
+}
+
+function formatLeaderboardComments(entry) {
+  const raw = entry.comments || entry.recent_comments || entry.review_comments || entry.voter_comments || [];
+  const comments = Array.isArray(raw)
+    ? raw
+    : String(raw || "").split(/\n+/).filter(Boolean);
+  if (!comments.length) return '<p class="placeholder">No reviewer comments recorded yet.</p>';
+  return `
+    <ul class="area-comment-list">
+      ${comments.slice(0, 8).map((comment) => {
+        const winner = typeof comment === "string" ? "" : String(comment.winner || comment.choice || "").toUpperCase();
+        const label = winner === "IBD" ? "Invariant-based" : winner === "TD" ? "Baseline" : "Comment";
+        const text = typeof comment === "string" ? comment : comment.comments || comment.comment || "No comment";
+        const tone = winner === "IBD" ? "ibd" : winner === "TD" ? "td" : "neutral";
+        return `
+          <li class="area-comment-item is-${tone}">
+            <span>${escapeHtml(label)}</span>
+            <p>${escapeHtml(text)}</p>
+          </li>
+        `;
+      }).join("")}
+    </ul>
+  `;
+}
+
+function renderLeaderboardViz({ ibdPct, tdPct, ibdElo, tdElo, voteCount }) {
+  if (!voteCount && !ibdElo && !tdElo && !ibdPct && !tdPct) {
+    return '<p class="area-no-viz">No visualization to show for now.</p>';
+  }
+  const normalizedIbd = Math.max(8, Math.min(100, ibdPct));
+  const normalizedTd = Math.max(8, Math.min(100, tdPct));
+  const eloDelta = Number(ibdElo || 0) - Number(tdElo || 0);
+  return `
+    <div class="area-viz-grid" aria-label="Leaderboard visualizations">
+      <div class="area-viz-card">
+        <span class="area-viz-label">Preference split</span>
+        <div class="area-mini-bars">
+          <i style="--bar: ${normalizedIbd}%"><b>${ibdPct}%</b></i>
+          <i style="--bar: ${normalizedTd}%"><b>${tdPct}%</b></i>
+        </div>
+      </div>
+      <div class="area-viz-card">
+        <span class="area-viz-label">Rating comparison</span>
+        <div class="area-rating-pair">
+          <span><strong>${ibdElo || "—"}</strong> Invariant-based</span>
+          <span><strong>${tdElo || "—"}</strong> Baseline</span>
+        </div>
+      </div>
+      <div class="area-viz-card">
+        <span class="area-viz-label">Vote volume</span>
+        <strong class="area-vote-volume">${voteCount}</strong>
+        <small>${voteCount === 1 ? "comparison" : "comparisons"}</small>
+      </div>
+    </div>
+  `;
+}
+
+async function fetchComparisonLeaderboard() {
+  const response = await fetch(apiUrl("/comparison/leaderboard"));
+  const data = await response.json().catch(() => []);
+  if (!response.ok) throw new Error(data.detail || "Could not load leaderboard.");
+  comparisonLeaderboardRows = Array.isArray(data) ? data : [];
+  return comparisonLeaderboardRows;
+}
+
+function randomizeAreaSides() {
+  if (Math.random() < 0.5) {
+    activeAreaSides = { A: "TD", B: "IBD" };
+  } else {
+    activeAreaSides = { A: "IBD", B: "TD" };
+  }
+  selectedAreaWinner = null;
+  areaVoteSubmitted = false;
+}
+
+async function renderLandingLeaderboard() {
+  if (!landingLeaderboardList) return;
+  landingLeaderboardList.innerHTML = '<li class="placeholder">Loading leaderboard...</li>';
+  try {
+    const ranked = await fetchComparisonLeaderboard();
+    if (!ranked.length) {
+      landingLeaderboardList.innerHTML = '<li class="placeholder">No blind comparison votes have been recorded yet.</li>';
+      return;
+    }
+    landingLeaderboardList.innerHTML = ranked.map((entry) => {
+      const voteCount = Number(entry.comparison_count || 0);
+      const ibdPct = Math.round(Number(entry.IBD_win_percentage || 0));
+      const tdPct = Math.round(Number(entry.TD_win_percentage || 0));
+      return `
+        <li>
+          <article class="area-ranking-card">
+            <div class="area-ranking-main">
+              <span class="area-rank">#${entry.rank}</span>
+              <div>
+                <strong>${escapeHtml(entry.documentation_title || "Documentation sample")}</strong>
+                <small>${voteCount} blind comparisons</small>
+              </div>
+              <span class="area-rating">${Number(entry.ibd_doc_elo_rating || 0)}</span>
+            </div>
+            <details class="area-ranking-details">
+              <summary>Show study stats</summary>
+              <div class="area-stat-grid">
+                <span><strong>${Number(entry.ibd_doc_elo_rating || 0)}</strong> IBD Elo</span>
+                <span><strong>${Number(entry.td_doc_elo_rating || 0)}</strong> TD Elo</span>
+                <span><strong>${Math.round(Number(entry.bt_ibd_win_prob || 0) * 100)}%</strong> IBD win probability</span>
+                <span><strong>${voteCount}</strong> comparisons</span>
+              </div>
+              <div class="area-distribution" aria-label="Preference distribution">
+                <div class="area-distribution-bar">
+                  <span style="--share: ${ibdPct}%" title="IBD ${ibdPct}%"></span>
+                  <span style="--share: ${tdPct}%" title="TD ${tdPct}%"></span>
+                </div>
+                <div class="area-distribution-labels">
+                  <small>IBD ${ibdPct}%</small>
+                  <small>TD ${tdPct}%</small>
+                </div>
+              </div>
+              ${renderLeaderboardViz({
+                ibdPct,
+                tdPct,
+                ibdElo: Number(entry.ibd_doc_elo_rating || 0),
+                tdElo: Number(entry.td_doc_elo_rating || 0),
+                voteCount
+              })}
+              <details class="area-comment-details">
+                <summary>Show comments</summary>
+                ${formatLeaderboardComments(entry)}
+              </details>
+            </details>
+          </article>
+        </li>
+      `;
+    }).join("");
+  } catch (error) {
+    landingLeaderboardList.innerHTML = `<li class="placeholder">${escapeHtml(error.message || "Could not load leaderboard.")}</li>`;
+  }
+}
+
+function renderAreaLeaderboard() {
+  if (!areaLeaderboardList) return;
+  const ranked = [...areaFallbackPosts].sort((a, b) => b.ibdElo - a.ibdElo);
+  areaLeaderboardList.innerHTML = ranked.map((post, index) => {
+    const voteCount = areaPostVoteCount(post);
+    const isCurrent = post === areaFallbackPosts[activeAreaIndex];
+    const ibdPct = Math.round((post.ibdWins / Math.max(voteCount, 1)) * 100);
+    const tdPct = 100 - ibdPct;
+    return `
+      <li class="${index === 0 ? "is-leading" : ""} ${isCurrent ? "is-current" : ""}">
+        <article class="area-ranking-card">
+          <div class="area-ranking-main">
+            <span class="area-rank">#${index + 1}</span>
+            <div>
+              <strong>${escapeHtml(post.label)}</strong>
+              <small>${isCurrent ? "Current comparison" : "Example documentation duel"}</small>
+            </div>
+            <span class="area-rating">${post.ibdElo}</span>
+          </div>
+          <details class="area-ranking-details">
+            <summary>Show more stats</summary>
+            <div class="area-stat-grid">
+              <span><strong>${post.ibdElo}</strong> IBD Elo</span>
+              <span><strong>${post.tdElo}</strong> TD Elo</span>
+              <span><strong>${Math.round(post.bt * 100)}%</strong> IBD win probability</span>
+              <span><strong>${voteCount}</strong> comparisons</span>
+            </div>
+            <div class="area-distribution" aria-label="Preference distribution">
+              <div class="area-distribution-bar">
+                <span style="--share: ${ibdPct}%" title="IBD ${ibdPct}%"></span>
+                <span style="--share: ${tdPct}%" title="TD ${tdPct}%"></span>
+              </div>
+              <div class="area-distribution-labels">
+                <small>IBD ${ibdPct}%</small>
+                <small>TD ${tdPct}%</small>
+              </div>
+            </div>
+          </details>
+        </article>
+      </li>
+    `;
+  }).join("");
+}
+
+function leaderboardEntryForDoc(doc) {
+  return comparisonLeaderboardRows.find((entry) => String(entry.documentation_id) === String(doc.id)) || null;
+}
+
+function renderAccountRankingSummary(doc) {
+  const leaderboardEntry = leaderboardEntryForDoc(doc);
+  const rank = leaderboardEntry?.rank || doc.rank || doc.comparison_rank || doc.leaderboard_rank;
+  const comparisonCount = Number(leaderboardEntry?.comparison_count ?? doc.comparison_count ?? doc.comparisons ?? 0);
+  const ibdElo = Number(leaderboardEntry?.ibd_doc_elo_rating ?? doc.ibd_doc_elo_rating ?? doc.ibdElo ?? 0);
+  const tdElo = Number(leaderboardEntry?.td_doc_elo_rating ?? doc.td_doc_elo_rating ?? doc.tdElo ?? 0);
+  const ibdWins = Number(leaderboardEntry?.IBD_wins ?? doc.ibd_wins ?? doc.IBD_wins ?? 0);
+  const ibdPct = comparisonCount ? Math.round((ibdWins / comparisonCount) * 100) : 0;
+  const tdPct = comparisonCount ? Math.max(0, 100 - ibdPct) : 0;
+  const hasStats = rank || comparisonCount || ibdElo || tdElo || ibdPct;
+  if (!hasStats) {
+    return `
+      <section class="account-detail-section account-ranking-panel">
+        <p class="eyebrow">Arena ranking</p>
+        <p class="placeholder">No arena ranking yet. Once this document receives blind-comparison votes, its rank and distributions will appear here.</p>
+      </section>
+    `;
+  }
+  return `
+    <section class="account-detail-section account-ranking-panel">
+      <p class="eyebrow">Arena ranking</p>
+      <div class="account-ranking-summary">
+        <span><strong>${rank ? `#${rank}` : "—"}</strong> Rank</span>
+        <span><strong>${ibdElo || "—"}</strong> Invariant-based Elo</span>
+        <span><strong>${tdElo || "—"}</strong> Baseline Elo</span>
+        <span><strong>${comparisonCount}</strong> Blind votes</span>
+      </div>
+      <div class="area-distribution" aria-label="Your document preference distribution">
+        <div class="area-distribution-bar">
+          <span style="--share: ${ibdPct}%" title="Invariant-based ${ibdPct}%"></span>
+          <span style="--share: ${tdPct}%" title="Baseline ${tdPct}%"></span>
+        </div>
+        <div class="area-distribution-labels">
+          <small>Invariant-based ${ibdPct}%</small>
+          <small>Baseline ${tdPct}%</small>
+        </div>
+      </div>
+      ${renderLeaderboardViz({ ibdPct, tdPct, ibdElo, tdElo, voteCount: comparisonCount })}
+      <details class="area-comment-details">
+        <summary>Show comments</summary>
+        ${leaderboardEntry ? formatLeaderboardComments(leaderboardEntry) : '<p class="placeholder">No reviewer comments recorded yet.</p>'}
+      </details>
+    </section>
+  `;
+}
+
+function renderAreaPost() {
+  const post = currentAreaPost || areaFallbackPosts[activeAreaIndex] || areaFallbackPosts[0];
+  if (!post) return;
+
+  const candidateADocument = getAreaCandidateDocument(post, "A");
+  const candidateBDocument = getAreaCandidateDocument(post, "B");
+  if (areaTitle) areaTitle.textContent = "Anonymous documentation comparison";
+  if (areaTdTitle) areaTdTitle.textContent = "Candidate A";
+  if (areaIbdTitle) areaIbdTitle.textContent = "Candidate B";
+  if (areaTdDoc) areaTdDoc.innerHTML = renderMarkdown(candidateADocument);
+  if (areaIbdDoc) areaIbdDoc.innerHTML = renderMarkdown(candidateBDocument);
+  if (areaVoteButton) {
+    areaVoteButton.textContent = selectedAreaWinner ? `Vote for ${areaCandidateLabelForWinner(selectedAreaWinner)}` : "Select a candidate";
+  }
+  if (areaVoteMessage) {
+    areaVoteMessage.textContent = areaVoteSubmitted
+      ? "Vote recorded. Source labels and rankings stay hidden in the ranking flow."
+      : "Blind study mode. Pick a candidate without seeing source labels, rankings, or statistics.";
+  }
+  areaChoices.forEach((choice, index) => {
+    const label = index === 0 ? "A" : "B";
+    choice.dataset.areaLabel = label;
+    choice.dataset.areaChoice = activeAreaSides[label];
+    const active = choice.dataset.areaChoice === selectedAreaWinner;
+    choice.classList.toggle("is-selected", active);
+    choice.setAttribute("aria-pressed", String(active));
+  });
+  updateAreaSessionUI();
+}
+
+function selectAreaWinner(winner) {
+  const nextWinner = winner === "TD" ? "TD" : "IBD";
+  selectedAreaWinner = selectedAreaWinner === nextWinner ? null : nextWinner;
+  renderAreaPost();
+}
+
+async function submitAreaVote() {
+  const post = currentAreaPost;
+  if (!selectedAreaWinner) {
+    if (areaVoteMessage) areaVoteMessage.textContent = "Select Candidate A or Candidate B before submitting.";
+    return;
+  }
+  const rankLimit = areaRankLimitValue();
+  if (rankLimit && areaRankCountValue() >= rankLimit) {
+    if (areaVoteMessage) areaVoteMessage.textContent = "Ranking limit reached. Increase the limit to continue.";
+    updateAreaSessionUI();
+    return;
+  }
+  const comment = (areaCommentInput?.value || "").trim();
+  const commentWords = comment.split(/\s+/).filter(Boolean).length;
+  if (comment.length < 40 || commentWords < 8) {
+    if (areaVoteMessage) {
+      areaVoteMessage.textContent = "Please add a meaningful comment before submitting: at least 40 characters and 8 words.";
+    }
+    areaCommentInput?.focus();
+    return;
+  }
+  if (!post?.id) {
+    areaVoteSubmitted = true;
+    incrementAreaRankCount();
+    renderAreaPost();
+    return;
+  }
+  if (areaVoteButton) areaVoteButton.disabled = true;
+  if (areaVoteMessage) areaVoteMessage.textContent = "Recording blind preference...";
+  try {
+    const response = await fetch(apiUrl("/comparison/vote"), {
+      method: "POST",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        documentation_id: post.id,
+        winner: selectedAreaWinner,
+        comments: comment
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(response.status === 401 ? "Log in to submit a recorded study vote." : data.detail || "Could not record vote.");
+    }
+    currentAreaPost = {
+      ...post,
+      ibdElo: Number(data.ibd_doc_elo_rating || post.ibdElo),
+      tdElo: Number(data.td_doc_elo_rating || post.tdElo),
+      ibdWins: Number(data.IBD_wins || post.ibdWins),
+      tdWins: Number(data.TD_wins || post.tdWins),
+      ibdWinPercentage: Number(data.IBD_win_percentage || post.ibdWinPercentage),
+      tdWinPercentage: Number(data.TD_win_percentage || post.tdWinPercentage),
+      bt: Number(data.bt_ibd_win_prob || post.bt)
+    };
+    areaVoteSubmitted = true;
+    incrementAreaRankCount();
+    renderAreaPost();
+    renderLandingLeaderboard();
+  } catch (error) {
+    areaVoteSubmitted = true;
+    renderAreaPost();
+    if (areaVoteMessage) areaVoteMessage.textContent = `${error.message || "Vote was not recorded."} Statistics are shown for review only.`;
+  } finally {
+    if (areaVoteButton) areaVoteButton.disabled = false;
+  }
+}
+
+function showNextAreaPost() {
+  activeAreaIndex = (activeAreaIndex + 1) % areaFallbackPosts.length;
+  if (areaCommentInput) areaCommentInput.value = "";
+  loadAreaComparison();
 }
 
 function updateAccountMenuLabel() {
@@ -225,7 +893,7 @@ async function refreshDatabaseStatus() {
   databaseStatus.dataset.state = "checking";
   databaseStatusText.textContent = "Checking database...";
   try {
-    const response = await fetch("/api/status");
+    const response = await fetch(apiUrl("/api/status"));
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.database?.connected) {
       throw new Error(data.database?.error || "Database unavailable");
@@ -247,12 +915,17 @@ function setAuthMode(nextMode) {
 }
 
 function showLoginPage(nextMode = "login") {
+  if (isResearchModeActive()) {
+    showAreaPage();
+    return;
+  }
   setAuthMode(nextMode);
   landingPage?.classList.add("is-hidden");
+  areaPage?.classList.add("is-hidden");
   loginPage?.classList.remove("is-hidden");
   appShell?.classList.add("is-hidden");
   accountPage?.classList.add("is-hidden");
-  document.body.classList.remove("landing-active", "app-active", "account-active");
+  document.body.classList.remove("landing-active", "app-active", "account-active", "area-active");
   document.body.classList.add("auth-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
   window.setTimeout(() => authEmailInput?.focus(), 120);
@@ -265,7 +938,7 @@ async function submitAuth(event) {
   if (authSubmitButton) authSubmitButton.disabled = true;
   try {
     if (authMode === "signup") {
-      const createResponse = await fetch("/users/", {
+      const createResponse = await fetch(apiUrl("/users/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: authEmailInput.value.trim(), password: authPasswordInput.value })
@@ -279,7 +952,7 @@ async function submitAuth(event) {
     const credentials = new URLSearchParams();
     credentials.set("username", authEmailInput.value.trim());
     credentials.set("password", authPasswordInput.value);
-    const loginResponse = await fetch("/login/", {
+    const loginResponse = await fetch(apiUrl("/login/"), {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: credentials
@@ -552,7 +1225,7 @@ function renderMarkdown(markdown) {
 
 function setStage(stage) {
   hideSourceHoverCard();
-  document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests", "stage-coverage", "stage-docs-example", "stage-generated-docs");
+  document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests", "stage-td", "stage-coverage", "stage-docs-example", "stage-generated-docs");
   document.body.classList.add(`stage-${stage}`);
   stepTabs.forEach((tab) => {
     const active = tab.dataset.step === stage;
@@ -661,6 +1334,7 @@ function showGeneratedDoc(docId = activeGeneratedDocId || generatedDocs[0]?.id |
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  tdPanel?.classList.add("is-hidden");
   coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.remove("is-hidden");
@@ -766,7 +1440,7 @@ async function fetchSavedDocs() {
   }
   if (savedDocList) savedDocList.innerHTML = '<p class="placeholder">Loading saved Markdown...</p>';
   try {
-    const response = await fetch("/documentation/me", {
+    const response = await fetch(apiUrl("/documentation/me"), {
       headers: authHeaders({ Accept: "application/json" })
     });
     const data = await response.json().catch(() => []);
@@ -846,7 +1520,7 @@ async function fetchAccountProfile() {
   accountId.textContent = "—";
   setDeleteConfirmPhrase(getSavedUserEmail());
   try {
-    const response = await fetch("/users/me", { headers: authHeaders({ Accept: "application/json" }) });
+    const response = await fetch(apiUrl("/users/me"), { headers: authHeaders({ Accept: "application/json" }) });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || data.error || "Could not load profile.");
     accountEmail.textContent = data.email || getSavedUserEmail() || "—";
@@ -929,6 +1603,9 @@ function renderAccountDocs() {
   }
   accountDocsList.innerHTML = visibleDocs.map((doc) => {
     const invariants = parseStoredInvariants(doc.invariants);
+    const comparisonCount = Number(doc.comparison_count || 0);
+    const ibdWins = Number(doc.ibd_wins || 0);
+    const ibdPct = comparisonCount ? Math.round((ibdWins / comparisonCount) * 100) : 0;
     return `
       <article class="account-doc-card">
         <div class="account-doc-info">
@@ -939,6 +1616,8 @@ function renderAccountDocs() {
             <span>Validity ${formatPercentMaybe(doc.validity)}</span>
             <span>Mutation ${formatPercentMaybe(doc.mutation_score)}</span>
             <span>${invariants.length} invariants</span>
+            <span>${comparisonCount} arena votes</span>
+            ${comparisonCount ? `<span>${ibdPct}% invariant-based preference</span>` : ""}
           </div>
         </div>
         <div class="account-doc-actions">
@@ -957,10 +1636,11 @@ async function fetchAccountDocs() {
   }
   if (accountDocsList) accountDocsList.innerHTML = '<p class="placeholder">Loading your documents…</p>';
   try {
-    const response = await fetch("/documentation/me", { headers: authHeaders({ Accept: "application/json" }) });
+    const response = await fetch(apiUrl("/documentation/me"), { headers: authHeaders({ Accept: "application/json" }) });
     const data = await response.json().catch(() => []);
     if (!response.ok) throw new Error(data.detail || data.error || "Could not load documents.");
     accountDocuments = Array.isArray(data) ? data : [];
+    await fetchComparisonLeaderboard().catch(() => []);
     if (accountDocCount) accountDocCount.textContent = String(accountDocuments.length);
     renderAccountStats();
     renderAccountDocs();
@@ -1015,6 +1695,7 @@ function showAccountDocDetail(docId) {
         </div>
       </section>
     ` : ""}
+    ${renderAccountRankingSummary(doc)}
     <section class="account-detail-section">
       <div class="account-detail-md-head">
         <p class="eyebrow">Generated Markdown</p>
@@ -1045,7 +1726,7 @@ async function deleteAccountDocument(docId) {
   if (!doc) return;
   const title = doc.documentation_title || "this document";
   if (!window.confirm(`Delete ${title}? This removes the saved Markdown, invariants, and metrics.`)) return;
-  const response = await fetch(`/documentation/delete/${doc.id}`, {
+  const response = await fetch(apiUrl(`/documentation/delete/${doc.id}`), {
     method: "DELETE",
     headers: authHeaders({ Accept: "application/json" })
   });
@@ -1124,7 +1805,7 @@ async function saveAccountMarkdown(button) {
       mutation_summary: activeAccountDoc.mutation_summary ?? null,
       hypothesis_tests: activeAccountDoc.hypothesis_tests ?? null
     };
-    const response = await fetch(`/documentation/update_ibd/${activeAccountDoc.id}`, {
+    const response = await fetch(apiUrl(`/documentation/update_ibd/${activeAccountDoc.id}`), {
       method: "PUT",
       headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
       body: JSON.stringify(payload)
@@ -1150,15 +1831,20 @@ async function saveAccountMarkdown(button) {
 }
 
 function showAccountPage() {
+  if (isResearchModeActive()) {
+    showAreaPage();
+    return;
+  }
   if (!getAccessToken()) {
     showLoginPage("login");
     return;
   }
   landingPage?.classList.add("is-hidden");
   loginPage?.classList.add("is-hidden");
+  areaPage?.classList.add("is-hidden");
   appShell?.classList.add("is-hidden");
   accountPage?.classList.remove("is-hidden");
-  document.body.classList.remove("landing-active", "auth-active", "app-active");
+  document.body.classList.remove("landing-active", "auth-active", "app-active", "area-active");
   document.body.classList.add("account-active");
   accountMenu?.classList.add("is-hidden");
   accountMenuButton?.setAttribute("aria-expanded", "false");
@@ -1192,7 +1878,7 @@ async function submitPasswordChange(event) {
   passwordSubmit.disabled = true;
   passwordMessage.textContent = "Updating password...";
   try {
-    const response = await fetch("/users/me/password", {
+    const response = await fetch(apiUrl("/users/me/password"), {
       method: "PUT",
       headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
       body: JSON.stringify({ current_password: current, new_password: next })
@@ -1246,7 +1932,7 @@ async function deleteAccount() {
   if (deleteConfirmButton) deleteConfirmButton.disabled = true;
   deleteMessage.textContent = "Deleting account...";
   try {
-    const response = await fetch("/users/me", {
+    const response = await fetch(apiUrl("/users/me"), {
       method: "DELETE",
       headers: authHeaders({ Accept: "application/json" })
     });
@@ -1295,16 +1981,92 @@ async function saveCompletedDocumentation(acceptedInvariants) {
 
   // The streaming route cannot easily return a saved row id, so logged-in users
   // get a second authenticated save once the human-reviewed Markdown is complete.
-  const response = await fetch("/documentation/create_ibd", {
+  const response = await fetch(apiUrl("/documentation/create_ibd"), {
     method: "POST",
     headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
     body: JSON.stringify(payload)
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.detail || data.error || "Could not save generated Markdown.");
+  activeSavedDocumentation = data;
   savedDocumentation = [data, ...savedDocumentation.filter((doc) => doc.id !== data.id)];
   renderSavedDocs();
   return data;
+}
+
+async function formatTraditionalMarkdown() {
+  const raw = (tdSourceInput?.value || "").trim();
+  if (!raw) {
+    if (tdMessage) tdMessage.textContent = "Paste original/reference documentation first.";
+    tdSourceInput?.focus();
+    return;
+  }
+  if (tdFormatButton) {
+    tdFormatButton.disabled = true;
+    tdFormatButton.textContent = "Formatting...";
+  }
+  if (tdMessage) tdMessage.textContent = "Calling GPT to format TD Markdown...";
+  try {
+    const data = await postJson("/api/td-markdown", {
+      api_name: apiNameInput.value.trim() || activeSavedDocumentation?.documentation_title || "api.function",
+      source_code: currentSource || documentationInput.value.trim(),
+      td_text: raw,
+      openai_key: openaiKeyInput?.value.trim() || "",
+      model_provider: modelProviderInput?.value || "openai",
+      markdown_model: markdownModelInput?.value.trim() || "",
+      base_url: modelBaseUrlInput?.value.trim() || "",
+      seed: Number(openaiSeedInput?.value || 42)
+    }, { cache: false });
+    const markdown = data.markdown || raw;
+    if (tdSourceInput) tdSourceInput.value = markdown;
+    if (tdPreview) tdPreview.innerHTML = renderMarkdown(markdown);
+    if (tdMessage) tdMessage.textContent = "Formatted. Review the preview, then save.";
+  } catch (error) {
+    if (tdMessage) tdMessage.textContent = error.message || "Could not format TD Markdown.";
+  } finally {
+    if (tdFormatButton) {
+      tdFormatButton.disabled = false;
+      tdFormatButton.textContent = "Format with GPT";
+    }
+  }
+}
+
+async function saveTraditionalMarkdown() {
+  const markdown = (tdSourceInput?.value || "").trim();
+  if (!markdown) {
+    if (tdMessage) tdMessage.textContent = "Paste or format TD Markdown before saving.";
+    return;
+  }
+  if (!activeSavedDocumentation?.id) {
+    if (tdMessage) tdMessage.textContent = "Generate and save IBD Markdown first, then save TD to that row.";
+    return;
+  }
+  if (tdSaveButton) {
+    tdSaveButton.disabled = true;
+    tdSaveButton.textContent = "Saving...";
+  }
+  if (tdMessage) tdMessage.textContent = "Saving TD Markdown...";
+  try {
+    const response = await fetch(apiUrl(`/documentation/${activeSavedDocumentation.id}/td`), {
+      method: "PUT",
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
+      body: JSON.stringify({ TD_md: markdown })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not save TD Markdown.");
+    activeSavedDocumentation = data;
+    savedDocumentation = [data, ...savedDocumentation.filter((doc) => doc.id !== data.id)];
+    renderSavedDocs();
+    if (tdPreview) tdPreview.innerHTML = renderMarkdown(markdown);
+    if (tdMessage) tdMessage.textContent = "TD Markdown saved. This document can now enter Arena comparisons.";
+  } catch (error) {
+    if (tdMessage) tdMessage.textContent = error.message || "Could not save TD Markdown.";
+  } finally {
+    if (tdSaveButton) {
+      tdSaveButton.disabled = false;
+      tdSaveButton.textContent = "Save TD Markdown";
+    }
+  }
 }
 
 async function writeClipboardText(text) {
@@ -1343,7 +2105,7 @@ async function postJson(path, payload, options = {}) {
   if (useCache && requestCache.has(cacheKey)) {
     return requestCache.get(cacheKey);
   }
-  const response = await fetch(path, {
+  const response = await fetch(apiUrl(path), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -1368,7 +2130,7 @@ async function postJson(path, payload, options = {}) {
 }
 
 async function postTextStream(path, payload, onChunk) {
-  const response = await fetch(path, {
+  const response = await fetch(apiUrl(path), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -1464,6 +2226,7 @@ function showInputStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  tdPanel?.classList.add("is-hidden");
   coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
@@ -1585,6 +2348,7 @@ function showReviewStage() {
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  tdPanel?.classList.add("is-hidden");
   coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
@@ -1604,6 +2368,7 @@ function showCompareStage(force = false) {
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.remove("is-hidden");
   testsPanel.classList.add("is-hidden");
+  tdPanel?.classList.add("is-hidden");
   coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
@@ -1626,6 +2391,7 @@ function showTestsStage(testIndex = selectedTestIndex) {
   comparePanel.classList.add("is-hidden");
   coveragePanel?.classList.add("is-hidden");
   testsPanel.classList.remove("is-hidden");
+  tdPanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.remove("is-hidden");
@@ -1634,6 +2400,28 @@ function showTestsStage(testIndex = selectedTestIndex) {
   setStage("tests");
   setStatus("ready", "Tests ready");
   syncMarkdownActions();
+}
+
+function showTDStage() {
+  if (!currentMarkdown) {
+    showCompareStage();
+    return;
+  }
+  reviewPanel.classList.add("is-hidden");
+  comparePanel.classList.add("is-hidden");
+  testsPanel.classList.add("is-hidden");
+  coveragePanel?.classList.add("is-hidden");
+  docsExamplePanel.classList.add("is-hidden");
+  generatedDocsPanel.classList.add("is-hidden");
+  tdPanel?.classList.remove("is-hidden");
+  backReviewButton.classList.remove("is-hidden");
+  outputEyebrow.textContent = "Original TD";
+  outputTitle.textContent = "Submit baseline docs";
+  setStage("td");
+  setStatus("review", "Add TD docs");
+  if (tdPreview && !tdPreview.innerHTML.trim()) {
+    tdPreview.innerHTML = '<p class="placeholder">Formatted TD Markdown preview will appear here.</p>';
+  }
 }
 
 
@@ -1649,6 +2437,7 @@ function showCoverageStage() {
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  tdPanel?.classList.add("is-hidden");
   coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
@@ -1933,6 +2722,7 @@ async function showDocsExampleStage(exampleId = docsExamplePanel.dataset.activeE
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  tdPanel?.classList.add("is-hidden");
   docsExamplePanel.classList.remove("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
   backReviewButton.classList.add("is-hidden");
@@ -1953,6 +2743,7 @@ function renderError(message, eyebrow = "GPT call failed", title = "Could not ru
   reviewPanel.classList.remove("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
+  tdPanel?.classList.add("is-hidden");
   coveragePanel?.classList.add("is-hidden");
   docsExamplePanel.classList.add("is-hidden");
   generatedDocsPanel.classList.add("is-hidden");
@@ -2727,9 +3518,9 @@ async function generateMarkdownFromReview() {
 	      setStatus("ready", "Generated, save failed");
 	      console.warn("Could not save generated documentation", saveError);
 	    }
-	    fillCoverageDocsFromCurrent(true);
+    fillCoverageDocsFromCurrent(true);
     syncMarkdownActions();
-    showCompareStage();
+    showTDStage();
   } catch (error) {
     generatedDoc.classList.remove("is-streaming");
     renderError(error.message || "Documentation generation failed.");
@@ -3014,6 +3805,7 @@ landingExampleSwitch?.addEventListener("click", (event) => {
 });
 
 loadLandingExample("numpy-pad");
+renderLandingLeaderboard();
 
 if ("IntersectionObserver" in window) {
   const revealObserver = new IntersectionObserver((entries, observer) => {
@@ -3041,6 +3833,69 @@ loginOpenButtons.forEach((button) => {
     }
     showLoginPage(button.dataset.authMode || "login");
   });
+});
+
+areaOpenButtons.forEach((button) => {
+  button.addEventListener("click", showAreaPage);
+});
+
+document.querySelectorAll(".home-button").forEach((button) => {
+  button.addEventListener("click", showLandingPage);
+});
+
+document.querySelectorAll(".research-mode-button").forEach((button) => {
+  button.addEventListener("click", toggleResearchMode);
+});
+
+areaRankLimitInput?.addEventListener("input", () => {
+  const value = Math.max(0, Number(areaRankLimitInput.value || 0));
+  if (value) {
+    localStorage.setItem(ARENA_RANK_LIMIT_STORAGE_KEY, String(value));
+  } else {
+    localStorage.removeItem(ARENA_RANK_LIMIT_STORAGE_KEY);
+  }
+  updateAreaSessionUI();
+});
+
+areaBackButton?.addEventListener("click", () => {
+  if (isResearchModeActive()) {
+    toggleResearchMode();
+    return;
+  }
+  if (getAccessToken()) {
+    showAccountPage();
+    return;
+  }
+  showLandingPage();
+});
+
+areaNextButton?.addEventListener("click", showNextAreaPost);
+
+areaChoices.forEach((choice) => {
+  choice.addEventListener("click", () => selectAreaWinner(choice.dataset.areaChoice));
+  choice.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      selectAreaWinner(choice.dataset.areaChoice);
+    }
+  });
+});
+
+areaVoteButton?.addEventListener("click", submitAreaVote);
+tdFormatButton?.addEventListener("click", formatTraditionalMarkdown);
+tdSaveButton?.addEventListener("click", saveTraditionalMarkdown);
+researchConfirmButton?.addEventListener("click", confirmResearchMode);
+researchCancelButton?.addEventListener("click", closeResearchModal);
+researchChangePhraseButton?.addEventListener("click", changeResearchPhrase);
+researchModal?.addEventListener("click", (event) => {
+  if (event.target?.matches?.("[data-close-research-modal]")) closeResearchModal();
+});
+researchModal?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    confirmResearchMode();
+  }
+  if (event.key === "Escape") closeResearchModal();
 });
 
 authBackButton?.addEventListener("click", showLandingPage);
@@ -3203,6 +4058,8 @@ stepTabs.forEach((tab) => {
       showCompareStage();
     } else if (tab.dataset.step === "tests") {
       showTestsStage();
+    } else if (tab.dataset.step === "td") {
+      showTDStage();
     } else if (tab.dataset.step === "coverage") {
       showCoverageStage();
     }
@@ -3219,7 +4076,7 @@ updateAccountMenuLabel();
 // stays logged in. Validate it in the background and only drop it if it has
 // actually expired (401) — a refresh on its own never logs the user out.
 if (getAccessToken()) {
-  fetch("/users/me", { headers: authHeaders({ Accept: "application/json" }) })
+  fetch(apiUrl("/users/me"), { headers: authHeaders({ Accept: "application/json" }) })
     .then((response) => {
       if (response.status === 401) {
         localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);

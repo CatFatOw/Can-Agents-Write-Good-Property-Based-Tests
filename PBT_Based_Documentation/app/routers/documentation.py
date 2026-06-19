@@ -123,6 +123,15 @@ async def generate_documentation(payload: dict, db: Session = Depends(get_db)):
         return legacy_error(exc)
 
 
+@api_router.post("/td-markdown")
+async def format_traditional_documentation(payload: dict):
+    """Convert pasted traditional/reference docs into Markdown for Arena."""
+    try:
+        return legacy_backend.generate_traditional_markdown(payload)
+    except Exception as exc:
+        return legacy_error(exc)
+
+
 @api_router.post("/documentation-stream")
 async def generate_documentation_stream(payload: dict, db: Session = Depends(get_db)):
     """Stream generated Markdown, then persist the full document once complete."""
@@ -260,6 +269,26 @@ async def update_IBD(id:int, ibd_doc:Documentation, db:Session=Depends(get_db), 
     post_query.update(ibd_doc.model_dump(), synchronize_session=False)
     db.commit()
     return post_query.first()
+
+
+@router.put("/{id}/td", response_model=DocumentationResponse)
+async def update_TD(
+    id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    curr_user: models.User = Depends(oath2.get_current_user)
+):
+    """Update only the traditional/reference Markdown for a saved document."""
+    post = db.query(models.Documentation).filter(
+        models.Documentation.id == id,
+        models.Documentation.owner_id == curr_user.id,
+    ).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"POST ID: {id} CANNOT BE FOUND")
+    post.TD_md = str(payload.get("TD_md") or payload.get("td_md") or "")
+    db.commit()
+    db.refresh(post)
+    return post
 
 # DELETE the documentation endpoint
 

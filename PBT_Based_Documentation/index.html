@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invariant-Based Documentation generator</title>
     <link rel="icon" type="image/png" href="logo_new.png">
-    <link rel="stylesheet" href="styles.css?v=account-page-10">
+    <link rel="stylesheet" href="styles.css?v=arena-page-13">
   </head>
   <body class="stage-review">
     <section class="landing-page" id="landing-page" aria-labelledby="landing-title">
@@ -13,6 +13,9 @@
         <a class="landing-brand" href="#landing-page" aria-label="Invariant-Based Documentation Generator">IBD Generator</a>
         <div class="landing-nav-actions">
           <a href="#examples" class="landing-nav-link">Examples</a>
+          <a href="#leaderboard" class="landing-nav-link">Leaderboard</a>
+          <button type="button" class="landing-nav-link area-open-button">Arena</button>
+          <button type="button" class="landing-nav-link research-mode-button">Research mode</button>
           <button type="button" class="landing-nav-link login-open-button" id="landing-account-button" data-auth-mode="login">Login</button>
           <button type="button" class="theme-toggle landing-theme-toggle" aria-pressed="false" title="Toggle dark mode">Dark</button>
           <button type="button" class="landing-primary-button launch-app-button">Launch app</button>
@@ -28,6 +31,7 @@
           </p>
           <div class="landing-actions">
             <button type="button" class="landing-primary-button launch-app-button">Start generating</button>
+            <button type="button" class="landing-secondary-button area-open-button">Enter Arena</button>
             <button type="button" class="landing-secondary-button login-open-button" data-auth-mode="signup">Create account</button>
           </div>
           <div class="landing-stats" aria-label="Workflow highlights">
@@ -107,6 +111,103 @@
         </div>
         <button type="button" class="landing-secondary-button launch-app-button">Open the generator</button>
       </section>
+
+      <section class="landing-leaderboard" id="leaderboard" aria-labelledby="leaderboard-title">
+        <div class="examples-heading" data-reveal>
+          <p class="eyebrow">Research leaderboard</p>
+          <h2 id="leaderboard-title">Documentation preference rankings</h2>
+        </div>
+        <p class="landing-leaderboard-note" data-reveal>
+          Aggregated after blind comparisons. Individual arena cards stay anonymous until a participant submits a vote.
+        </p>
+        <ol class="landing-leaderboard-list" id="landing-leaderboard-list" data-reveal>
+          <li class="placeholder">Loading leaderboard...</li>
+        </ol>
+      </section>
+    </section>
+
+    <section class="area-page is-hidden" id="area-page" aria-labelledby="area-title">
+      <div class="area-shell">
+        <nav class="area-topbar" aria-label="Arena">
+          <button type="button" class="landing-nav-link area-back-button">Back</button>
+          <div class="area-topbar-actions">
+            <button type="button" class="landing-nav-link home-button">Home</button>
+            <button type="button" class="landing-nav-link research-mode-button">Research mode</button>
+            <button type="button" class="landing-nav-link login-open-button" data-auth-mode="login">Login</button>
+            <button type="button" class="theme-toggle" aria-pressed="false" title="Toggle dark mode">Dark</button>
+          </div>
+        </nav>
+
+        <header class="area-hero">
+          <div>
+            <p class="eyebrow">Documentation battle arena</p>
+            <h1 id="area-title">Arena</h1>
+            <p class="area-subtitle">
+              Review two anonymized documentation samples and choose the version that is more useful, precise, and trustworthy.
+            </p>
+          </div>
+          <div class="area-orbit" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+        </header>
+
+        <section class="area-session-bar" aria-label="Arena session controls">
+          <div>
+            <p class="eyebrow">Ranking session</p>
+            <strong id="area-rank-count">0 ranked</strong>
+          </div>
+          <label class="field compact-field" for="area-rank-limit">
+            <span>Ranking limit</span>
+            <input id="area-rank-limit" type="number" min="0" step="1" placeholder="Unlimited">
+          </label>
+          <p id="area-limit-message" role="status">Default is unlimited.</p>
+        </section>
+
+        <main class="area-layout">
+          <section class="area-battle area-study-view" id="area-study-view" aria-labelledby="area-battle-title">
+            <div class="area-battle-head">
+              <div>
+                <p class="eyebrow">Current post</p>
+                <h2 id="area-battle-title">np.pad documentation duel</h2>
+              </div>
+              <button type="button" class="secondary-button" id="area-next-button">Next comparison</button>
+            </div>
+
+            <div class="area-doc-grid">
+              <article class="landing-doc-panel area-doc-card area-choice" data-area-choice="TD" data-area-label="A" tabindex="0">
+                <div class="area-doc-card-head">
+                  <p class="eyebrow">Candidate A</p>
+                  <span class="area-choice-badge">A</span>
+                </div>
+                <h3 id="area-td-title">np.pad</h3>
+                <div class="markdown-rendered landing-doc-scroll area-doc-body" id="area-td-doc"></div>
+              </article>
+
+              <article class="landing-doc-panel area-doc-card area-choice is-selected" data-area-choice="IBD" data-area-label="B" tabindex="0">
+                <div class="area-doc-card-head">
+                  <p class="eyebrow">Candidate B</p>
+                  <span class="area-choice-badge">B</span>
+                </div>
+                <h3 id="area-ibd-title">np.pad</h3>
+                <div class="markdown-rendered landing-doc-scroll area-doc-body" id="area-ibd-doc"></div>
+              </article>
+            </div>
+
+            <section class="area-comment-panel" aria-labelledby="area-comment-title">
+              <div>
+                <p class="eyebrow">Reviewer note</p>
+                <h3 id="area-comment-title">Why did this version win?</h3>
+                <p class="field-hint">Comment required: minimum 40 characters and 8 words to submit.</p>
+              </div>
+              <textarea id="area-comment-input" rows="4" placeholder="Write what made this documentation more useful, precise, or trustworthy."></textarea>
+              <div class="area-vote-actions">
+                <button type="button" class="landing-primary-button" id="area-vote-button">Vote for Candidate B</button>
+                <p id="area-vote-message" role="status">Blind study mode. Statistics are hidden until after your vote.</p>
+              </div>
+            </section>
+          </section>
+        </main>
+      </div>
     </section>
 
     <section class="login-page is-hidden" id="login-page" aria-labelledby="login-title">
@@ -132,8 +233,45 @@
       </div>
     </section>
 
+    <section class="research-modal is-hidden" id="research-modal" aria-labelledby="research-title" aria-modal="true" role="dialog">
+      <div class="research-modal-backdrop" data-close-research-modal></div>
+      <div class="auth-panel research-panel">
+        <p class="eyebrow">Research mode</p>
+        <h1 id="research-title">Lock to Arena</h1>
+        <p class="research-copy">Research mode hides the rest of the site and keeps participants inside blind ranking until the exit phrase is entered.</p>
+        <label class="field" for="research-phrase">
+          <span>Secret phrase</span>
+          <input id="research-phrase" type="password" placeholder="Type phrase">
+        </label>
+        <label class="field" for="research-limit">
+          <span>Ranking limit</span>
+          <input id="research-limit" type="number" min="1" step="1" value="10" placeholder="Default: 10">
+        </label>
+        <p class="account-message" id="research-message" role="status"></p>
+        <details class="research-phrase-settings">
+          <summary>Change research phrase</summary>
+          <label class="field" for="research-current-phrase">
+            <span>Current phrase</span>
+            <input id="research-current-phrase" type="password" placeholder="Current phrase">
+          </label>
+          <label class="field" for="research-new-phrase">
+            <span>New phrase</span>
+            <input id="research-new-phrase" type="password" placeholder="New phrase">
+          </label>
+          <button type="button" class="secondary-button" id="research-change-phrase-button">Update phrase</button>
+          <p class="account-message" id="research-phrase-message" role="status"></p>
+        </details>
+        <div class="research-actions">
+          <button type="button" class="landing-primary-button" id="research-confirm-button">Enter research mode</button>
+          <button type="button" class="secondary-button" id="research-cancel-button">Cancel</button>
+        </div>
+      </div>
+    </section>
+
     <main class="app-shell is-hidden" id="app-shell">
       <div class="app-status-bar" id="app-status-bar">
+        <button type="button" class="secondary-button home-button" id="home-button">Home</button>
+        <button type="button" class="secondary-button area-open-button">Arena</button>
         <div class="database-status" id="database-status" data-state="checking">
           <span class="status-dot" aria-hidden="true"></span>
           <span id="database-status-text">Checking database...</span>
@@ -150,6 +288,7 @@
             </label>
             <div class="account-menu-actions">
               <button type="button" class="secondary-button" id="account-page-button">View account</button>
+              <button type="button" class="secondary-button area-open-button">Open Arena</button>
               <button type="button" class="secondary-button" id="saved-doc-refresh">Refresh saved docs</button>
               <button type="button" class="secondary-button" id="logout-button">Log out</button>
             </div>
@@ -189,8 +328,12 @@
             <span aria-hidden="true">04</span>
             Final Markdown
           </button>
-          <button type="button" class="step-tab" data-step="coverage">
+          <button type="button" class="step-tab" data-step="td">
             <span aria-hidden="true">05</span>
+            Original TD
+          </button>
+          <button type="button" class="step-tab" data-step="coverage">
+            <span aria-hidden="true">06</span>
             Coverage
           </button>
         </div>
@@ -335,6 +478,26 @@
           </article>
         </div>
 
+        <div class="paper td-panel is-hidden" id="td-panel">
+          <div class="td-panel-head">
+            <div>
+              <p class="eyebrow">Traditional documentation</p>
+              <h3>Submit original TD</h3>
+            </div>
+            <button type="button" class="secondary-button" id="td-format-button">Format with GPT</button>
+          </div>
+          <p class="td-help">Paste the original/reference documentation. Format it into Markdown, review it, then save it to the same database row for Arena comparisons.</p>
+          <textarea id="td-source-input" rows="9" placeholder="Paste original/reference documentation here..."></textarea>
+          <div class="td-actions">
+            <button type="button" class="landing-primary-button" id="td-save-button">Save TD Markdown</button>
+            <p id="td-message" role="status"></p>
+          </div>
+          <article class="td-preview">
+            <p class="eyebrow">TD Markdown preview</p>
+            <div class="markdown-rendered" id="td-preview"></div>
+          </article>
+        </div>
+
         <div class="paper tests-panel is-hidden" id="tests-panel">
           <p class="placeholder">
             Toggle metrics and run the invariant pass to generate property-based tests.
@@ -426,6 +589,7 @@
       <div class="account-shell">
         <nav class="account-topbar" aria-label="Account">
           <button type="button" class="landing-nav-link account-back-button">← Back to app</button>
+          <button type="button" class="landing-nav-link area-open-button">Open Arena</button>
           <button type="button" class="theme-toggle" aria-pressed="false" title="Toggle dark mode">Dark</button>
         </nav>
 
@@ -567,6 +731,6 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=account-page-10"></script>
+    <script src="app.js?v=arena-page-13"></script>
   </body>
 </html>
