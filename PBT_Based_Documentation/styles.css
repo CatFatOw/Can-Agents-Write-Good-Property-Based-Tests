@@ -6774,6 +6774,87 @@ body.area-active:not(.dark-mode) {
 .area-orbit span:nth-child(2) { right: 26px; bottom: 48px; background: #8bdde8; animation-delay: 420ms; }
 .area-orbit span:nth-child(3) { left: 30px; bottom: 36px; background: #b4f0c8; animation-delay: 820ms; }
 
+.area-rank-signal {
+  width: 220px;
+  aspect-ratio: 1.18;
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  background:
+    linear-gradient(135deg, rgba(139, 221, 232, 0.14), transparent 36%),
+    radial-gradient(circle at 72% 18%, rgba(255, 176, 107, 0.22), transparent 24%),
+    color-mix(in srgb, currentColor 5%, transparent);
+  box-shadow:
+    0 24px 70px rgba(13, 20, 34, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  overflow: hidden;
+  animation: arena-signal-float 7s ease-in-out infinite;
+}
+
+.area-rank-signal::before {
+  content: "";
+  position: absolute;
+  inset: 20px 24px;
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, rgba(180, 240, 200, 0.9) 0 34%, transparent 34%),
+    linear-gradient(90deg, rgba(139, 221, 232, 0.82) 0 58%, transparent 58%),
+    linear-gradient(90deg, rgba(255, 176, 107, 0.82) 0 46%, transparent 46%);
+  background-size: 100% 10px, 100% 10px, 100% 10px;
+  background-position: 0 0, 0 58px, 0 116px;
+  background-repeat: no-repeat;
+  opacity: 0.7;
+}
+
+.area-rank-signal::after {
+  content: "";
+  position: absolute;
+  inset: -26% auto -26% 42%;
+  width: 24px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+  transform: rotate(18deg);
+  animation: arena-signal-scan 5.8s ease-in-out infinite;
+}
+
+.area-rank-signal span {
+  position: relative;
+  inset: auto !important;
+  z-index: 1;
+  display: block;
+  width: auto;
+  height: 26px;
+  aspect-ratio: auto;
+  margin: 0 0 18px;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 250, 242, 0.2), rgba(255, 250, 242, 0.08)),
+    rgba(255, 250, 242, 0.08);
+  box-shadow: 0 0 0 1px rgba(255, 250, 242, 0.1) inset;
+  animation: arena-rank-row 5.6s ease-in-out infinite;
+}
+
+.area-rank-signal span:nth-child(1) { max-width: 74%; animation-delay: 0ms; }
+.area-rank-signal span:nth-child(2) { max-width: 90%; animation-delay: 320ms; }
+.area-rank-signal span:nth-child(3) { max-width: 64%; animation-delay: 640ms; }
+.area-rank-signal span:nth-child(4) { max-width: 82%; animation-delay: 960ms; }
+
+.area-rank-signal i {
+  position: absolute;
+  z-index: 2;
+  right: 24px;
+  width: 12px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: #ffb06b;
+  box-shadow: 0 0 22px rgba(255, 176, 107, 0.45);
+  animation: arena-node-pulse 3.8s ease-in-out infinite;
+}
+
+.area-rank-signal i:nth-of-type(1) { top: 30px; background: #b4f0c8; }
+.area-rank-signal i:nth-of-type(2) { top: 74px; background: #8bdde8; animation-delay: 520ms; }
+.area-rank-signal i:nth-of-type(3) { top: 118px; background: #ffb06b; animation-delay: 980ms; }
+
 .area-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -7134,6 +7215,22 @@ body.area-active:not(.dark-mode) .area-doc-card {
   50% { transform: scale(1.35); filter: brightness(1.24); }
 }
 
+@keyframes arena-signal-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes arena-signal-scan {
+  0%, 28% { left: -18%; opacity: 0; }
+  42%, 68% { opacity: 0.72; }
+  100% { left: 108%; opacity: 0; }
+}
+
+@keyframes arena-rank-row {
+  0%, 100% { transform: translateX(0); opacity: 0.72; }
+  50% { transform: translateX(8px); opacity: 1; }
+}
+
 @keyframes arena-card-sheen {
   0%, 40% { transform: translateX(-55%) rotate(-7deg); }
   72%, 100% { transform: translateX(80%) rotate(-7deg); }
@@ -7215,6 +7312,10 @@ body.area-active .area-page * {
 
 body.area-active .area-page {
   overflow-x: hidden;
+}
+
+body.area-active .area-rank-signal {
+  display: block !important;
 }
 
 body.area-active .area-topbar {
@@ -7924,4 +8025,8 @@ body.research-mode .research-mode-button::after {
   .account-ranking-summary {
     grid-template-columns: 1fr !important;
   }
+}
+
+body.area-active .area-rank-signal {
+  display: block !important;
 }
