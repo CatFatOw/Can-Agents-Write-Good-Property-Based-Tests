@@ -591,6 +591,17 @@ select {
   min-width: 0;
 }
 
+#page-title {
+  max-width: 13ch;
+  font-size: clamp(3.2rem, 6vw, 5.2rem);
+  line-height: 0.92;
+  overflow-wrap: break-word;
+}
+
+#page-title span {
+  display: block;
+}
+
 .masthead .status {
   position: absolute;
   top: 0;
