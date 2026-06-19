@@ -482,6 +482,111 @@ def mutation_score_from_summary(summary):
     return summary.get("killed", 0) / scored_mutants
 
 
+def run_batched_mutation_tests(source_code, results, api_name, mutation_packages="", mutation_auto_install=True):
+    """Run one mutmut pass for the whole generated test suite.
+
+    Metrics are still generated per invariant, but mutmut is the expensive part.
+    This helper writes every usable generated test into the same temporary
+    project, keeps tests that pass on the original source, and then runs mutmut
+    once across that passing suite. The resulting score is suite-level, so each
+    participating invariant receives the same batch mutation score.
+    """
+    for result in results:
+        result["mutation_score"] = None
+        result["mutation_error"] = ""
+        result["mutation_counts"] = {}
+        result["mutation_scope"] = "batch"
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_dir = Path(temp_dir)
+
+        source_path = temp_dir / "source.py"
+        source_path.write_text(prepare_mutation_source_code(source_code, api_name), encoding="utf-8")
+
+        test_paths = []
+        combined_test_code = []
+        for index, result in enumerate(results):
+            test_code = result.get("test_code") or ""
+            if not test_code.strip():
+                result["mutation_error"] = "No generated test code was available for mutation testing."
+                continue
+
+            test_path = temp_dir / f"test_invariant_{index + 1}.py"
+            mutation_test_code = prepare_mutation_test_code(test_code, api_name)
+            test_path.write_text(mutation_test_code, encoding="utf-8")
+            test_paths.append((result, test_path))
+            combined_test_code.append(mutation_test_code)
+
+        if not test_paths:
+            return results
+
+        setup_path = temp_dir / "setup.cfg"
+        setup_path.write_text(
+            textwrap.dedent("""
+            [mutmut]
+            paths_to_mutate=source.py
+            mutate_only_covered_lines=true
+            pytest_add_cli_args_test_selection=.
+            """).strip(),
+            encoding="utf-8",
+        )
+
+        mutation_error = install_mutation_packages(
+            temp_dir,
+            mutation_packages,
+            source_code=source_code,
+            test_code="\n\n".join(combined_test_code),
+            auto_install=mutation_auto_install,
+        )
+        write_mutation_sitecustomize(temp_dir, source_code, "\n\n".join(combined_test_code), api_name)
+        mutation_env = mutation_subprocess_env(temp_dir)
+
+        if mutation_error:
+            for result, _ in test_paths:
+                result["mutation_error"] = mutation_error
+            return results
+
+        passing_test_names = []
+        for result, test_path in test_paths:
+            clean_test_output = subprocess.run(
+                [sys.executable, "-m", "pytest", "-q", str(test_path.name)],
+                cwd=temp_dir,
+                capture_output=True,
+                text=True,
+                env=mutation_env,
+            )
+            if clean_test_output.returncode == 0:
+                passing_test_names.append(test_path.name)
+                continue
+
+            result["mutation_error"] = (
+                clean_test_output.stdout.strip()
+                or clean_test_output.stderr.strip()
+                or "Generated mutation test failed before mutmut could run."
+            )
+            test_path.unlink(missing_ok=True)
+
+        if not passing_test_names:
+            return results
+
+        output, mutation_stderr, run_error = run_mutmut(temp_dir, mutation_env)
+        mutation_counts = parse_mutation_summary(output)
+        if mutation_counts:
+            mutation_counts["total_mutants"] = sum(mutation_counts.values())
+            covered_mutants_score = mutation_score_from_summary(mutation_counts)
+            for result, test_path in test_paths:
+                if test_path.name in passing_test_names:
+                    result["mutation_score"] = covered_mutants_score
+                    result["mutation_counts"] = dict(mutation_counts)
+            return results
+
+        batch_error = run_error or mutation_stderr.strip() or output.strip() or "mutmut did not return a parseable summary."
+        for result, test_path in test_paths:
+            if test_path.name in passing_test_names:
+                result["mutation_error"] = batch_error
+        return results
+
+
 def parse_mutmut_result_line(line):
     text = line.strip()
     if not text:
@@ -709,86 +814,6 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             explanation = str(data.get("explanation", ""))
             test_code = str(data.get("test_code", ""))
             lineno = list_from_unknown(data.get("lineno"))
-            covered_mutants_score = None
-            mutation_error = ""
-            mutation_counts = {}
-
-            # If the user selected to do mutmut mutation testing
-            if show_mutation_tests:
-                # Create a directory for workflow
-                with tempfile.TemporaryDirectory() as temp_dir:
-                    temp_dir = Path(temp_dir)
-
-                    # Save the user provided source code. This will be crucial for the setup.cfg later
-                    source_path = temp_dir / "source.py"
-                    # Writes the source code to source path
-                    source_path.write_text(prepare_mutation_source_code(source_code, api_name), encoding="utf-8")
-
-                    # Save/write the generated hypothesis invariant
-                    test_path = temp_dir / "test_invariant.py"
-                    test_path.write_text(prepare_mutation_test_code(test_code, api_name), encoding="utf-8")
-
-
-                    # 3. Create mutmut config setup.cfg
-                    # textwrap.dedent so the written file has no leading indentation:
-                    # indented lines are invalid INI and make pytest/mutmut reject the config
-                    setup_path = temp_dir / "setup.cfg"
-                    setup_path.write_text(
-                        textwrap.dedent("""
-                        [mutmut]
-                        paths_to_mutate=source.py
-                        mutate_only_covered_lines=true
-                        pytest_add_cli_args_test_selection=.
-                        """).strip(), encoding="utf-8",
-
-                    )
-
-                    mutation_error = install_mutation_packages(
-                        temp_dir,
-                        mutation_packages,
-                        source_code=source_code,
-                        test_code=test_code,
-                        auto_install=mutation_auto_install,
-                    )
-
-                    # Subprocesses need the temp dir on PYTHONPATH to import source.py
-                    # and the packages installed above
-                    write_mutation_sitecustomize(temp_dir, source_code, test_code, api_name)
-                    # Subprocesses need the deps dir on PYTHONPATH for installed packages and sitecustomize.
-                    mutation_env = mutation_subprocess_env(temp_dir)
-
-                    if not mutation_error:
-                        clean_test_output = subprocess.run(
-                            [sys.executable, "-m", "pytest", "-q", str(test_path.name)],
-                            cwd=temp_dir,
-                            capture_output=True,
-                            text=True,
-                            env=mutation_env,
-                        )
-                        if clean_test_output.returncode != 0:
-                            mutation_error = (
-                                clean_test_output.stdout.strip()
-                                or clean_test_output.stderr.strip()
-                                or "Generated mutation test failed before mutmut could run."
-                            )
-
-                    # Run mutmut. Keep FileNotFoundError from escaping into the
-                    # outer exception handler, and parse stdout + stderr because
-                    # different mutmut versions print the summary differently.
-                    if not mutation_error:
-                        output, mutation_stderr, run_error = run_mutmut(temp_dir, mutation_env)
-                        if run_error:
-                            mutation_error = run_error
-                    else:
-                        output = ""
-                        mutation_stderr = ""
-                    mutation_counts = parse_mutation_summary(output)
-                    if mutation_counts:
-                        mutation_counts["total_mutants"] = sum(mutation_counts.values())
-                        covered_mutants_score = mutation_score_from_summary(mutation_counts)
-                    elif not mutation_error:
-                        mutation_error = (mutation_stderr.strip() or output.strip() or "mutmut did not return a parseable summary.")
-
 
             # {"invariant": invariant,"test_code": output, "validity": validity, "soundness": soundness, "error": error,}
             result = evaluate_pbt_test(
@@ -806,10 +831,6 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
             result["explanation"] = explanation
             # Adding lineno where the update pertains
             result["lineno"] = lineno
-            if show_mutation_tests:
-                result["mutation_score"] = covered_mutants_score
-                result["mutation_error"] = mutation_error
-                result["mutation_counts"] = mutation_counts
 
             results.append(result)
 
@@ -828,7 +849,17 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
                 result["mutation_score"] = None
                 result["mutation_error"] = str(e)
                 result["mutation_counts"] = {}
+                result["mutation_scope"] = "batch"
             results.append(result)
+
+    if show_mutation_tests:
+        run_batched_mutation_tests(
+            source_code,
+            results,
+            api_name,
+            mutation_packages=mutation_packages,
+            mutation_auto_install=mutation_auto_install,
+        )
 
     return {"results": results}
 
