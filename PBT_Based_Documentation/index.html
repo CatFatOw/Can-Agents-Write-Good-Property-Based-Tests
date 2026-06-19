@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invariant-Based Documentation generator</title>
     <link rel="icon" type="image/png" href="logo_new.png">
-    <link rel="stylesheet" href="styles.css?v=account-page-7">
+    <link rel="stylesheet" href="styles.css?v=account-page-8">
   </head>
   <body class="stage-review">
     <section class="landing-page" id="landing-page" aria-labelledby="landing-title">
@@ -13,7 +13,7 @@
         <a class="landing-brand" href="#landing-page" aria-label="Invariant-Based Documentation Generator">IBD Generator</a>
         <div class="landing-nav-actions">
           <a href="#examples" class="landing-nav-link">Examples</a>
-          <button type="button" class="landing-nav-link login-open-button" data-auth-mode="login">Login</button>
+          <button type="button" class="landing-nav-link login-open-button" id="landing-account-button" data-auth-mode="login">Login</button>
           <button type="button" class="theme-toggle landing-theme-toggle" aria-pressed="false" title="Toggle dark mode">Dark</button>
           <button type="button" class="landing-primary-button launch-app-button">Launch app</button>
         </div>
@@ -36,10 +36,10 @@
             <span><strong>03</strong> IBD Markdown ships</span>
           </div>
           <div class="process-rail" aria-label="Human in the loop process to invariant-based documentation">
-            <span>Source</span>
-            <span>Tool pass</span>
-            <span>Human review</span>
-            <span>IBD Markdown</span>
+            <span>Load API source code</span>
+            <span>Extract invariants</span>
+            <span>Compute metrics</span>
+            <span>Generate IBD docs</span>
           </div>
         </div>
 
@@ -48,13 +48,16 @@
             <span></span><span></span><span></span>
             <p>tool-process / source to IBD</p>
           </div>
-          <pre><code><span class="terminal-muted">$ inspect numpy.linspace</span>
-<span class="terminal-accent">source</span> loaded: 141 lines
-<span class="terminal-muted">$ generate semantic guarantees</span>
+          <pre><code><span class="terminal-muted">$ load api source code</span>
+<span class="terminal-accent">source</span> loaded: numpy.linspace
+<span class="terminal-muted">$ extract invariants</span>
+<span class="terminal-muted">$ compute metrics</span>
+<span class="terminal-muted">$ generate IBD docs</span>
 <span class="terminal-wave-line">▁▂▃▄▅▆▇█▇▆▅▄▃▂▁▂▃▄▅▆▇</span>
-✓ endpoint behavior verified
-✓ dtype edge cases surfaced
-✓ retstep contract mapped
+✓ edge case behavior
+✓ semantic guarantees
+✓ exceptions
+✓ and more
 <span class="terminal-accent">markdown</span> ready for human review</code></pre>
         </div>
       </div>
@@ -494,6 +497,10 @@
               <h2 id="account-docs-title">Your documents</h2>
             </div>
             <div class="account-docs-controls">
+              <label class="field compact-field" for="account-docs-search">
+                <span>Find</span>
+                <input id="account-docs-search" type="search" placeholder="Markdown, invariants, metrics">
+              </label>
               <label class="field compact-field" for="account-docs-sort">
                 <span>Sort by</span>
                 <select id="account-docs-sort">
@@ -564,6 +571,6 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=account-page-7"></script>
+    <script src="app.js?v=account-page-8"></script>
   </body>
 </html>

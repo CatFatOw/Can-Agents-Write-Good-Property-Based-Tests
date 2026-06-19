@@ -11,6 +11,7 @@ const authPasswordInput = document.querySelector("#auth-password");
 const authMessage = document.querySelector("#auth-message");
 const authSubmitButton = document.querySelector("#auth-submit-button");
 const authModeToggle = document.querySelector("#auth-mode-toggle");
+const landingAccountButton = document.querySelector("#landing-account-button");
 const databaseStatus = document.querySelector("#database-status");
 const databaseStatusText = document.querySelector("#database-status-text");
 const accountMenuButton = document.querySelector("#account-menu-button");
@@ -30,6 +31,7 @@ const accountDocCount = document.querySelector("#account-doc-count");
 const accountStats = document.querySelector("#account-stats");
 const accountDocsList = document.querySelector("#account-docs-list");
 const accountDocsRefresh = document.querySelector("#account-docs-refresh");
+const accountDocsSearch = document.querySelector("#account-docs-search");
 const passwordForm = document.querySelector("#password-form");
 const currentPasswordInput = document.querySelector("#current-password");
 const newPasswordInput = document.querySelector("#new-password");
@@ -179,6 +181,7 @@ function showLandingPage() {
   accountPage?.classList.add("is-hidden");
   document.body.classList.remove("app-active", "auth-active", "account-active");
   document.body.classList.add("landing-active");
+  updateAccountMenuLabel();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -210,6 +213,11 @@ function authHeaders(extra = {}) {
 function updateAccountMenuLabel() {
   if (!accountMenuLabel) return;
   accountMenuLabel.textContent = getSavedUserEmail() || "Guest";
+  if (landingAccountButton) {
+    const signedIn = Boolean(getAccessToken());
+    landingAccountButton.textContent = signedIn ? "Account" : "Login";
+    landingAccountButton.dataset.authMode = signedIn ? "account" : "login";
+  }
 }
 
 async function refreshDatabaseStatus() {
@@ -861,28 +869,47 @@ function accountDocLibrary(doc) {
 
 function sortedAccountDocuments() {
   const docs = [...accountDocuments];
+  const query = (accountDocsSearch?.value || "").trim().toLowerCase();
+  const filteredDocs = query ? docs.filter((doc) => {
+    const metrics = parseStoredMetrics(doc.hypothesis_tests);
+    const haystack = [
+      doc.documentation_title,
+      doc.source_code,
+      doc.IBD_generated_md,
+      doc.invariants,
+      doc.mutation_summary,
+      metrics.map((metric) => [
+        metric.invariant,
+        metric.explanation,
+        metric.test_code,
+        metric.mutation_analysis,
+        metric.mutation_error
+      ].join(" ")).join(" ")
+    ].join(" ").toLowerCase();
+    return haystack.includes(query);
+  }) : docs;
   const byDate = (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0);
   const byName = (a, b) =>
     (a.documentation_title || "").localeCompare(b.documentation_title || "", undefined, { sensitivity: "base" });
   switch (accountSort) {
     case "created-asc":
-      docs.sort(byDate);
+      filteredDocs.sort(byDate);
       break;
     case "name-asc":
-      docs.sort(byName);
+      filteredDocs.sort(byName);
       break;
     case "name-desc":
-      docs.sort((a, b) => byName(b, a));
+      filteredDocs.sort((a, b) => byName(b, a));
       break;
     case "library-asc":
-      docs.sort((a, b) => accountDocLibrary(a).localeCompare(accountDocLibrary(b)) || byName(a, b));
+      filteredDocs.sort((a, b) => accountDocLibrary(a).localeCompare(accountDocLibrary(b)) || byName(a, b));
       break;
     case "created-desc":
     default:
-      docs.sort((a, b) => byDate(b, a));
+      filteredDocs.sort((a, b) => byDate(b, a));
       break;
   }
-  return docs;
+  return filteredDocs;
 }
 
 function renderAccountDocs() {
@@ -895,7 +922,12 @@ function renderAccountDocs() {
     accountDocsList.innerHTML = '<p class="placeholder">No generated documents yet. Run the generator to create one.</p>';
     return;
   }
-  accountDocsList.innerHTML = sortedAccountDocuments().map((doc) => {
+  const visibleDocs = sortedAccountDocuments();
+  if (!visibleDocs.length) {
+    accountDocsList.innerHTML = '<p class="placeholder">No documents match that search.</p>';
+    return;
+  }
+  accountDocsList.innerHTML = visibleDocs.map((doc) => {
     const invariants = parseStoredInvariants(doc.invariants);
     return `
       <article class="account-doc-card">
@@ -909,7 +941,10 @@ function renderAccountDocs() {
             <span>${invariants.length} invariants</span>
           </div>
         </div>
-        <button type="button" class="secondary-button account-doc-view" data-doc-id="${doc.id}">View more</button>
+        <div class="account-doc-actions">
+          <button type="button" class="secondary-button account-doc-view" data-doc-id="${doc.id}">View more</button>
+          <button type="button" class="danger-button account-doc-delete" data-doc-id="${doc.id}">Delete</button>
+        </div>
       </article>
     `;
   }).join("");
@@ -986,6 +1021,7 @@ function showAccountDocDetail(docId) {
         <div class="account-detail-md-actions">
           <button type="button" class="secondary-button" id="account-md-download">Download .md</button>
           <button type="button" class="secondary-button" id="account-md-edit">Edit</button>
+          <button type="button" class="danger-button" id="account-md-delete">Delete</button>
         </div>
       </div>
       <p class="account-message" id="account-md-message"></p>
@@ -1002,6 +1038,30 @@ function showAccountDocDetail(docId) {
   accountDetailModal.classList.remove("is-hidden");
   document.body.classList.add("account-detail-open");
   accountDetailClose?.focus();
+}
+
+async function deleteAccountDocument(docId) {
+  const doc = accountDocuments.find((item) => String(item.id) === String(docId));
+  if (!doc) return;
+  const title = doc.documentation_title || "this document";
+  if (!window.confirm(`Delete ${title}? This removes the saved Markdown, invariants, and metrics.`)) return;
+  const response = await fetch(`/documentation/delete/${doc.id}`, {
+    method: "DELETE",
+    headers: authHeaders({ Accept: "application/json" })
+  });
+  if (!response.ok && response.status !== 204) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.detail || data.error || "Could not delete document.");
+  }
+  accountDocuments = accountDocuments.filter((item) => String(item.id) !== String(doc.id));
+  savedDocumentation = savedDocumentation.filter((item) => String(item.id) !== String(doc.id));
+  if (activeAccountDoc && String(activeAccountDoc.id) === String(doc.id)) {
+    closeAccountDocDetail();
+  }
+  if (accountDocCount) accountDocCount.textContent = String(accountDocuments.length);
+  renderAccountStats();
+  renderAccountDocs();
+  renderSavedDocs();
 }
 
 function closeAccountDocDetail() {
@@ -2606,16 +2666,16 @@ async function assessMetricsForReview() {
   renderTestsPanel();
   setStatus("review", "Assessing metrics");
 
-	  const data = await postJson("/api/metrics", {
-	    api_name: apiNameInput.value.trim() || "api.function",
-	    source_code: currentSource,
-	    invariants: invariantTexts(currentInvariants),
-	    // Keep the overall metrics pass fast. Mutation testing runs on demand
-	    // from each generated test's mutation button.
-	    show_mutation_tests: false,
-	    mutation_packages: mutationPackagesInput.value.trim(),
-	    mutation_auto_install: mutationAutoInstallInput.checked
-	  });
+  const data = await postJson("/api/metrics", {
+    api_name: apiNameInput.value.trim() || "api.function",
+    source_code: currentSource,
+    invariants: invariantTexts(currentInvariants),
+    // Honor the mutation toggle here so mutation scores are available in
+    // the review table when the user asks for them.
+    show_mutation_tests: showMutationTestingInput.checked,
+    mutation_packages: mutationPackagesInput.value.trim(),
+    mutation_auto_install: mutationAutoInstallInput.checked
+  });
   currentMetrics = data.metrics || [];
   renderInvariantReviewWithMetrics(currentInvariants);
   renderTestsPanel();
@@ -2970,7 +3030,13 @@ launchAppButtons.forEach((button) => {
 });
 
 loginOpenButtons.forEach((button) => {
-  button.addEventListener("click", () => showLoginPage(button.dataset.authMode || "login"));
+  button.addEventListener("click", () => {
+    if (button.dataset.authMode === "account" || (button.id === "landing-account-button" && getAccessToken())) {
+      showAccountPage();
+      return;
+    }
+    showLoginPage(button.dataset.authMode || "login");
+  });
 });
 
 authBackButton?.addEventListener("click", showLandingPage);
@@ -3020,8 +3086,16 @@ accountDocsSort?.addEventListener("change", () => {
   accountSort = accountDocsSort.value;
   renderAccountDocs();
 });
+accountDocsSearch?.addEventListener("input", renderAccountDocs);
 
 accountDocsList?.addEventListener("click", (event) => {
+  const deleteButton = event.target.closest(".account-doc-delete");
+  if (deleteButton) {
+    deleteAccountDocument(deleteButton.dataset.docId).catch((error) => {
+      if (accountDocsList) accountDocsList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not delete document.")}</p>`;
+    });
+    return;
+  }
   const button = event.target.closest(".account-doc-view");
   if (!button) return;
   showAccountDocDetail(button.dataset.docId);
@@ -3039,6 +3113,13 @@ accountDetailBody?.addEventListener("click", (event) => {
   }
   if (event.target.closest("#account-md-edit")) {
     setAccountMarkdownEditing(true);
+    return;
+  }
+  if (event.target.closest("#account-md-delete")) {
+    deleteAccountDocument(activeAccountDoc?.id).catch((error) => {
+      const message = accountDetailBody?.querySelector("#account-md-message");
+      if (message) message.textContent = error.message || "Could not delete document.";
+    });
     return;
   }
   if (event.target.closest("#account-md-cancel")) {

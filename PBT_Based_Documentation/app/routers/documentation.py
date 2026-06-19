@@ -264,8 +264,16 @@ async def update_IBD(id:int, ibd_doc:Documentation, db:Session=Depends(get_db), 
 # DELETE the documentation endpoint
 
 @router.delete("/delete/{id}")
-async def delete_docs(id:int, db:Session=Depends(get_db)):
-    post_query = db.query(models.Documentation).filter(models.Documentation.id == id)
+async def delete_docs(
+    id:int,
+    db:Session=Depends(get_db),
+    curr_user:models.User=Depends(oath2.get_current_user)
+):
+    """Delete one saved documentation row owned by the current user."""
+    post_query = db.query(models.Documentation).filter(
+        models.Documentation.id == id,
+        models.Documentation.owner_id == curr_user.id,
+    )
     post = post_query.first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"ID: {id} NOT FOUND")
