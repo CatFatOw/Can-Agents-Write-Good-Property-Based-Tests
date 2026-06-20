@@ -2453,14 +2453,14 @@ body.dark-mode .markdown-rendered blockquote {
 }
 
 body.dark-mode .markdown-rendered code {
-  border-color: rgba(238, 221, 197, 0.18);
-  background: rgba(238, 221, 197, 0.1);
-  color: #f5eadb;
+  border-color: rgba(230, 210, 188, 0.13);
+  background: rgba(69, 55, 84, 0.7);
+  color: #f7ebdf;
 }
 
 body.dark-mode .markdown-rendered .md-code {
-  border-color: rgba(238, 221, 197, 0.14);
-  background: linear-gradient(180deg, rgba(31, 36, 44, 0.96), rgba(23, 27, 34, 0.96));
+  border-color: rgba(230, 210, 188, 0.13);
+  background: linear-gradient(180deg, rgba(44, 35, 56, 0.95), rgba(35, 28, 47, 0.95));
 }
 
 body.dark-mode .markdown-rendered table {
@@ -8365,6 +8365,49 @@ body.dark-mode .area-documentation-menu .leaderboard-doc-preview.markdown-render
 
 .area-documentation-menu .leaderboard-doc-preview.markdown-rendered code {
   box-shadow: none;
+}
+
+body.stage-td .app-shell {
+  width: min(1500px, calc(100% - 32px));
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+body.stage-td .workspace {
+  padding: 30px 0 4px;
+  gap: 20px;
+}
+
+body.stage-td .generator,
+body.stage-td .model-card {
+  display: none;
+}
+
+body.stage-td .output-panel {
+  min-height: calc(100vh - 260px);
+  padding-top: 24px;
+}
+
+body.stage-td .td-panel {
+  min-height: calc(100vh - 360px);
+}
+
+body.dark-mode .area-documentation-menu .leaderboard-doc-preview,
+body.dark-mode .area-documentation-menu .leaderboard-doc-preview.markdown-rendered {
+  color: #f7ebdf;
+}
+
+body.dark-mode .area-documentation-menu .leaderboard-doc-preview.markdown-rendered h1,
+body.dark-mode .area-documentation-menu .leaderboard-doc-preview.markdown-rendered h2,
+body.dark-mode .area-documentation-menu .leaderboard-doc-preview.markdown-rendered h3,
+body.dark-mode .area-documentation-menu .leaderboard-doc-preview.markdown-rendered h4 {
+  color: #fff7ed;
+}
+
+body.dark-mode .area-documentation-menu,
+body.dark-mode .leaderboard-doc-menu > details {
+  border-color: rgba(230, 210, 188, 0.13);
+  background: linear-gradient(180deg, rgba(44, 35, 56, 0.84), rgba(35, 28, 47, 0.84));
 }
 
 body.research-mode .landing-page,

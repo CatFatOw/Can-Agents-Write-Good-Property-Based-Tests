@@ -2515,15 +2515,12 @@ function showTDStage() {
   tdPanel?.classList.remove("is-hidden");
   backReviewButton.classList.remove("is-hidden");
   outputEyebrow.textContent = "Original TD";
-  outputTitle.textContent = "Submit baseline docs";
+  outputTitle.textContent = "Traditional documentation";
   setStage("td");
   setStatus("review", "TD needed");
   if (tdPreview && !tdPreview.innerHTML.trim()) {
     tdPreview.innerHTML = '<p class="placeholder">Formatted TD Markdown preview will appear here.</p>';
   }
-  tdPanel?.classList.add("needs-attention");
-  setTimeout(() => tdPanel?.classList.remove("needs-attention"), 2800);
-  tdPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 
