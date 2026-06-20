@@ -7174,6 +7174,12 @@ body.area-active .area-session-bar .field {
   line-height: 1.45;
 }
 
+.bt-stat-note {
+  margin: 0;
+  color: color-mix(in srgb, currentColor 68%, transparent);
+  line-height: 1.45;
+}
+
 .area-distribution {
   display: grid;
   gap: 8px;

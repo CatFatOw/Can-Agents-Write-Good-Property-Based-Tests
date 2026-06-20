@@ -587,23 +587,24 @@ function renderBradleyTerryStats(entry) {
     return `
       <section class="bt-stat-panel is-empty" aria-label="Bradley-Terry statistics">
         <div class="bt-stat-head">
-          <span class="area-viz-label">Bradley-Terry</span>
+          <span class="area-viz-label">Bradley-Terry model</span>
           <strong>Not enough comparisons yet</strong>
         </div>
-        <p>Bradley-Terry probability appears after at least 2 blind comparisons for this documentation pair.</p>
+        <p>Model-estimated win probability appears after at least 2 blind comparisons for this documentation pair.</p>
       </section>
     `;
   }
   return `
     <section class="bt-stat-panel" aria-label="Bradley-Terry statistics">
       <div class="bt-stat-head">
-        <span class="area-viz-label">Bradley-Terry</span>
+        <span class="area-viz-label">Bradley-Terry model</span>
         <strong>${formatPercentValue(winProb)}</strong>
       </div>
+      <p class="bt-stat-note">Model-estimated probability from the vote pattern, not the raw observed win rate.</p>
       <div class="area-stat-grid">
         <span><strong>${formatSignedStatistic(entry.bt_ibd_rating)}</strong> IBD BT rating</span>
         <span><strong>${formatSignedStatistic(entry.bt_td_rating)}</strong> TD BT rating</span>
-        <span><strong>${formatPercentValue(winProb)}</strong> IBD win probability</span>
+        <span><strong>${formatPercentValue(winProb)}</strong> Model-estimated IBD win probability</span>
         <span><strong>${hasCi ? `${formatPercentValue(ciLower)}-${formatPercentValue(ciUpper)}` : "—"}</strong> 95% CI</span>
       </div>
     </section>
@@ -675,7 +676,7 @@ function renderLeaderboardViz({ ibdPct, tdPct, ibdElo, tdElo, voteCount }) {
   return `
     <div class="area-viz-grid" aria-label="Leaderboard visualizations">
       <div class="area-viz-card">
-        <span class="area-viz-label">Preference split</span>
+        <span class="area-viz-label">Observed vote split</span>
         <div class="area-mini-bars">
           <i style="--bar: ${normalizedIbd}%"><b>${ibdPct}%</b></i>
           <i style="--bar: ${normalizedTd}%"><b>${tdPct}%</b></i>
@@ -752,7 +753,7 @@ async function renderLandingLeaderboard() {
               <div class="area-stat-grid">
                 <span><strong>${Number(entry.ibd_doc_elo_rating || 0)}</strong> IBD Elo</span>
                 <span><strong>${Number(entry.td_doc_elo_rating || 0)}</strong> TD Elo</span>
-                <span><strong>${voteCount >= 2 ? formatPercentValue(entry.bt_ibd_win_prob) : "Pending"}</strong> BT IBD win probability</span>
+                <span><strong>${voteCount >= 2 ? formatPercentValue(entry.bt_ibd_win_prob) : "Pending"}</strong> Bradley-Terry model probability</span>
                 <span><strong>${voteCount}</strong> comparisons</span>
               </div>
               ${renderBradleyTerryStats(entry)}
@@ -762,8 +763,8 @@ async function renderLandingLeaderboard() {
                   <span style="--share: ${tdPct}%" title="TD ${tdPct}%"></span>
                 </div>
                 <div class="area-distribution-labels">
-                  <small>IBD ${ibdPct}%</small>
-                  <small>TD ${tdPct}%</small>
+                  <small>Observed IBD wins ${ibdPct}%</small>
+                  <small>Observed TD wins ${tdPct}%</small>
                 </div>
               </div>
               ${renderLeaderboardViz({
@@ -821,7 +822,7 @@ function renderAreaLeaderboard() {
             <div class="area-stat-grid">
               <span><strong>${post.ibdElo}</strong> IBD Elo</span>
               <span><strong>${post.tdElo}</strong> TD Elo</span>
-              <span><strong>${voteCount >= 2 ? formatPercentValue(post.bt) : "Pending"}</strong> BT IBD win probability</span>
+              <span><strong>${voteCount >= 2 ? formatPercentValue(post.bt) : "Pending"}</strong> Bradley-Terry model probability</span>
               <span><strong>${voteCount}</strong> comparisons</span>
             </div>
             ${renderBradleyTerryStats({
@@ -838,8 +839,8 @@ function renderAreaLeaderboard() {
                 <span style="--share: ${tdPct}%" title="TD ${tdPct}%"></span>
               </div>
               <div class="area-distribution-labels">
-                <small>IBD ${ibdPct}%</small>
-                <small>TD ${tdPct}%</small>
+                <small>Observed IBD wins ${ibdPct}%</small>
+                <small>Observed TD wins ${tdPct}%</small>
               </div>
             </div>
           </details>
@@ -886,8 +887,8 @@ function renderAccountRankingSummary(doc) {
           <span style="--share: ${tdPct}%" title="Baseline ${tdPct}%"></span>
         </div>
         <div class="area-distribution-labels">
-          <small>Invariant-based ${ibdPct}%</small>
-          <small>Baseline ${tdPct}%</small>
+          <small>Observed IBD wins ${ibdPct}%</small>
+          <small>Observed TD wins ${tdPct}%</small>
         </div>
       </div>
       ${renderLeaderboardViz({ ibdPct, tdPct, ibdElo, tdElo, voteCount: comparisonCount })}
