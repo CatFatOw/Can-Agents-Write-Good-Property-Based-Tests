@@ -7353,6 +7353,146 @@ body.area-active .area-rank-signal {
   display: block !important;
 }
 
+/* Final light-mode palette pass: keep the dark-mode personality, but remove
+   the muddy cream/tan cast from the light UI. */
+body:not(.dark-mode) {
+  --ink: #241c34;
+  --muted: #655f78;
+  --paper: #fbf9ff;
+  --panel: #f1edf9;
+  --line: rgba(81, 63, 120, 0.18);
+  --clay: #9b5fca;
+  --clay-dark: #5b3f91;
+  --sage: #3f7f79;
+  --blue: #415f9d;
+  --gold: #b8823d;
+  --violet: #7150a5;
+  --shadow: 0 24px 60px rgba(42, 29, 72, 0.14);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 14% 12%, rgba(113, 80, 165, 0.18), transparent 28rem),
+    radial-gradient(circle at 86% 16%, rgba(65, 95, 157, 0.14), transparent 24rem),
+    radial-gradient(circle at 78% 82%, rgba(63, 127, 121, 0.1), transparent 26rem),
+    linear-gradient(135deg, #f9f7ff 0%, #f3f0fb 48%, #eef3fb 100%) !important;
+}
+
+body:not(.dark-mode)::before {
+  background-image:
+    linear-gradient(rgba(81, 63, 120, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(81, 63, 120, 0.04) 1px, transparent 1px);
+}
+
+body:not(.dark-mode)::after {
+  opacity: 0.38;
+  background:
+    linear-gradient(90deg, transparent 0 22px, rgba(81, 63, 120, 0.08) 23px 24px, transparent 25px),
+    linear-gradient(rgba(81, 63, 120, 0.05) 1px, transparent 1px);
+}
+
+body:not(.dark-mode) .workspace,
+body:not(.dark-mode) .output-panel,
+body:not(.dark-mode) .auth-panel,
+body:not(.dark-mode) .account-card,
+body:not(.dark-mode) .account-detail-shell,
+body:not(.dark-mode) .area-battle,
+body:not(.dark-mode) .area-leaderboard,
+body:not(.dark-mode) .area-signal-board,
+body:not(.dark-mode) .area-comment-panel {
+  border-color: rgba(81, 63, 120, 0.16) !important;
+  background: rgba(251, 249, 255, 0.78) !important;
+  box-shadow: 0 24px 70px rgba(42, 29, 72, 0.12);
+}
+
+body:not(.dark-mode) .paper,
+body:not(.dark-mode) .test-item,
+body:not(.dark-mode) .source-lookup,
+body:not(.dark-mode) .field input,
+body:not(.dark-mode) .field select,
+body:not(.dark-mode) textarea,
+body:not(.dark-mode) .toggle-field,
+body:not(.dark-mode) .status,
+body:not(.dark-mode) .theme-toggle,
+body:not(.dark-mode) .step-tab,
+body:not(.dark-mode) .copy-button,
+body:not(.dark-mode) .download-button,
+body:not(.dark-mode) .secondary-button,
+body:not(.dark-mode) .landing-secondary-button,
+body:not(.dark-mode) .landing-example-switch,
+body:not(.dark-mode) .docs-example-switch,
+body:not(.dark-mode) .generated-doc-tab,
+body:not(.dark-mode) .saved-doc-card,
+body:not(.dark-mode) .area-ranking-card,
+body:not(.dark-mode) .bt-stat-panel {
+  border-color: rgba(81, 63, 120, 0.16) !important;
+  background: rgba(255, 255, 255, 0.74) !important;
+  color: var(--ink) !important;
+}
+
+body:not(.dark-mode) .step-tab.is-active,
+body:not(.dark-mode) .docs-example-choice.is-active,
+body:not(.dark-mode) .landing-example-choice.is-active {
+  border-color: rgba(113, 80, 165, 0.34) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(242, 237, 252, 0.9)),
+    linear-gradient(90deg, rgba(113, 80, 165, 0.18), rgba(65, 95, 157, 0.12)) !important;
+  color: #2a1d48 !important;
+  box-shadow: 0 16px 34px rgba(81, 63, 120, 0.14);
+}
+
+body:not(.dark-mode) .landing-primary-button,
+body:not(.dark-mode) #run-button,
+body:not(.dark-mode) .approve-button,
+body:not(.dark-mode) .area-vote-actions .landing-primary-button {
+  border-color: rgba(81, 63, 120, 0.22) !important;
+  background: linear-gradient(135deg, #44306d, #415f9d) !important;
+  color: #fff !important;
+  box-shadow: 0 18px 38px rgba(65, 48, 109, 0.22);
+}
+
+body:not(.dark-mode) .eyebrow,
+body:not(.dark-mode) .step-tab span,
+body:not(.dark-mode) .landing-stats strong,
+body:not(.dark-mode) .area-viz-label,
+body:not(.dark-mode) .td-preview > .eyebrow {
+  color: #7a569d !important;
+}
+
+body:not(.dark-mode) .markdown-rendered code {
+  border-color: rgba(81, 63, 120, 0.16);
+  background: rgba(113, 80, 165, 0.1);
+  color: #39285d;
+}
+
+body:not(.dark-mode) .markdown-rendered .md-code,
+body:not(.dark-mode) .source-preview,
+body:not(.dark-mode) #coverage-source-lines {
+  border-color: rgba(81, 63, 120, 0.14);
+  background: linear-gradient(180deg, rgba(250, 248, 255, 0.96), rgba(239, 235, 249, 0.96));
+}
+
+body:not(.dark-mode) .area-rating,
+body:not(.dark-mode) .bt-stat-head strong,
+body:not(.dark-mode) .area-choice[data-area-label="B"] .area-choice-badge,
+body:not(.dark-mode) .area-leaderboard li.is-leading .area-rank {
+  color: #2e746f;
+  background: rgba(63, 127, 121, 0.13);
+}
+
+body:not(.dark-mode) .area-ranking-details summary,
+body:not(.dark-mode) .area-choice-badge,
+body:not(.dark-mode) .area-rank {
+  color: #74519b;
+  background: rgba(113, 80, 165, 0.12);
+}
+
+body.landing-active:not(.dark-mode),
+body.area-active:not(.dark-mode) {
+  background:
+    radial-gradient(circle at 16% 12%, rgba(113, 80, 165, 0.18), transparent 30rem),
+    radial-gradient(circle at 86% 14%, rgba(65, 95, 157, 0.14), transparent 26rem),
+    linear-gradient(135deg, #f9f7ff 0%, #f3f0fb 52%, #eef3fb 100%) !important;
+}
+
 /* Arena hero visual: a quiet blind-comparison flow instead of the old spinner. */
 body.area-active .area-rank-signal,
 .area-rank-signal {
