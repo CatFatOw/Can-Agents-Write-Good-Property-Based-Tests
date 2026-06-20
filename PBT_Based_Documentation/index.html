@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invariant-Based Documentation generator</title>
     <link rel="icon" type="image/png" href="logo_new.png">
-    <link rel="stylesheet" href="styles.css?v=arena-page-15">
+    <link rel="stylesheet" href="styles.css?v=td-leaderboard-2">
   </head>
   <body class="stage-review">
     <section class="landing-page" id="landing-page" aria-labelledby="landing-title">
@@ -329,7 +329,7 @@
             <span aria-hidden="true">04</span>
             Final Markdown
           </button>
-          <button type="button" class="step-tab" data-step="td">
+          <button type="button" class="step-tab is-hidden" data-step="td" disabled aria-disabled="true">
             <span aria-hidden="true">05</span>
             Original TD
           </button>
@@ -479,15 +479,15 @@
           </article>
         </div>
 
-        <div class="paper td-panel is-hidden" id="td-panel">
+        <div class="paper td-panel td-callout-panel is-hidden" id="td-panel">
           <div class="td-panel-head">
             <div>
               <p class="eyebrow">Traditional documentation</p>
-              <h3>Submit original TD</h3>
+              <h3>Submit original TD <span class="td-required-pill">After IBD generation</span></h3>
             </div>
-            <button type="button" class="secondary-button" id="td-format-button">Format with GPT</button>
+            <button type="button" class="secondary-button" id="td-format-button">Format TD with GPT</button>
           </div>
-          <p class="td-help">Paste the original/reference documentation. Format it into Markdown, review it, then save it to the same database row for Arena comparisons.</p>
+          <p class="td-help td-callout-copy">IBD Markdown is saved. Add the original/reference TD here so this documentation pair can appear in Arena comparisons.</p>
           <textarea id="td-source-input" rows="9" placeholder="Paste original/reference documentation here..."></textarea>
           <div class="td-actions">
             <button type="button" class="landing-primary-button" id="td-save-button">Save TD Markdown</button>
@@ -732,6 +732,6 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
-    <script src="app.js?v=arena-page-15"></script>
+    <script src="app.js?v=td-leaderboard-2"></script>
   </body>
 </html>

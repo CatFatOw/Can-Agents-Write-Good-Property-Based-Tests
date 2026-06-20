@@ -254,8 +254,15 @@ async def get_leaderboard_ibd(db: Session = Depends(get_db)):
 
     all_docs = (
         db.query(models.Documentation)
-        .filter(models.Documentation.comparison_count > 0)
-        .order_by(models.Documentation.ibd_doc_elo_rating.desc())
+        .filter(models.Documentation.IBD_generated_md.isnot(None))
+        .filter(func.length(func.trim(models.Documentation.IBD_generated_md)) > 0)
+        .filter(models.Documentation.TD_md.isnot(None))
+        .filter(func.length(func.trim(models.Documentation.TD_md)) > 0)
+        .order_by(
+            models.Documentation.comparison_count.desc(),
+            models.Documentation.ibd_doc_elo_rating.desc(),
+            models.Documentation.created_at.desc(),
+        )
         .all()
     )
 
@@ -278,6 +285,11 @@ async def get_leaderboard_ibd(db: Session = Depends(get_db)):
             "rank": rank,
             "documentation_id": doc.id,
             "documentation_title": doc.documentation_title,
+            "source_code": doc.source_code,
+            "IBD_generated_md": doc.IBD_generated_md,
+            "TD_md": doc.TD_md,
+            "invariants": doc.invariants,
+            "hypothesis_tests": doc.hypothesis_tests,
 
             # Elo
             "ibd_doc_elo_rating": doc.ibd_doc_elo_rating,

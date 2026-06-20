@@ -25,6 +25,7 @@ const areaStudyView = document.querySelector("#area-study-view");
 const areaStudyTab = document.querySelector("#area-study-tab");
 const areaResultsTab = document.querySelector("#area-results-tab");
 const areaLeaderboardList = document.querySelector("#area-leaderboard-list");
+const landingLeaderboardSection = document.querySelector("#leaderboard");
 const landingLeaderboardList = document.querySelector("#landing-leaderboard-list");
 const areaChoices = Array.from(document.querySelectorAll(".area-choice"));
 const authBackButton = document.querySelector(".auth-back-button");
@@ -563,6 +564,61 @@ function formatLeaderboardComments(entry) {
   `;
 }
 
+function renderLeaderboardDocumentationMenu(entry) {
+  const ibdMarkdown = entry.IBD_generated_md || entry.ibd_doc || entry.ibd_markdown || "";
+  const tdMarkdown = entry.TD_md || entry.td_doc || entry.td_markdown || "";
+  const sourceCode = entry.source_code || entry.source || "";
+  const invariants = parseStoredInvariants(entry.invariants);
+  const metrics = parseStoredMetrics(entry.hypothesis_tests);
+  if (!ibdMarkdown && !tdMarkdown && !sourceCode && !invariants.length && !metrics.length) {
+    return '<p class="placeholder">No documentation details are available for this leaderboard row yet.</p>';
+  }
+  return `
+    <div class="leaderboard-doc-menu">
+      ${ibdMarkdown ? `
+        <details>
+          <summary>IBD Markdown</summary>
+          <div class="markdown-rendered landing-doc-scroll leaderboard-doc-preview">${renderMarkdown(ibdMarkdown)}</div>
+        </details>
+      ` : ""}
+      ${tdMarkdown ? `
+        <details>
+          <summary>TD Markdown</summary>
+          <div class="markdown-rendered landing-doc-scroll leaderboard-doc-preview">${renderMarkdown(tdMarkdown)}</div>
+        </details>
+      ` : ""}
+      ${sourceCode ? `
+        <details>
+          <summary>Source code</summary>
+          <pre class="md-code landing-doc-scroll leaderboard-doc-preview"><code>${escapeHtml(sourceCode)}</code></pre>
+        </details>
+      ` : ""}
+      ${invariants.length ? `
+        <details>
+          <summary>Invariants (${invariants.length})</summary>
+          <ul class="leaderboard-invariant-list">
+            ${invariants.map((invariant) => `<li>${escapeHtml(invariant)}</li>`).join("")}
+          </ul>
+        </details>
+      ` : ""}
+      ${metrics.length ? `
+        <details>
+          <summary>Metrics &amp; PBT tests (${metrics.length})</summary>
+          <div class="leaderboard-metric-list">
+            ${metrics.map((metric, index) => `
+              <details>
+                <summary>Invariant ${index + 1}</summary>
+                ${metric.invariant ? `<div class="markdown-rendered">${renderMarkdown(String(metric.invariant))}</div>` : ""}
+                ${metric.test_code ? `<pre class="md-code"><code>${escapeHtml(metric.test_code)}</code></pre>` : ""}
+              </details>
+            `).join("")}
+          </div>
+        </details>
+      ` : ""}
+    </div>
+  `;
+}
+
 function renderLeaderboardViz({ ibdPct, tdPct, ibdElo, tdElo, voteCount }) {
   if (!voteCount && !ibdElo && !tdElo && !ibdPct && !tdPct) {
     return '<p class="area-no-viz">No visualization to show for now.</p>';
@@ -615,13 +671,17 @@ function randomizeAreaSides() {
 
 async function renderLandingLeaderboard() {
   if (!landingLeaderboardList) return;
+  landingLeaderboardSection?.classList.remove("is-hidden");
   landingLeaderboardList.innerHTML = '<li class="placeholder">Loading leaderboard...</li>';
   try {
-    const ranked = await fetchComparisonLeaderboard();
+    const ranked = (await fetchComparisonLeaderboard())
+      .filter((entry) => String(entry.IBD_generated_md || entry.ibd_doc || "").trim() && String(entry.TD_md || entry.td_doc || "").trim());
     if (!ranked.length) {
-      landingLeaderboardList.innerHTML = '<li class="placeholder">No blind comparison votes have been recorded yet.</li>';
+      landingLeaderboardSection?.classList.add("is-hidden");
+      landingLeaderboardList.innerHTML = '<li class="placeholder">No documentation pairs with both TD and IBD are ready for the leaderboard yet.</li>';
       return;
     }
+    landingLeaderboardSection?.classList.remove("is-hidden");
     landingLeaderboardList.innerHTML = ranked.map((entry) => {
       const voteCount = Number(entry.comparison_count || 0);
       const ibdPct = Math.round(Number(entry.IBD_win_percentage || 0));
@@ -633,10 +693,14 @@ async function renderLandingLeaderboard() {
               <span class="area-rank">#${entry.rank}</span>
               <div>
                 <strong>${escapeHtml(entry.documentation_title || "Documentation sample")}</strong>
-                <small>${voteCount} blind comparisons</small>
+                <small>${voteCount ? `${voteCount} blind comparisons` : "Ready for Arena votes"}</small>
               </div>
               <span class="area-rating">${Number(entry.ibd_doc_elo_rating || 0)}</span>
             </div>
+            <details class="area-documentation-menu">
+              <summary>Open docs / invariants</summary>
+              ${renderLeaderboardDocumentationMenu(entry)}
+            </details>
             <details class="area-ranking-details">
               <summary>Show study stats</summary>
               <div class="area-stat-grid">
@@ -672,6 +736,7 @@ async function renderLandingLeaderboard() {
       `;
     }).join("");
   } catch (error) {
+    landingLeaderboardSection?.classList.add("is-hidden");
     landingLeaderboardList.innerHTML = `<li class="placeholder">${escapeHtml(error.message || "Could not load leaderboard.")}</li>`;
   }
 }
@@ -695,6 +760,15 @@ function renderAreaLeaderboard() {
             </div>
             <span class="area-rating">${post.ibdElo}</span>
           </div>
+          <details class="area-documentation-menu">
+            <summary>Open docs / invariants</summary>
+            ${renderLeaderboardDocumentationMenu({
+              IBD_generated_md: post.ibdDoc,
+              TD_md: post.tdDoc,
+              invariants: post.invariants,
+              hypothesis_tests: post.hypothesis_tests
+            })}
+          </details>
           <details class="area-ranking-details">
             <summary>Show more stats</summary>
             <div class="area-stat-grid">
@@ -765,6 +839,10 @@ function renderAccountRankingSummary(doc) {
       <details class="area-comment-details">
         <summary>Show comments</summary>
         ${leaderboardEntry ? formatLeaderboardComments(leaderboardEntry) : '<p class="placeholder">No reviewer comments recorded yet.</p>'}
+      </details>
+      <details class="area-documentation-menu">
+        <summary>Open docs / invariants</summary>
+        ${renderLeaderboardDocumentationMenu(leaderboardEntry || doc)}
       </details>
     </section>
   `;
@@ -1225,6 +1303,7 @@ function renderMarkdown(markdown) {
 
 function setStage(stage) {
   hideSourceHoverCard();
+  syncStepAvailability();
   document.body.classList.remove("stage-input", "stage-review", "stage-compare", "stage-tests", "stage-td", "stage-coverage", "stage-docs-example", "stage-generated-docs");
   document.body.classList.add(`stage-${stage}`);
   stepTabs.forEach((tab) => {
@@ -1232,6 +1311,23 @@ function setStage(stage) {
     tab.classList.toggle("is-active", active);
     tab.setAttribute("aria-current", active ? "step" : "false");
   });
+}
+
+function syncStepAvailability() {
+  const tdTab = stepTabs.find((tab) => tab.dataset.step === "td");
+  if (!tdTab) return;
+  const hasSavedIbd = Boolean(currentMarkdown && currentMarkdown.trim() && activeSavedDocumentation?.id);
+  tdTab.classList.toggle("is-hidden", !hasSavedIbd);
+  tdTab.disabled = !hasSavedIbd;
+  tdTab.setAttribute("aria-disabled", String(!hasSavedIbd));
+}
+
+function markTDStepReady() {
+  const tdTab = stepTabs.find((tab) => tab.dataset.step === "td");
+  if (!tdTab) return;
+  syncStepAvailability();
+  tdTab.classList.add("td-step-ready");
+  setTimeout(() => tdTab.classList.remove("td-step-ready"), 4200);
 }
 
 function setStatus(mode, label) {
@@ -2026,7 +2122,7 @@ async function formatTraditionalMarkdown() {
   } finally {
     if (tdFormatButton) {
       tdFormatButton.disabled = false;
-      tdFormatButton.textContent = "Format with GPT";
+      tdFormatButton.textContent = "Format TD with GPT";
     }
   }
 }
@@ -2059,6 +2155,7 @@ async function saveTraditionalMarkdown() {
     renderSavedDocs();
     if (tdPreview) tdPreview.innerHTML = renderMarkdown(markdown);
     if (tdMessage) tdMessage.textContent = "TD Markdown saved. This document can now enter Arena comparisons.";
+    await renderLandingLeaderboard();
   } catch (error) {
     if (tdMessage) tdMessage.textContent = error.message || "Could not save TD Markdown.";
   } finally {
@@ -2403,10 +2500,12 @@ function showTestsStage(testIndex = selectedTestIndex) {
 }
 
 function showTDStage() {
-  if (!currentMarkdown) {
+  if (!currentMarkdown || !activeSavedDocumentation?.id) {
     showCompareStage();
+    if (tdMessage) tdMessage.textContent = "Generate and save IBD Markdown first, then add TD.";
     return;
   }
+  syncStepAvailability();
   reviewPanel.classList.add("is-hidden");
   comparePanel.classList.add("is-hidden");
   testsPanel.classList.add("is-hidden");
@@ -2418,10 +2517,13 @@ function showTDStage() {
   outputEyebrow.textContent = "Original TD";
   outputTitle.textContent = "Submit baseline docs";
   setStage("td");
-  setStatus("review", "Add TD docs");
+  setStatus("review", "TD needed");
   if (tdPreview && !tdPreview.innerHTML.trim()) {
     tdPreview.innerHTML = '<p class="placeholder">Formatted TD Markdown preview will appear here.</p>';
   }
+  tdPanel?.classList.add("needs-attention");
+  setTimeout(() => tdPanel?.classList.remove("needs-attention"), 2800);
+  tdPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 
@@ -3513,14 +3615,20 @@ async function generateMarkdownFromReview() {
 	    addGeneratedDoc(currentMarkdown, accepted);
 	    try {
 	      const savedDoc = await saveCompletedDocumentation(accepted);
-	      if (savedDoc) setStatus("ready", "Saved to DB");
+	      if (savedDoc) {
+	        setStatus("ready", "Saved to DB");
+	        markTDStepReady();
+	        showCompareStage(true);
+	      } else {
+	        setStatus("ready", "Generated");
+	        showCompareStage(true);
+	      }
 	    } catch (saveError) {
 	      setStatus("ready", "Generated, save failed");
 	      console.warn("Could not save generated documentation", saveError);
 	    }
     fillCoverageDocsFromCurrent(true);
     syncMarkdownActions();
-    showTDStage();
   } catch (error) {
     generatedDoc.classList.remove("is-streaming");
     renderError(error.message || "Documentation generation failed.");
@@ -4050,6 +4158,7 @@ showMutationTestingInput.addEventListener("change", async () => {
 
 stepTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
+    if (tab.disabled || tab.getAttribute("aria-disabled") === "true") return;
     if (tab.dataset.step === "input") {
       showInputStage();
     } else if (tab.dataset.step === "review") {
