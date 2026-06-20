@@ -564,6 +564,52 @@ function formatLeaderboardComments(entry) {
   `;
 }
 
+function formatPercentValue(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "—";
+  return `${Math.round(numeric * 100)}%`;
+}
+
+function formatSignedStatistic(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "—";
+  return numeric.toFixed(2);
+}
+
+function renderBradleyTerryStats(entry) {
+  const comparisonCount = Number(entry.comparison_count || 0);
+  const winProb = Number(entry.bt_ibd_win_prob);
+  const ciLower = Number(entry.bt_ibd_win_prob_ci_lower);
+  const ciUpper = Number(entry.bt_ibd_win_prob_ci_upper);
+  const hasCi = Number.isFinite(ciLower) && Number.isFinite(ciUpper);
+  const hasBt = comparisonCount >= 2 && Number.isFinite(winProb);
+  if (!hasBt) {
+    return `
+      <section class="bt-stat-panel is-empty" aria-label="Bradley-Terry statistics">
+        <div class="bt-stat-head">
+          <span class="area-viz-label">Bradley-Terry</span>
+          <strong>Not enough comparisons yet</strong>
+        </div>
+        <p>Bradley-Terry probability appears after at least 2 blind comparisons for this documentation pair.</p>
+      </section>
+    `;
+  }
+  return `
+    <section class="bt-stat-panel" aria-label="Bradley-Terry statistics">
+      <div class="bt-stat-head">
+        <span class="area-viz-label">Bradley-Terry</span>
+        <strong>${formatPercentValue(winProb)}</strong>
+      </div>
+      <div class="area-stat-grid">
+        <span><strong>${formatSignedStatistic(entry.bt_ibd_rating)}</strong> IBD BT rating</span>
+        <span><strong>${formatSignedStatistic(entry.bt_td_rating)}</strong> TD BT rating</span>
+        <span><strong>${formatPercentValue(winProb)}</strong> IBD win probability</span>
+        <span><strong>${hasCi ? `${formatPercentValue(ciLower)}-${formatPercentValue(ciUpper)}` : "—"}</strong> 95% CI</span>
+      </div>
+    </section>
+  `;
+}
+
 function renderLeaderboardDocumentationMenu(entry) {
   const ibdMarkdown = entry.IBD_generated_md || entry.ibd_doc || entry.ibd_markdown || "";
   const tdMarkdown = entry.TD_md || entry.td_doc || entry.td_markdown || "";
@@ -695,7 +741,7 @@ async function renderLandingLeaderboard() {
                 <strong>${escapeHtml(entry.documentation_title || "Documentation sample")}</strong>
                 <small>${voteCount ? `${voteCount} blind comparisons` : "Ready for Arena votes"}</small>
               </div>
-              <span class="area-rating">${Number(entry.ibd_doc_elo_rating || 0)}</span>
+              <span class="area-rating">ELO: ${Number(entry.ibd_doc_elo_rating || 0)}</span>
             </div>
             <details class="area-documentation-menu">
               <summary>Open docs / invariants</summary>
@@ -706,9 +752,10 @@ async function renderLandingLeaderboard() {
               <div class="area-stat-grid">
                 <span><strong>${Number(entry.ibd_doc_elo_rating || 0)}</strong> IBD Elo</span>
                 <span><strong>${Number(entry.td_doc_elo_rating || 0)}</strong> TD Elo</span>
-                <span><strong>${Math.round(Number(entry.bt_ibd_win_prob || 0) * 100)}%</strong> IBD win probability</span>
+                <span><strong>${voteCount >= 2 ? formatPercentValue(entry.bt_ibd_win_prob) : "Pending"}</strong> BT IBD win probability</span>
                 <span><strong>${voteCount}</strong> comparisons</span>
               </div>
+              ${renderBradleyTerryStats(entry)}
               <div class="area-distribution" aria-label="Preference distribution">
                 <div class="area-distribution-bar">
                   <span style="--share: ${ibdPct}%" title="IBD ${ibdPct}%"></span>
@@ -758,7 +805,7 @@ function renderAreaLeaderboard() {
               <strong>${escapeHtml(post.label)}</strong>
               <small>${isCurrent ? "Current comparison" : "Example documentation duel"}</small>
             </div>
-            <span class="area-rating">${post.ibdElo}</span>
+            <span class="area-rating">ELO: ${post.ibdElo}</span>
           </div>
           <details class="area-documentation-menu">
             <summary>Open docs / invariants</summary>
@@ -774,9 +821,17 @@ function renderAreaLeaderboard() {
             <div class="area-stat-grid">
               <span><strong>${post.ibdElo}</strong> IBD Elo</span>
               <span><strong>${post.tdElo}</strong> TD Elo</span>
-              <span><strong>${Math.round(post.bt * 100)}%</strong> IBD win probability</span>
+              <span><strong>${voteCount >= 2 ? formatPercentValue(post.bt) : "Pending"}</strong> BT IBD win probability</span>
               <span><strong>${voteCount}</strong> comparisons</span>
             </div>
+            ${renderBradleyTerryStats({
+              comparison_count: voteCount,
+              bt_ibd_rating: post.btIbdRating,
+              bt_td_rating: post.btTdRating,
+              bt_ibd_win_prob: post.bt,
+              bt_ibd_win_prob_ci_lower: post.btCiLower,
+              bt_ibd_win_prob_ci_upper: post.btCiUpper
+            })}
             <div class="area-distribution" aria-label="Preference distribution">
               <div class="area-distribution-bar">
                 <span style="--share: ${ibdPct}%" title="IBD ${ibdPct}%"></span>
@@ -1316,10 +1371,9 @@ function setStage(stage) {
 function syncStepAvailability() {
   const tdTab = stepTabs.find((tab) => tab.dataset.step === "td");
   if (!tdTab) return;
-  const hasSavedIbd = Boolean(currentMarkdown && currentMarkdown.trim() && activeSavedDocumentation?.id);
-  tdTab.classList.toggle("is-hidden", !hasSavedIbd);
-  tdTab.disabled = !hasSavedIbd;
-  tdTab.setAttribute("aria-disabled", String(!hasSavedIbd));
+  tdTab.classList.remove("is-hidden");
+  tdTab.disabled = false;
+  tdTab.setAttribute("aria-disabled", "false");
 }
 
 function markTDStepReady() {

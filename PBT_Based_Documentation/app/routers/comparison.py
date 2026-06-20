@@ -299,6 +299,8 @@ async def get_leaderboard_ibd(db: Session = Depends(get_db)):
             "bt_ibd_rating": doc.bt_ibd_rating,
             "bt_td_rating": doc.bt_td_rating,
             "bt_ibd_win_prob": doc.bt_ibd_win_prob,
+            "bt_ibd_win_prob_ci_lower": doc.bt_ibd_win_prob_ci_lower,
+            "bt_ibd_win_prob_ci_upper": doc.bt_ibd_win_prob_ci_upper,
 
             # Vote counts
             "comparison_count": doc.comparison_count,

@@ -7145,6 +7145,35 @@ body.area-active .area-session-bar .field {
   font-size: 1.18rem;
 }
 
+.bt-stat-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+}
+
+.bt-stat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bt-stat-head strong {
+  color: #89ead0;
+  font-weight: 900;
+  text-align: right;
+}
+
+.bt-stat-panel.is-empty p {
+  margin: 0;
+  color: color-mix(in srgb, currentColor 68%, transparent);
+  line-height: 1.45;
+}
+
 .area-distribution {
   display: grid;
   gap: 8px;
@@ -8094,6 +8123,10 @@ body.area-active:not(.dark-mode) .area-doc-body.markdown-rendered tr:nth-child(e
 .td-panel {
   display: grid;
   gap: 14px;
+}
+
+.td-panel.is-hidden {
+  display: none !important;
 }
 
 .td-callout-panel {
