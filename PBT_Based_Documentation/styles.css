@@ -7318,6 +7318,166 @@ body.area-active .area-rank-signal {
   display: block !important;
 }
 
+/* Arena hero visual: a quiet blind-comparison flow instead of the old spinner. */
+body.area-active .area-rank-signal,
+.area-rank-signal {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 1fr 20px 1fr !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: min(280px, 100%) !important;
+  height: 178px !important;
+  aspect-ratio: auto !important;
+  padding: 18px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(245, 225, 204, 0.14) !important;
+  background:
+    linear-gradient(145deg, rgba(255, 250, 242, 0.09), rgba(255, 250, 242, 0.03)),
+    radial-gradient(circle at 18% 28%, rgba(125, 224, 202, 0.18), transparent 34%),
+    radial-gradient(circle at 82% 72%, rgba(255, 190, 131, 0.16), transparent 34%),
+    rgba(16, 15, 26, 0.5) !important;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset !important;
+  overflow: hidden !important;
+  animation: arena-compare-float 8s ease-in-out infinite !important;
+}
+
+.area-rank-signal::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 18px auto 18px 50% !important;
+  width: 1px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, transparent, rgba(245, 225, 204, 0.44), transparent) !important;
+  transform: translateX(-50%) !important;
+  opacity: 0.7 !important;
+}
+
+.area-rank-signal::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 999px !important;
+  background: #f5e1cc !important;
+  box-shadow:
+    0 0 0 7px rgba(245, 225, 204, 0.08),
+    0 0 34px rgba(125, 224, 202, 0.3) !important;
+  transform: translate(-50%, -50%) !important;
+  animation: arena-compare-core 4.8s ease-in-out infinite !important;
+}
+
+.area-rank-signal span {
+  position: absolute !important;
+  z-index: 1 !important;
+  display: block !important;
+  width: 88px !important;
+  height: 46px !important;
+  margin: 0 !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(245, 225, 204, 0.12) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.13), rgba(255, 250, 242, 0.05)),
+    rgba(255, 250, 242, 0.04) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
+  opacity: 0.86 !important;
+  animation: arena-doc-card-breathe 6.5s ease-in-out infinite !important;
+}
+
+.area-rank-signal span::before,
+.area-rank-signal span::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 12px !important;
+  right: 12px !important;
+  height: 4px !important;
+  border-radius: 999px !important;
+  background: rgba(245, 225, 204, 0.38) !important;
+}
+
+.area-rank-signal span::before { top: 14px !important; }
+.area-rank-signal span::after { top: 26px !important; right: 28px !important; opacity: 0.58 !important; }
+
+.area-rank-signal span:nth-child(1) {
+  inset: 24px auto auto 18px !important;
+  transform: rotate(-2deg) !important;
+}
+
+.area-rank-signal span:nth-child(2) {
+  inset: auto auto 26px 28px !important;
+  transform: rotate(2deg) !important;
+  animation-delay: 600ms !important;
+}
+
+.area-rank-signal span:nth-child(3) {
+  inset: 26px 18px auto auto !important;
+  transform: rotate(2deg) !important;
+  animation-delay: 1.1s !important;
+}
+
+.area-rank-signal span:nth-child(4) {
+  inset: auto 28px 24px auto !important;
+  transform: rotate(-2deg) !important;
+  animation-delay: 1.7s !important;
+}
+
+.area-rank-signal i {
+  position: absolute !important;
+  z-index: 2 !important;
+  left: 50% !important;
+  width: 58px !important;
+  height: 2px !important;
+  aspect-ratio: auto !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, transparent, rgba(125, 224, 202, 0.75), transparent) !important;
+  box-shadow: none !important;
+  transform-origin: left center !important;
+  animation: arena-compare-beam 5.8s ease-in-out infinite !important;
+}
+
+.area-rank-signal i:nth-of-type(1) {
+  top: 44px !important;
+  transform: rotate(-155deg) !important;
+}
+
+.area-rank-signal i:nth-of-type(2) {
+  top: 88px !important;
+  transform: rotate(0deg) !important;
+  background: linear-gradient(90deg, transparent, rgba(245, 225, 204, 0.72), transparent) !important;
+  animation-delay: 900ms !important;
+}
+
+.area-rank-signal i:nth-of-type(3) {
+  top: 132px !important;
+  transform: rotate(155deg) !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 190, 131, 0.72), transparent) !important;
+  animation-delay: 1.8s !important;
+}
+
+@keyframes arena-compare-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes arena-doc-card-breathe {
+  0%, 100% { filter: brightness(0.95); opacity: 0.72; }
+  50% { filter: brightness(1.08); opacity: 0.96; }
+}
+
+@keyframes arena-compare-core {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.72; }
+  50% { transform: translate(-50%, -50%) scale(1.12); opacity: 1; }
+}
+
+@keyframes arena-compare-beam {
+  0%, 100% { opacity: 0.18; clip-path: inset(0 100% 0 0); }
+  42%, 62% { opacity: 0.78; clip-path: inset(0 0 0 0); }
+}
+
 body.area-active .area-topbar {
   flex-direction: row !important;
   align-items: center !important;
