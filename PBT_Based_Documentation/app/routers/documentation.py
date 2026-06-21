@@ -154,7 +154,10 @@ async def generate_documentation_stream(payload: dict, db: Session = Depends(get
         return legacy_error(exc)
 
 @router.get("/", response_model=list[DocumentationResponse])
-async def get_all_documentation(db:Session = Depends(get_db)):
+async def get_all_documentation(
+    db:Session = Depends(get_db),
+    curr_user:Session = Depends(admin.get_current_admin)
+):
     """Function gets every single documentation generated"""
     return db.query(models.Documentation).all()
 
@@ -330,5 +333,4 @@ async def delete_docs(
     post_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
 

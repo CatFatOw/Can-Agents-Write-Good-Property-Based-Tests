@@ -10,7 +10,16 @@ import legacy_backend
 import random 
 import oath2
 from collections import defaultdict
-from schemas import AssessmentResponse, AssessmentSubmit, AssessmentAnswerResponse, AssessmentStatsResponse, DocumentationResponse
+from schemas import (
+    AssessmentAnswerResponse,
+    AssessmentAnswerAdminResponse,
+    AssessmentQuestionAdminResponse,
+    AssessmentQuestionUpdate,
+    AssessmentResponse,
+    AssessmentStatsResponse,
+    AssessmentSubmit,
+    DocumentationResponse,
+)
 from fastapi.responses import FileResponse
 import pandas as pd 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
@@ -87,6 +96,92 @@ def request_payload_from_provider_fields(
 
 
 # ADMIN SIDE ROUTES
+@router.get("/documentation/{documentation_id}", response_model=list[AssessmentQuestionAdminResponse])
+async def list_documentation_questions(
+    documentation_id:int,
+    db:Session=Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """List all comprehension questions attached to a documentation row."""
+    doc = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
+    if doc is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documentation not found")
+    return (
+        db.query(models.AssessmentQuestion)
+        .filter(models.AssessmentQuestion.documentation_id == documentation_id)
+        .order_by(models.AssessmentQuestion.id.asc())
+        .all()
+    )
+
+
+@router.get("/documentation/{documentation_id}/answers", response_model=list[AssessmentAnswerAdminResponse])
+async def list_documentation_answers(
+    documentation_id:int,
+    db:Session=Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """List all submitted answers for questions attached to a documentation row."""
+    doc = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
+    if doc is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documentation not found")
+    rows = (
+        db.query(models.AssessmentAnswer, models.AssessmentQuestion.documentation_id)
+        .join(models.AssessmentQuestion, models.AssessmentAnswer.question_id == models.AssessmentQuestion.id)
+        .filter(models.AssessmentQuestion.documentation_id == documentation_id)
+        .order_by(models.AssessmentAnswer.id.asc())
+        .all()
+    )
+    return [
+        {
+            "id": answer.id,
+            "attempt_id": answer.attempt_id,
+            "question_id": answer.question_id,
+            "documentation_id": doc_id,
+            "user_id": answer.user_id,
+            "user_response": answer.user_response,
+            "is_correct": answer.is_correct,
+        }
+        for answer, doc_id in rows
+    ]
+
+
+@router.put("/questions/{question_id}", response_model=AssessmentQuestionAdminResponse)
+async def update_assessment_question(
+    question_id:int,
+    payload:AssessmentQuestionUpdate,
+    db:Session=Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """Edit one existing comprehension question."""
+    question = db.query(models.AssessmentQuestion).filter(models.AssessmentQuestion.id == question_id).first()
+    if question is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
+    if payload.correct_response not in payload.choices:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Correct response must match one of the choices")
+    question.question = payload.question
+    question.choices = payload.choices
+    question.correct_response = payload.correct_response
+    question.explanation = payload.explanation
+    db.commit()
+    db.refresh(question)
+    return question
+
+
+@router.delete("/questions/{question_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_assessment_question(
+    question_id:int,
+    db:Session=Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """Delete one existing comprehension question."""
+    question = db.query(models.AssessmentQuestion).filter(models.AssessmentQuestion.id == question_id).first()
+    if question is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
+    db.delete(question)
+    db.commit()
+    return None
+
+
 @router.post("/generate/{documentation_id}")
 async def generate_questions(
     documentation_id:int,
@@ -320,7 +415,15 @@ async def submit_answers(response:AssessmentSubmit, db:Session = Depends(get_db)
         attempt.total_correct += 1
     db.commit()
     db.refresh(user_response)
-    return user_response
+    return {
+        "id": user_response.id,
+        "attempt_id": user_response.attempt_id,
+        "question_id": user_response.question_id,
+        "user_response": user_response.user_response,
+        "is_correct": user_response.is_correct,
+        "correct_response": attempting_question.correct_response,
+        "explanation": attempting_question.explanation,
+    }
     
 
 
@@ -409,7 +512,3 @@ async def export_assessment_question_table_csv(
         filename=file_name,
         media_type="text/csv"
     )
-
-
-
-

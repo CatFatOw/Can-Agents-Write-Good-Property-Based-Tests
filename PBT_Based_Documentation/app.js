@@ -5,6 +5,7 @@ const areaPage = document.querySelector("#area-page");
 const appShell = document.querySelector("#app-shell");
 const launchAppButtons = Array.from(document.querySelectorAll(".launch-app-button"));
 const loginOpenButtons = Array.from(document.querySelectorAll(".login-open-button"));
+const loginAccountButtons = Array.from(document.querySelectorAll(".login-open-button[data-auth-mode='login'], #landing-account-button"));
 const areaOpenButtons = Array.from(document.querySelectorAll(".area-open-button"));
 const homeButton = document.querySelector("#home-button");
 const areaBackButton = document.querySelector(".area-back-button");
@@ -63,7 +64,6 @@ const researchCurrentPhraseInput = document.querySelector("#research-current-phr
 const researchNewPhraseInput = document.querySelector("#research-new-phrase");
 const researchChangePhraseButton = document.querySelector("#research-change-phrase-button");
 const researchPhraseMessage = document.querySelector("#research-phrase-message");
-const landingAccountButton = document.querySelector("#landing-account-button");
 const databaseStatus = document.querySelector("#database-status");
 const databaseStatusText = document.querySelector("#database-status-text");
 const accountMenuButton = document.querySelector("#account-menu-button");
@@ -84,6 +84,8 @@ const accountStats = document.querySelector("#account-stats");
 const accountDocsList = document.querySelector("#account-docs-list");
 const accountDocsRefresh = document.querySelector("#account-docs-refresh");
 const accountDocsSearch = document.querySelector("#account-docs-search");
+const accountDocsTitle = document.querySelector("#account-docs-title");
+const accountDocsScope = document.querySelector("#account-docs-scope");
 const passwordForm = document.querySelector("#password-form");
 const currentPasswordInput = document.querySelector("#current-password");
 const newPasswordInput = document.querySelector("#new-password");
@@ -254,6 +256,7 @@ let answeredAssessmentQuestions = new Set();
 let assessmentAnsweredCountValue = 0;
 let assessmentCorrectCountValue = 0;
 let activeAssessmentResource = "documentation";
+let assessmentSummaryVisible = false;
 const areaFallbackPosts = [
   {
     title: "Anonymous np.pad documentation comparison",
@@ -327,6 +330,7 @@ async function showAreaPage() {
   document.body.classList.toggle("research-mode", isResearchModeActive());
   accountMenu?.classList.add("is-hidden");
   accountMenuButton?.setAttribute("aria-expanded", "false");
+  updateAccountMenuLabel();
   updateAreaSessionUI();
   await loadAreaComparison();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -664,7 +668,7 @@ function renderLeaderboardDocumentationMenu(entry) {
       ${sourceCode ? `
         <details>
           <summary>Source code</summary>
-          <pre class="md-code landing-doc-scroll leaderboard-doc-preview"><code>${escapeHtml(sourceCode)}</code></pre>
+          <div class="landing-doc-scroll leaderboard-doc-preview">${renderPythonMarkdown(sourceCode)}</div>
         </details>
       ` : ""}
       ${invariants.length ? `
@@ -683,7 +687,7 @@ function renderLeaderboardDocumentationMenu(entry) {
               <details>
                 <summary>Invariant ${index + 1}</summary>
                 ${metric.invariant ? `<div class="markdown-rendered">${renderMarkdown(String(metric.invariant))}</div>` : ""}
-                ${metric.test_code ? `<pre class="md-code"><code>${escapeHtml(metric.test_code)}</code></pre>` : ""}
+                ${metric.test_code ? renderPythonMarkdown(metric.test_code) : ""}
               </details>
             `).join("")}
           </div>
@@ -1025,7 +1029,7 @@ function renderAssessmentResource() {
     const source = anonymizeStudyReference(currentAssessmentDoc?.source_code || "", "Reference");
     if (assessmentResourceSummary) assessmentResourceSummary.textContent = "Open source code";
     assessmentResourceBody.innerHTML = source
-      ? `<pre class="md-code"><code>${escapeHtml(source)}</code></pre>`
+      ? renderPythonMarkdown(source)
       : '<p class="placeholder">Source code is not available for this assessment.</p>';
     return;
   }
@@ -1058,6 +1062,11 @@ async function fetchAssessmentStats() {
 function renderAssessmentQuestion() {
   const question = currentAssessmentQuestion();
   selectedAssessmentChoice = "";
+  assessmentSummaryVisible = false;
+  if (assessmentNextButton) {
+    assessmentNextButton.textContent = "Next question";
+    assessmentNextButton.disabled = !question || !answeredAssessmentQuestions.has(question.id);
+  }
   if (!question) {
     if (assessmentQuestionText) assessmentQuestionText.textContent = "No questions are available for this assessment.";
     if (assessmentChoiceList) assessmentChoiceList.innerHTML = "";
@@ -1083,6 +1092,31 @@ function renderAssessmentQuestion() {
   if (assessmentSubmitButton) assessmentSubmitButton.disabled = answeredAssessmentQuestions.has(question.id);
 }
 
+function renderAssessmentSummary() {
+  assessmentSummaryVisible = true;
+  const total = currentAssessment?.questions?.length || 0;
+  const correct = assessmentCorrectCountValue;
+  const percent = total ? Math.round((correct / total) * 100) : 0;
+  if (assessmentProgressText) assessmentProgressText.textContent = "Assessment complete";
+  if (assessmentProgressBar) assessmentProgressBar.style.width = "100%";
+  if (assessmentQuestionText) assessmentQuestionText.textContent = "Summary";
+  if (assessmentChoiceList) {
+    assessmentChoiceList.innerHTML = `
+      <div class="assessment-summary-card">
+        <strong>${correct} / ${total} correct</strong>
+        <span>${percent}% score</span>
+        <p>You answered every question for this documentation sample.</p>
+      </div>
+    `;
+  }
+  if (assessmentMessage) assessmentMessage.textContent = "Start a new assessment when you are ready.";
+  if (assessmentSubmitButton) assessmentSubmitButton.disabled = true;
+  if (assessmentNextButton) {
+    assessmentNextButton.textContent = "Start new assessment";
+    assessmentNextButton.disabled = false;
+  }
+}
+
 async function loadAssessment() {
   if (assessmentMessage) assessmentMessage.textContent = "Loading comprehension practice...";
   if (assessmentSubmitButton) assessmentSubmitButton.disabled = true;
@@ -1099,6 +1133,7 @@ async function loadAssessment() {
     answeredAssessmentQuestions = new Set();
     assessmentAnsweredCountValue = 0;
     assessmentCorrectCountValue = 0;
+    assessmentSummaryVisible = false;
     currentAssessmentDoc = await fetchAssessmentDocumentation(data.documentation_id);
     activeAssessmentResource = "documentation";
     renderAssessmentResource();
@@ -1155,22 +1190,38 @@ async function submitAssessmentAnswer() {
     updateAssessmentStatsUI();
     assessmentChoiceList?.querySelectorAll(".assessment-choice").forEach((button) => {
       const selected = button.dataset.assessmentChoice === selectedAssessmentChoice;
-      button.classList.toggle(data.is_correct && selected ? "is-correct" : "is-incorrect", selected);
+      const correct = button.dataset.assessmentChoice === data.correct_response;
+      button.classList.toggle("is-correct", correct);
+      button.classList.toggle("is-incorrect", selected && !correct);
     });
     if (assessmentMessage) assessmentMessage.textContent = data.is_correct
-      ? "Correct. Nice reading."
-      : "Not quite. Review the reference, then continue.";
+      ? "Correct. Press Next question when you are ready."
+      : `Not quite. Correct answer: ${data.correct_response}. ${data.explanation || ""} Press Next question when you are ready.`;
+    if (assessmentNextButton) assessmentNextButton.disabled = false;
     fetchAssessmentStats();
   } catch (error) {
     if (assessmentMessage) assessmentMessage.textContent = error.message || "Could not submit answer.";
   } finally {
-    if (assessmentSubmitButton) assessmentSubmitButton.disabled = false;
+    if (assessmentSubmitButton) assessmentSubmitButton.disabled = answeredAssessmentQuestions.has(question.id);
   }
 }
 
 function moveAssessmentQuestion(direction) {
   if (!currentAssessment?.questions?.length) return;
+  if (assessmentSummaryVisible) {
+    loadAssessment();
+    return;
+  }
+  const question = currentAssessmentQuestion();
+  if (question && !answeredAssessmentQuestions.has(question.id)) {
+    if (assessmentMessage) assessmentMessage.textContent = "Answer this question before moving on.";
+    return;
+  }
   const total = currentAssessment.questions.length;
+  if (answeredAssessmentQuestions.size >= total && direction > 0) {
+    renderAssessmentSummary();
+    return;
+  }
   currentAssessmentQuestionIndex = (currentAssessmentQuestionIndex + direction + total) % total;
   renderAssessmentQuestion();
 }
@@ -1256,11 +1307,11 @@ function showNextAreaPost() {
 function updateAccountMenuLabel() {
   if (!accountMenuLabel) return;
   accountMenuLabel.textContent = getSavedUserEmail() || "Guest";
-  if (landingAccountButton) {
-    const signedIn = Boolean(getAccessToken());
-    landingAccountButton.textContent = signedIn ? "Account" : "Login";
-    landingAccountButton.dataset.authMode = signedIn ? "account" : "login";
-  }
+  const signedIn = Boolean(getAccessToken());
+  loginAccountButtons.forEach((button) => {
+    button.textContent = signedIn ? "Account" : "Login";
+    button.dataset.authMode = signedIn ? "account" : "login";
+  });
 }
 
 async function refreshDatabaseStatus() {
@@ -1598,6 +1649,10 @@ function renderMarkdown(markdown) {
   return html.join("");
 }
 
+function renderPythonMarkdown(source) {
+  return renderMarkdown(["```python", String(source || ""), "```"].join("\n"));
+}
+
 function setStage(stage) {
   hideSourceHoverCard();
   syncStepAvailability();
@@ -1849,6 +1904,10 @@ let accountDocuments = [];
 let activeAccountDoc = null;
 let accountSort = "created-desc";
 let accountConfirmPhrase = "";
+let accountCurrentUserId = null;
+let accountIsAdmin = false;
+let activeAccountQuestions = [];
+let activeAccountAnswers = [];
 
 function formatAccountDate(value) {
   if (!value) return "—";
@@ -1898,6 +1957,37 @@ function renderAccountStats() {
   `).join("");
 }
 
+function updateAccountDocsScopeUi() {
+  if (accountDocsTitle) accountDocsTitle.textContent = accountIsAdmin ? "All generated documents" : "Your documents";
+  if (accountDocsScope) {
+    accountDocsScope.textContent = accountIsAdmin
+      ? "Admin view: every saved documentation row is available for assessment generation."
+      : "Saved documentation generated by your account.";
+  }
+}
+
+async function refreshAccountAdminState() {
+  accountIsAdmin = false;
+  if (!getAccessToken()) {
+    updateAccountDocsScopeUi();
+    return false;
+  }
+  try {
+    const response = await fetch(apiUrl("/users/me/admin"), {
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    accountIsAdmin = response.ok;
+  } catch {
+    accountIsAdmin = false;
+  }
+  updateAccountDocsScopeUi();
+  return accountIsAdmin;
+}
+
+function canManageAccountDoc(doc) {
+  return accountCurrentUserId != null && String(doc?.owner_id) === String(accountCurrentUserId);
+}
+
 function setDeleteConfirmPhrase(email) {
   accountConfirmPhrase = (email || "").trim();
   if (deleteConfirmPhrase) deleteConfirmPhrase.textContent = accountConfirmPhrase || "your email";
@@ -1907,6 +1997,7 @@ function setDeleteConfirmPhrase(email) {
 
 async function fetchAccountProfile() {
   if (!getAccessToken() || !accountEmail) return;
+  accountCurrentUserId = null;
   accountEmail.textContent = getSavedUserEmail() || "—";
   accountCreated.textContent = "—";
   accountId.textContent = "—";
@@ -1915,6 +2006,7 @@ async function fetchAccountProfile() {
     const response = await fetch(apiUrl("/users/me"), { headers: authHeaders({ Accept: "application/json" }) });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || data.error || "Could not load profile.");
+    accountCurrentUserId = data.id ?? null;
     accountEmail.textContent = data.email || getSavedUserEmail() || "—";
     accountCreated.textContent = formatAccountDate(data.created_at);
     accountId.textContent = data.id != null ? `#${data.id}` : "—";
@@ -1985,7 +2077,9 @@ function renderAccountDocs() {
     return;
   }
   if (!accountDocuments.length) {
-    accountDocsList.innerHTML = '<p class="placeholder">No generated documents yet. Run the generator to create one.</p>';
+    accountDocsList.innerHTML = accountIsAdmin
+      ? '<p class="placeholder">No generated documentation rows exist yet.</p>'
+      : '<p class="placeholder">No generated documents yet. Run the generator to create one.</p>';
     return;
   }
   const visibleDocs = sortedAccountDocuments();
@@ -1998,12 +2092,14 @@ function renderAccountDocs() {
     const comparisonCount = Number(doc.comparison_count || 0);
     const ibdWins = Number(doc.ibd_wins || 0);
     const ibdPct = comparisonCount ? Math.round((ibdWins / comparisonCount) * 100) : 0;
+    const canManage = canManageAccountDoc(doc);
     return `
       <article class="account-doc-card">
         <div class="account-doc-info">
           <strong>${escapeHtml(doc.documentation_title || "Untitled documentation")}</strong>
           <small>${escapeHtml(formatAccountDate(doc.created_at))}</small>
           <div class="account-doc-pills">
+            ${accountIsAdmin ? `<span>Owner #${escapeHtml(String(doc.owner_id ?? "—"))}</span>` : ""}
             <span>Soundness ${formatPercentMaybe(doc.soundness)}</span>
             <span>Validity ${formatPercentMaybe(doc.validity)}</span>
             <span>Mutation ${formatPercentMaybe(doc.mutation_score)}</span>
@@ -2013,8 +2109,9 @@ function renderAccountDocs() {
           </div>
         </div>
         <div class="account-doc-actions">
+          ${accountIsAdmin ? `<button type="button" class="landing-primary-button account-doc-questions" data-doc-id="${doc.id}">Questions</button>` : ""}
           <button type="button" class="secondary-button account-doc-view" data-doc-id="${doc.id}">View more</button>
-          <button type="button" class="danger-button account-doc-delete" data-doc-id="${doc.id}">Delete</button>
+          ${canManage ? `<button type="button" class="danger-button account-doc-delete" data-doc-id="${doc.id}">Delete</button>` : ""}
         </div>
       </article>
     `;
@@ -2028,7 +2125,9 @@ async function fetchAccountDocs() {
   }
   if (accountDocsList) accountDocsList.innerHTML = '<p class="placeholder">Loading your documents…</p>';
   try {
-    const response = await fetch(apiUrl("/documentation/me"), { headers: authHeaders({ Accept: "application/json" }) });
+    const isAdmin = await refreshAccountAdminState();
+    if (accountDocsList) accountDocsList.innerHTML = `<p class="placeholder">Loading ${isAdmin ? "all generated documents" : "your documents"}…</p>`;
+    const response = await fetch(apiUrl(isAdmin ? "/documentation/" : "/documentation/me"), { headers: authHeaders({ Accept: "application/json" }) });
     const data = await response.json().catch(() => []);
     if (!response.ok) throw new Error(data.detail || data.error || "Could not load documents.");
     accountDocuments = Array.isArray(data) ? data : [];
@@ -2047,6 +2146,7 @@ function showAccountDocDetail(docId) {
   activeAccountDoc = doc;
   const invariants = parseStoredInvariants(doc.invariants);
   const metrics = parseStoredMetrics(doc.hypothesis_tests);
+  const canManage = canManageAccountDoc(doc);
   accountDetailTitle.textContent = doc.documentation_title || "Document";
   accountDetailEyebrow.textContent = `Generated ${formatAccountDate(doc.created_at)}`;
   accountDetailBody.innerHTML = `
@@ -2055,6 +2155,7 @@ function showAccountDocDetail(docId) {
       <dl class="account-detail-meta">
         <div><dt>Name</dt><dd>${escapeHtml(doc.documentation_title || "—")}</dd></div>
         <div><dt>Generated</dt><dd>${escapeHtml(formatAccountDate(doc.created_at))}</dd></div>
+        ${accountIsAdmin ? `<div><dt>Owner</dt><dd>#${escapeHtml(String(doc.owner_id ?? "—"))}</dd></div>` : ""}
         <div><dt>Soundness</dt><dd>${formatPercentMaybe(doc.soundness)}</dd></div>
         <div><dt>Validity</dt><dd>${formatPercentMaybe(doc.validity)}</dd></div>
         <div><dt>Mutation</dt><dd>${formatPercentMaybe(doc.mutation_score)}</dd></div>
@@ -2081,7 +2182,7 @@ function showAccountDocDetail(docId) {
                 </span>
               </summary>
               ${metric.invariant ? `<div class="markdown-rendered">${renderMarkdown(String(metric.invariant))}</div>` : ""}
-              ${metric.test_code ? `<pre class="md-code"><code>${escapeHtml(metric.test_code)}</code></pre>` : ""}
+              ${metric.test_code ? renderPythonMarkdown(metric.test_code) : ""}
             </details>
           `).join("")}
         </div>
@@ -2093,8 +2194,8 @@ function showAccountDocDetail(docId) {
         <p class="eyebrow">Generated Markdown</p>
         <div class="account-detail-md-actions">
           <button type="button" class="secondary-button" id="account-md-download">Download .md</button>
-          <button type="button" class="secondary-button" id="account-md-edit">Edit</button>
-          <button type="button" class="danger-button" id="account-md-delete">Delete</button>
+          ${canManage ? '<button type="button" class="secondary-button" id="account-md-edit">Edit</button>' : ""}
+          ${canManage ? '<button type="button" class="danger-button" id="account-md-delete">Delete</button>' : ""}
         </div>
       </div>
       <p class="account-message" id="account-md-message"></p>
@@ -2111,6 +2212,337 @@ function showAccountDocDetail(docId) {
   accountDetailModal.classList.remove("is-hidden");
   document.body.classList.add("account-detail-open");
   accountDetailClose?.focus();
+}
+
+function showAccountQuestionBuilder(docId) {
+  const doc = accountDocuments.find((item) => String(item.id) === String(docId));
+  if (!doc || !accountDetailModal) return;
+  activeAccountDoc = doc;
+  accountDetailTitle.textContent = "Question builder";
+  accountDetailEyebrow.textContent = doc.documentation_title || "Selected documentation";
+  accountDetailBody.innerHTML = `
+    <section class="account-question-builder">
+      <div class="account-question-head">
+        <div>
+          <p class="eyebrow">Admin assessment</p>
+          <h3>Questions for this documentation</h3>
+          <p>Write a human-authored comprehension question for <strong>${escapeHtml(doc.documentation_title || "this documentation")}</strong>, or use the smaller AI generator tab for drafts.</p>
+        </div>
+      </div>
+
+      <section class="account-human-question-panel" aria-labelledby="human-question-title">
+        <div class="account-question-section-head">
+          <div>
+            <p class="eyebrow">Human input</p>
+            <h4 id="human-question-title">Add a question</h4>
+          </div>
+        </div>
+        <label class="field" for="manual-question-text">
+          <span>Question</span>
+          <textarea id="manual-question-text" rows="4" placeholder="Ask a comprehension question about the selected documentation."></textarea>
+        </label>
+        <div class="manual-choice-grid">
+          ${["A", "B", "C", "D"].map((choice) => `
+            <label class="field" for="manual-choice-${choice}">
+              <span>Choice ${choice}</span>
+              <input id="manual-choice-${choice}" data-manual-choice="${choice}" type="text" placeholder="Answer ${choice}">
+            </label>
+          `).join("")}
+        </div>
+        <div class="manual-answer-row">
+          <label class="field compact-field" for="manual-correct-response">
+            <span>Correct</span>
+            <select id="manual-correct-response">
+              ${["A", "B", "C", "D"].map((choice) => `<option value="${choice}">${choice}</option>`).join("")}
+            </select>
+          </label>
+          <label class="field" for="manual-explanation">
+            <span>Explanation</span>
+            <input id="manual-explanation" type="text" placeholder="Why this answer is correct">
+          </label>
+        </div>
+        <div class="account-question-actions">
+          <button type="button" class="landing-primary-button" id="account-manual-question-save">Save human question</button>
+          <button type="button" class="secondary-button" id="account-question-refresh">Refresh questions</button>
+          <p class="account-message" id="account-manual-question-message"></p>
+        </div>
+      </section>
+
+      <section class="account-ai-generate-panel" id="account-ai-generate-panel">
+        <div>
+          <p class="eyebrow">AI generator</p>
+          <h4>Generate a full question set</h4>
+        </div>
+        <div class="account-ai-question-grid">
+          <label class="field compact-field" for="account-assessment-count">
+            <span>Questions</span>
+            <input id="account-assessment-count" type="number" min="1" max="30" value="10">
+          </label>
+          <label class="field compact-field" for="account-assessment-choices">
+            <span>Choices</span>
+            <input id="account-assessment-choices" type="number" min="2" max="6" value="4">
+          </label>
+          <button type="button" class="landing-primary-button" id="account-assessment-generate">AI generate full set</button>
+        </div>
+        <p class="account-message" id="account-assessment-message">AI generation creates the requested number of draft questions and adds them to this documentation row.</p>
+      </section>
+
+      <section class="account-question-list-section">
+        <div class="account-question-list-head">
+          <div>
+            <p class="eyebrow">Question bank</p>
+            <h4 id="account-question-count">Questions</h4>
+          </div>
+        </div>
+        <div class="account-question-list" id="account-question-list">
+          <p class="placeholder">Loading questions...</p>
+        </div>
+      </section>
+    </section>
+  `;
+  accountDetailModal.classList.remove("is-hidden");
+  document.body.classList.add("account-detail-open");
+  accountDetailClose?.focus();
+  loadAccountQuestions();
+}
+
+function renderAccountQuestions() {
+  const list = accountDetailBody?.querySelector("#account-question-list");
+  const count = accountDetailBody?.querySelector("#account-question-count");
+  if (count) count.textContent = `${activeAccountQuestions.length} question${activeAccountQuestions.length === 1 ? "" : "s"}`;
+  if (!list) return;
+  if (!activeAccountQuestions.length) {
+    list.innerHTML = '<p class="placeholder">No questions yet. Use AI generate questions to create a first draft.</p>';
+    return;
+  }
+  list.innerHTML = activeAccountQuestions.map((question, index) => {
+    const choices = question.choices || {};
+    const choiceKeys = Object.keys(choices).length ? Object.keys(choices) : ["A", "B", "C", "D"];
+    const answers = activeAccountAnswers.filter((answer) => String(answer.question_id) === String(question.id));
+    return `
+      <article class="account-question-item" data-question-id="${question.id}">
+        <div class="account-question-item-head">
+          <strong>Question ${index + 1}</strong>
+          <button type="button" class="danger-button account-question-delete" data-question-id="${question.id}">Delete</button>
+        </div>
+        <label class="field">
+          <span>Question</span>
+          <textarea data-question-field="question" rows="3">${escapeHtml(question.question || "")}</textarea>
+        </label>
+        <div class="manual-choice-grid">
+          ${choiceKeys.map((choice) => `
+            <label class="field">
+              <span>Choice ${escapeHtml(choice)}</span>
+              <input data-choice-key="${escapeHtml(choice)}" type="text" value="${escapeHtml(choices[choice] || "")}">
+            </label>
+          `).join("")}
+        </div>
+        <div class="manual-answer-row">
+          <label class="field compact-field">
+            <span>Correct</span>
+            <select data-question-field="correct_response">
+              ${choiceKeys.map((choice) => `<option value="${escapeHtml(choice)}" ${question.correct_response === choice ? "selected" : ""}>${escapeHtml(choice)}</option>`).join("")}
+            </select>
+          </label>
+          <label class="field">
+            <span>Explanation</span>
+            <input data-question-field="explanation" type="text" value="${escapeHtml(question.explanation || "")}">
+          </label>
+        </div>
+        <div class="account-question-actions">
+          <button type="button" class="landing-primary-button account-question-save" data-question-id="${question.id}">Save changes</button>
+          <p class="account-message" data-question-message="${question.id}"></p>
+        </div>
+        <details class="account-question-responses">
+          <summary>${answers.length} user response${answers.length === 1 ? "" : "s"}</summary>
+          ${answers.length ? `
+            <div class="account-response-list">
+              ${answers.map((answer) => `
+                <span>
+                  <strong>User #${escapeHtml(String(answer.user_id))}</strong>
+                  chose <code>${escapeHtml(answer.user_response || "")}</code>
+                  <em>${answer.is_correct ? "correct" : "incorrect"}</em>
+                  <small>Attempt #${escapeHtml(String(answer.attempt_id))}</small>
+                </span>
+              `).join("")}
+            </div>
+          ` : '<p class="placeholder">No submitted answers yet.</p>'}
+        </details>
+      </article>
+    `;
+  }).join("");
+}
+
+async function loadAccountQuestions() {
+  if (!activeAccountDoc) return;
+  const list = accountDetailBody?.querySelector("#account-question-list");
+  if (list) list.innerHTML = '<p class="placeholder">Loading questions...</p>';
+  try {
+    const [questionResponse, answerResponse] = await Promise.all([
+      fetch(apiUrl(`/assessments/documentation/${activeAccountDoc.id}`), {
+        headers: authHeaders({ Accept: "application/json" })
+      }),
+      fetch(apiUrl(`/assessments/documentation/${activeAccountDoc.id}/answers`), {
+        headers: authHeaders({ Accept: "application/json" })
+      })
+    ]);
+    const questionData = await questionResponse.json().catch(() => []);
+    const answerData = await answerResponse.json().catch(() => []);
+    if (!questionResponse.ok) throw new Error(questionData.detail || questionData.error || "Could not load questions.");
+    if (!answerResponse.ok) throw new Error(answerData.detail || answerData.error || "Could not load answers.");
+    activeAccountQuestions = Array.isArray(questionData) ? questionData : [];
+    activeAccountAnswers = Array.isArray(answerData) ? answerData : [];
+    renderAccountQuestions();
+  } catch (error) {
+    activeAccountQuestions = [];
+    activeAccountAnswers = [];
+    if (list) list.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load questions.")}</p>`;
+  }
+}
+
+function collectManualQuestionPayload() {
+  const choices = {};
+  accountDetailBody?.querySelectorAll("[data-manual-choice]").forEach((input) => {
+    choices[input.dataset.manualChoice] = input.value.trim();
+  });
+  return {
+    question: accountDetailBody?.querySelector("#manual-question-text")?.value.trim() || "",
+    choices,
+    correct_response: accountDetailBody?.querySelector("#manual-correct-response")?.value || "A",
+    explanation: accountDetailBody?.querySelector("#manual-explanation")?.value.trim() || ""
+  };
+}
+
+function resetManualQuestionForm() {
+  const questionInput = accountDetailBody?.querySelector("#manual-question-text");
+  if (questionInput) questionInput.value = "";
+  accountDetailBody?.querySelectorAll("[data-manual-choice]").forEach((input) => {
+    input.value = "";
+  });
+  const explanation = accountDetailBody?.querySelector("#manual-explanation");
+  if (explanation) explanation.value = "";
+  const correct = accountDetailBody?.querySelector("#manual-correct-response");
+  if (correct) correct.value = "A";
+}
+
+async function saveManualAssessmentQuestion(button) {
+  const message = accountDetailBody?.querySelector("#account-manual-question-message");
+  const payload = collectManualQuestionPayload();
+  if (!payload.question || !payload.explanation || Object.values(payload.choices).some((choice) => !choice)) {
+    if (message) message.textContent = "Fill in the question, all choices, and the explanation.";
+    return;
+  }
+  if (message) message.textContent = "Human question route is pending. This form is ready to connect when you add it.";
+  if (button) button.disabled = false;
+}
+
+async function generateAssessmentForActiveDoc(button) {
+  if (!activeAccountDoc) return;
+  const message = accountDetailBody?.querySelector("#account-assessment-message");
+  const countInput = accountDetailBody?.querySelector("#account-assessment-count");
+  const choicesInput = accountDetailBody?.querySelector("#account-assessment-choices");
+  const nQuestions = Math.max(1, Math.min(30, Number(countInput?.value || 10)));
+  const choices = Math.max(2, Math.min(6, Number(choicesInput?.value || 4)));
+  const params = new URLSearchParams({
+    n_questions: String(nQuestions),
+    choice: String(choices)
+  });
+  if (metricsModelInput?.value.trim()) params.set("model", metricsModelInput.value.trim());
+  if (currentModelProvider()) params.set("model_provider", currentModelProvider());
+  if (modelBaseUrlInput?.value.trim()) params.set("base_url", modelBaseUrlInput.value.trim());
+  const providerPayload = {
+    model_provider: currentModelProvider(),
+    model_api_key: openaiKeyInput?.value.trim() || "",
+    api_key: openaiKeyInput?.value.trim() || "",
+    base_url: modelBaseUrlInput?.value.trim() || (currentModelProvider() === "cmu_gateway" ? DEFAULT_CMU_GATEWAY_BASE_URL : ""),
+    metrics_model: metricsModelInput?.value.trim() || ""
+  };
+  if (message) message.textContent = "Generating assessment questions...";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Generating...";
+  }
+  try {
+    const response = await fetch(apiUrl(`/assessments/generate/${activeAccountDoc.id}?${params.toString()}`), {
+      method: "POST",
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
+      body: JSON.stringify(providerPayload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(response.status === 403 ? "Only admin users can generate assessment questions." : data.detail || data.error || "Could not generate questions.");
+    }
+    if (message) {
+      const questionId = data.id ? ` Last question id: ${data.id}.` : "";
+      message.textContent = `Generated ${nQuestions} comprehension questions for this documentation.${questionId}`;
+    }
+    loadAccountQuestions();
+  } catch (error) {
+    if (message) message.textContent = error.message || "Could not generate questions.";
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "AI generate full set";
+    }
+  }
+}
+
+function collectQuestionPayload(questionId) {
+  const item = accountDetailBody?.querySelector(`.account-question-item[data-question-id="${CSS.escape(String(questionId))}"]`);
+  if (!item) return null;
+  const choices = {};
+  item.querySelectorAll("[data-choice-key]").forEach((input) => {
+    choices[input.dataset.choiceKey] = input.value.trim();
+  });
+  return {
+    question: item.querySelector('[data-question-field="question"]')?.value.trim() || "",
+    choices,
+    correct_response: item.querySelector('[data-question-field="correct_response"]')?.value || "A",
+    explanation: item.querySelector('[data-question-field="explanation"]')?.value.trim() || ""
+  };
+}
+
+async function saveAccountQuestion(questionId, button) {
+  const message = accountDetailBody?.querySelector(`[data-question-message="${CSS.escape(String(questionId))}"]`);
+  const payload = collectQuestionPayload(questionId);
+  if (!payload) return;
+  if (message) message.textContent = "Saving...";
+  if (button) button.disabled = true;
+  try {
+    const response = await fetch(apiUrl(`/assessments/questions/${questionId}`), {
+      method: "PUT",
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not save question.");
+    if (message) message.textContent = "Saved.";
+    await loadAccountQuestions();
+  } catch (error) {
+    if (message) message.textContent = error.message || "Could not save question.";
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function deleteAccountQuestion(questionId, button) {
+  if (button) button.disabled = true;
+  try {
+    const response = await fetch(apiUrl(`/assessments/questions/${questionId}`), {
+      method: "DELETE",
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    if (!response.ok && response.status !== 204) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.detail || data.error || "Could not delete question.");
+    }
+    await loadAccountQuestions();
+  } catch (error) {
+    const message = accountDetailBody?.querySelector(`[data-question-message="${CSS.escape(String(questionId))}"]`);
+    if (message) message.textContent = error.message || "Could not delete question.";
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 async function deleteAccountDocument(docId) {
@@ -2248,8 +2680,7 @@ function showAccountPage() {
   passwordForm?.reset();
   if (accountDocsSort) accountDocsSort.value = accountSort;
   window.scrollTo({ top: 0, behavior: "smooth" });
-  fetchAccountProfile();
-  fetchAccountDocs();
+  fetchAccountProfile().finally(() => fetchAccountDocs());
 }
 
 async function submitPasswordChange(event) {
@@ -2336,6 +2767,9 @@ async function deleteAccount() {
     localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
     savedDocumentation = [];
     accountDocuments = [];
+    accountCurrentUserId = null;
+    accountIsAdmin = false;
+    updateAccountDocsScopeUi();
     updateAccountMenuLabel();
     renderSavedDocs();
     closeAccountDocDetail();
@@ -4344,6 +4778,10 @@ logoutButton?.addEventListener("click", () => {
   localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
   localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
   savedDocumentation = [];
+  accountDocuments = [];
+  accountCurrentUserId = null;
+  accountIsAdmin = false;
+  updateAccountDocsScopeUi();
   updateAccountMenuLabel();
   renderSavedDocs();
   setStatus("draft", "Signed out");
@@ -4352,8 +4790,7 @@ logoutButton?.addEventListener("click", () => {
 accountPageButton?.addEventListener("click", showAccountPage);
 accountBackButton?.addEventListener("click", showAppPage);
 accountDocsRefresh?.addEventListener("click", () => {
-  fetchAccountProfile();
-  fetchAccountDocs();
+  fetchAccountProfile().finally(() => fetchAccountDocs());
 });
 passwordForm?.addEventListener("submit", submitPasswordChange);
 deleteAccountButton?.addEventListener("click", revealDeleteConfirm);
@@ -4367,6 +4804,11 @@ accountDocsSort?.addEventListener("change", () => {
 accountDocsSearch?.addEventListener("input", renderAccountDocs);
 
 accountDocsList?.addEventListener("click", (event) => {
+  const questionsButton = event.target.closest(".account-doc-questions");
+  if (questionsButton) {
+    showAccountQuestionBuilder(questionsButton.dataset.docId);
+    return;
+  }
   const deleteButton = event.target.closest(".account-doc-delete");
   if (deleteButton) {
     deleteAccountDocument(deleteButton.dataset.docId).catch((error) => {
@@ -4385,8 +4827,32 @@ accountDetailModal?.addEventListener("click", (event) => {
 });
 
 accountDetailBody?.addEventListener("click", (event) => {
+  const manualSaveButton = event.target.closest("#account-manual-question-save");
+  if (manualSaveButton) {
+    saveManualAssessmentQuestion(manualSaveButton);
+    return;
+  }
+  if (event.target.closest("#account-question-refresh")) {
+    loadAccountQuestions();
+    return;
+  }
+  const questionSaveButton = event.target.closest(".account-question-save");
+  if (questionSaveButton) {
+    saveAccountQuestion(questionSaveButton.dataset.questionId, questionSaveButton);
+    return;
+  }
+  const questionDeleteButton = event.target.closest(".account-question-delete");
+  if (questionDeleteButton) {
+    deleteAccountQuestion(questionDeleteButton.dataset.questionId, questionDeleteButton);
+    return;
+  }
   if (event.target.closest("#account-md-download")) {
     downloadActiveAccountMarkdown();
+    return;
+  }
+  const assessmentGenerateButton = event.target.closest("#account-assessment-generate");
+  if (assessmentGenerateButton) {
+    generateAssessmentForActiveDoc(assessmentGenerateButton);
     return;
   }
   if (event.target.closest("#account-md-edit")) {
@@ -4492,6 +4958,7 @@ updateModelProviderControls();
 showLandingPage();
 setStage("input");
 updateAccountMenuLabel();
+updateAccountDocsScopeUi();
 // Keep the session across refreshes: the stored token is preserved so the user
 // stays logged in. Validate it in the background and only drop it if it has
 // actually expired (401) — a refresh on its own never logs the user out.

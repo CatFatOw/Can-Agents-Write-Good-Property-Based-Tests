@@ -202,6 +202,35 @@ class AssessmentQuestionResponse(BaseModel):
     choices: Dict[str, str]
 
 
+class AssessmentQuestionAdminResponse(BaseModel):
+    id: int
+    documentation_id: int
+    question: str
+    choices: Dict[str, str]
+    correct_response: str
+    explanation: str
+
+    class Config:
+        orm_mode = True
+
+
+class AssessmentQuestionUpdate(BaseModel):
+    question: str
+    choices: Dict[str, str]
+    correct_response: str
+    explanation: str
+
+
+class AssessmentAnswerAdminResponse(BaseModel):
+    id: int
+    attempt_id: int
+    question_id: int
+    documentation_id: int
+    user_id: int
+    user_response: str
+    is_correct: bool
+
+
 class AssessmentResponse(BaseModel):
     attempt_id: int
     documentation_id: int
@@ -217,6 +246,8 @@ class AssessmentAnswerResponse(BaseModel):
     question_id: int
     user_response: str
     is_correct: bool
+    correct_response: str
+    explanation: str
 
     class Config:
         orm_mode=True

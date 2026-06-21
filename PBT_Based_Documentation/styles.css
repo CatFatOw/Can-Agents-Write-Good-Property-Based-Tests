@@ -6027,6 +6027,14 @@ body.dark-mode .account-delete-confirm {
   flex-wrap: wrap;
 }
 
+.account-docs-scope {
+  max-width: 620px;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
 .account-docs-controls {
   display: flex;
   align-items: flex-end;
@@ -6236,6 +6244,207 @@ body.dark-mode .account-delete-confirm {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.account-admin-assessment .account-detail-md-actions {
+  align-items: end;
+}
+
+.account-admin-assessment .compact-field {
+  min-width: 112px;
+}
+
+.account-admin-assessment h3 {
+  margin: 4px 0 0;
+  font-size: 1.2rem;
+}
+
+.account-doc-questions {
+  min-height: 40px;
+  padding: 0 16px;
+}
+
+.account-question-builder {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--clay) 18%, var(--line));
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 242, 0.96), rgba(241, 234, 223, 0.88)),
+    var(--paper);
+  box-shadow: 0 18px 44px rgba(72, 56, 42, 0.12);
+}
+
+.account-question-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.account-question-head h3 {
+  margin: 3px 0 4px;
+  color: var(--ink);
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  line-height: 1.18;
+}
+
+.account-question-head p {
+  margin: 0;
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.48;
+}
+
+.account-question-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.manual-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.manual-answer-row,
+.account-ai-question-grid,
+.account-question-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.account-ai-generate-panel {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed color-mix(in srgb, var(--clay) 28%, var(--line));
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.58);
+}
+
+.account-ai-generate-panel h4 {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.account-ai-generate-panel .account-ai-question-grid {
+  align-items: end;
+}
+
+.manual-answer-row .field:last-child {
+  flex: 1 1 280px;
+}
+
+.account-question-builder .field input,
+.account-question-builder .field select,
+.account-question-builder .field textarea {
+  min-height: 42px;
+  border-color: color-mix(in srgb, var(--clay) 14%, var(--line));
+  background: rgba(255, 250, 242, 0.9);
+  color: var(--ink);
+  font-size: 0.94rem;
+}
+
+.account-question-builder .landing-primary-button {
+  border-color: rgba(132, 63, 44, 0.2);
+  background: var(--clay-dark);
+  color: #fffaf2;
+  box-shadow: 0 14px 28px rgba(132, 63, 44, 0.18);
+}
+
+.account-question-builder .field textarea {
+  min-height: 104px;
+  resize: vertical;
+}
+
+.account-question-list-section {
+  display: grid;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.account-question-list-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-question-list-head h4 {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-size: 1.12rem;
+}
+
+.account-question-list {
+  display: grid;
+  gap: 12px;
+}
+
+.account-question-item {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--clay) 12%, var(--line));
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.72);
+}
+
+.account-question-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-question-item-head strong {
+  color: var(--ink);
+  font-size: 0.98rem;
+}
+
+body.dark-mode .account-question-builder {
+  border-color: rgba(137, 234, 208, 0.24);
+  background:
+    linear-gradient(135deg, rgba(35, 50, 56, 0.84), rgba(30, 24, 42, 0.96)),
+    #181322;
+}
+
+body.dark-mode .account-question-head h3 {
+  color: #fff8ed;
+}
+
+body.dark-mode .account-question-head p {
+  color: rgba(255, 248, 237, 0.72);
+}
+
+body.dark-mode .account-question-builder .field input,
+body.dark-mode .account-question-builder .field select,
+body.dark-mode .account-question-builder .field textarea {
+  border-color: rgba(255, 248, 237, 0.18);
+  background: rgba(255, 248, 237, 0.08);
+  color: #fff8ed;
+}
+
+body.dark-mode .account-question-list-head h4,
+body.dark-mode .account-question-item-head strong,
+body.dark-mode .account-ai-generate-panel h4 {
+  color: #fff8ed;
+}
+
+body.dark-mode .account-question-item {
+  border-color: rgba(255, 248, 237, 0.14);
+  background: rgba(255, 248, 237, 0.06);
+}
+
+body.dark-mode .account-ai-generate-panel {
+  border-color: rgba(255, 248, 237, 0.18);
+  background: rgba(255, 248, 237, 0.06);
 }
 
 .account-detail-md-editor {
@@ -7003,6 +7212,27 @@ body.area-active .area-session-bar .field {
   overflow: auto;
 }
 
+.assessment-resource-body .md-code {
+  max-width: 100%;
+  overflow: auto;
+}
+
+.assessment-resource-body .md-code code {
+  white-space: pre;
+}
+
+.md-code:has(code.language-python)::before {
+  content: "python";
+  display: block;
+  margin: -4px 0 8px;
+  color: color-mix(in srgb, currentColor 54%, transparent);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
 .assessment-card {
   position: relative;
   display: grid;
@@ -7039,20 +7269,22 @@ body.area-active .area-session-bar .field {
 .assessment-card h3 {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.7rem, 3vw, 2.6rem);
-  line-height: 1.05;
+  font-size: clamp(1.15rem, 1.8vw, 1.55rem);
+  line-height: 1.28;
+  overflow-wrap: anywhere;
 }
 
 .assessment-choice-list {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .assessment-choice {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 34px minmax(0, 1fr);
   gap: 12px;
-  align-items: center;
+  align-items: start;
   width: 100%;
   padding: 14px;
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
@@ -7082,6 +7314,37 @@ body.area-active .area-session-bar .field {
   font-weight: 900;
 }
 
+.assessment-choice strong {
+  min-width: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.assessment-summary-card {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+
+.assessment-summary-card strong {
+  font-size: 1.45rem;
+  line-height: 1.15;
+}
+
+.assessment-summary-card span {
+  color: #89ead0;
+  font-weight: 900;
+}
+
+.assessment-summary-card p {
+  margin: 0;
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
 .assessment-choice.is-correct {
   border-color: rgba(137, 234, 208, 0.86);
   background: rgba(137, 234, 208, 0.16);
@@ -7103,6 +7366,8 @@ body.area-active .area-session-bar .field {
 .assessment-message {
   margin: 0;
   color: color-mix(in srgb, currentColor 68%, transparent);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .assessment-stats-panel span {
