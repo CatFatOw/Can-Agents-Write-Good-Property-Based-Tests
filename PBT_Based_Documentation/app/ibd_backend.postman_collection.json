@@ -63,6 +63,128 @@
           "response": []
         },
         {
+          "name": "Create Admin User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Admin user created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set(\"adminUserId\", response.id);",
+                  "}",
+                  "if (response.email) {",
+                  "    pm.collectionVariables.set(\"adminEmail\", response.email);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "admin"
+              ]
+            },
+            "description": "Creates an admin account and matching normal user row so admin JWT auth works."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My User Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Gets the logged-in user's profile. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Admin Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                "admin"
+              ]
+            },
+            "description": "Gets the logged-in admin profile. Run Auth/Admin Login first so {{adminAccessToken}} is set."
+          },
+          "response": []
+        },
+        {
           "name": "Get User By ID",
           "request": {
             "method": "GET",
@@ -275,6 +397,43 @@
               ]
             },
             "description": "Gets every documentation record."
+          },
+          "response": []
+        },
+        {
+          "name": "Export Documentation As CSV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Documentation CSV export returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/csv"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/documentation/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documentation",
+                "export"
+              ]
+            },
+            "description": "Exports every documentation table row as CSV."
           },
           "response": []
         },
@@ -993,6 +1152,504 @@
       ]
     },
     {
+      "name": "Comparison",
+      "item": [
+        {
+          "name": "Get Random Comparison",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Random comparison loaded\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.documentation_id) {",
+                  "    pm.collectionVariables.set(\"comparisonDocumentationId\", response.documentation_id);",
+                  "}",
+                  "if (response.documentation_title) {",
+                  "    pm.collectionVariables.set(\"comparisonDocumentationTitle\", response.documentation_title);",
+                  "}",
+                  "if (response.td_doc) {",
+                  "    pm.collectionVariables.set(\"comparisonTdMarkdown\", response.td_doc);",
+                  "}",
+                  "if (response.ibd_doc) {",
+                  "    pm.collectionVariables.set(\"comparisonIbdMarkdown\", response.ibd_doc);",
+                  "}",
+                  "if (response.ibd_doc_elo_rating !== undefined) {",
+                  "    pm.collectionVariables.set(\"comparisonIbdEloRating\", response.ibd_doc_elo_rating);",
+                  "}",
+                  "if (response.td_doc_elo_rating !== undefined) {",
+                  "    pm.collectionVariables.set(\"comparisonTdEloRating\", response.td_doc_elo_rating);",
+                  "}",
+                  "if (response.bt_ibd_win_prob !== undefined && response.bt_ibd_win_prob !== null) {",
+                  "    pm.collectionVariables.set(\"comparisonBtIbdWinProb\", response.bt_ibd_win_prob);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comparison/random",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comparison",
+                "random"
+              ]
+            },
+            "description": "Gets a random stored documentation row for comparing TD markdown against generated IBD markdown."
+          },
+          "response": []
+        },
+        {
+          "name": "Vote On Comparison",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Comparison vote saved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set(\"comparisonVoteId\", response.id);",
+                  "}",
+                  "if (response.documentation_id) {",
+                  "    pm.collectionVariables.set(\"comparisonDocumentationId\", response.documentation_id);",
+                  "}",
+                  "if (response.ibd_doc_elo_rating !== undefined) {",
+                  "    pm.collectionVariables.set(\"comparisonIbdEloRating\", response.ibd_doc_elo_rating);",
+                  "}",
+                  "if (response.td_doc_elo_rating !== undefined) {",
+                  "    pm.collectionVariables.set(\"comparisonTdEloRating\", response.td_doc_elo_rating);",
+                  "}",
+                  "if (response.bt_ibd_win_prob !== undefined && response.bt_ibd_win_prob !== null) {",
+                  "    pm.collectionVariables.set(\"comparisonBtIbdWinProb\", response.bt_ibd_win_prob);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentation_id\": {{comparisonDocumentationId}},\n  \"winner\": \"{{comparisonWinner}}\",\n  \"comments\": \"{{comparisonComments}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comparison/vote",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comparison",
+                "vote"
+              ]
+            },
+            "description": "Saves the logged-in user's TD/IBD preference for a documentation comparison. Run Auth/Login first, and optionally run Get Random Comparison to set {{comparisonDocumentationId}}."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Comparison Leaderboard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Comparison leaderboard loaded\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Leaderboard response is an array\", function () {",
+                  "    pm.expect(response).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "if (Array.isArray(response) && response.length > 0) {",
+                  "    const top = response[0];",
+                  "    pm.collectionVariables.set(\"comparisonLeaderboardTopDocumentationId\", top.documentation_id);",
+                  "    pm.collectionVariables.set(\"comparisonLeaderboardTopTitle\", top.documentation_title || \"\");",
+                  "    pm.collectionVariables.set(\"comparisonLeaderboardTopIbdEloRating\", top.ibd_doc_elo_rating);",
+                  "    pm.collectionVariables.set(\"comparisonLeaderboardTopTdEloRating\", top.td_doc_elo_rating);",
+                  "    if (top.bt_ibd_win_prob !== undefined && top.bt_ibd_win_prob !== null) {",
+                  "        pm.collectionVariables.set(\"comparisonLeaderboardTopBtIbdWinProb\", top.bt_ibd_win_prob);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comparison/leaderboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comparison",
+                "leaderboard"
+              ]
+            },
+            "description": "Returns documentation rows with votes, ranked by IBD Elo rating, with Elo, Bradley-Terry, vote counts, and win percentages."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Assessments",
+      "item": [
+        {
+          "name": "Generate Assessment Questions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Assessment questions generated\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set(\"assessmentQuestionId\", response.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model_provider\": \"{{modelProvider}}\",\n  \"metrics_model\": \"{{assessmentModel}}\",\n  \"api_key\": \"{{assessmentApiKey}}\",\n  \"base_url\": \"{{assessmentBaseUrl}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/assessments/generate/{{documentationId}}?n_questions={{assessmentQuestionCount}}&choice={{assessmentChoiceCount}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "generate",
+                "{{documentationId}}"
+              ],
+              "query": [
+                {
+                  "key": "n_questions",
+                  "value": "{{assessmentQuestionCount}}"
+                },
+                {
+                  "key": "choice",
+                  "value": "{{assessmentChoiceCount}}"
+                }
+              ]
+            },
+            "description": "Generates assessment questions for one documentation row using the selected model provider. Valid provider ids: openai, claude, cmu_gateway. Requires the logged-in user to be listed as an admin."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Random Assessment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Random assessment loaded\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.attempt_id) {",
+                  "    pm.collectionVariables.set(\"assessmentAttemptId\", response.attempt_id);",
+                  "}",
+                  "if (response.documentation_id) {",
+                  "    pm.collectionVariables.set(\"assessmentDocumentationId\", response.documentation_id);",
+                  "}",
+                  "if (response.documentation_type) {",
+                  "    pm.collectionVariables.set(\"assessmentDocumentationType\", response.documentation_type);",
+                  "}",
+                  "if (Array.isArray(response.questions) && response.questions.length > 0) {",
+                  "    pm.collectionVariables.set(\"assessmentQuestionId\", response.questions[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assessments/random",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "random"
+              ]
+            },
+            "description": "Gets a random assessment for the logged-in user, randomly choosing TD or IBD documentation and creating an assessment attempt. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Assessment Answer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Assessment answer submitted\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set(\"assessmentAnswerId\", response.id);",
+                  "}",
+                  "if (response.is_correct !== undefined) {",
+                  "    pm.collectionVariables.set(\"assessmentAnswerIsCorrect\", response.is_correct);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"attempt_id\": {{assessmentAttemptId}},\n  \"question_id\": {{assessmentQuestionId}},\n  \"user_response\": \"{{assessmentUserResponse}}\",\n  \"user_id\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/assessments/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "submit"
+              ]
+            },
+            "description": "Submits one answer for the logged-in user's assessment attempt. Run Get Random Assessment first so {{assessmentAttemptId}} and {{assessmentQuestionId}} are set."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assessment Stats",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Assessment stats loaded\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.total_answered !== undefined) {",
+                  "    pm.collectionVariables.set(\"assessmentTotalAnswered\", response.total_answered);",
+                  "}",
+                  "if (response.total_correct !== undefined) {",
+                  "    pm.collectionVariables.set(\"assessmentTotalCorrect\", response.total_correct);",
+                  "}",
+                  "if (response.total_incorrect !== undefined) {",
+                  "    pm.collectionVariables.set(\"assessmentTotalIncorrect\", response.total_incorrect);",
+                  "}",
+                  "if (response.percentage_correct !== undefined) {",
+                  "    pm.collectionVariables.set(\"assessmentPercentageCorrect\", response.percentage_correct);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assessments/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "stats"
+              ]
+            },
+            "description": "Gets answer statistics for the logged-in user. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Export Assessments CSV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Assessments CSV export returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/csv"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assessments/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "export"
+              ]
+            },
+            "description": "Exports assessment data as CSV for the logged-in user. Run Auth/Login first so {{accessToken}} is set."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Auth",
       "item": [
         {
@@ -1058,6 +1715,69 @@
           "response": []
         },
         {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Admin login succeeded\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.access_token) {",
+                  "    pm.collectionVariables.set(\"adminAccessToken\", response.access_token);",
+                  "    pm.collectionVariables.set(\"accessToken\", response.access_token);",
+                  "    pm.collectionVariables.set(\"tokenType\", response.token_type || \"bearer\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{adminEmail}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login/admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login",
+                "admin"
+              ]
+            },
+            "description": "Logs in an admin user with OAuth2PasswordRequestForm fields. The returned token is saved to {{adminAccessToken}} and {{accessToken}}."
+          },
+          "response": []
+        },
+        {
           "name": "Authorized Request Template",
           "request": {
             "auth": {
@@ -1110,6 +1830,21 @@
       "type": "string"
     },
     {
+      "key": "adminEmail",
+      "value": "admin@example.com",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "password123",
+      "type": "string"
+    },
+    {
+      "key": "adminUserId",
+      "value": "1",
+      "type": "string"
+    },
+    {
       "key": "userId",
       "value": "1",
       "type": "string"
@@ -1117,6 +1852,161 @@
     {
       "key": "documentationId",
       "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "comparisonDocumentationId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "comparisonVoteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonWinner",
+      "value": "IBD",
+      "type": "string"
+    },
+    {
+      "key": "comparisonComments",
+      "value": "IBD documentation was clearer and more actionable.",
+      "type": "string"
+    },
+    {
+      "key": "comparisonIbdEloRating",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonTdEloRating",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonBtIbdWinProb",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonLeaderboardTopDocumentationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonLeaderboardTopTitle",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonLeaderboardTopIbdEloRating",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonLeaderboardTopTdEloRating",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonLeaderboardTopBtIbdWinProb",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonDocumentationTitle",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonTdMarkdown",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comparisonIbdMarkdown",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentQuestionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentAttemptId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentDocumentationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentDocumentationType",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentUserResponse",
+      "value": "A",
+      "type": "string"
+    },
+    {
+      "key": "assessmentAnswerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentAnswerIsCorrect",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentTotalAnswered",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentTotalCorrect",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentTotalIncorrect",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentPercentageCorrect",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentModel",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentApiKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assessmentBaseUrl",
+      "value": "https://ai-gateway.andrew.cmu.edu/v1",
+      "type": "string"
+    },
+    {
+      "key": "assessmentQuestionCount",
+      "value": "10",
+      "type": "string"
+    },
+    {
+      "key": "assessmentChoiceCount",
+      "value": "4",
       "type": "string"
     },
     {
@@ -1156,7 +2046,7 @@
     },
     {
       "key": "modelProvider",
-      "value": "claude",
+      "value": "cmu_gateway",
       "type": "string"
     },
     {
@@ -1166,6 +2056,11 @@
     },
     {
       "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminAccessToken",
       "value": "",
       "type": "string"
     },

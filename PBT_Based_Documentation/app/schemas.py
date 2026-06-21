@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Any, Optional
 from datetime import datetime
-from typing import Literal
+from typing import Literal, List, Dict
 
 # --------------------------INPUT MODELS----------------------
 # Documentation
@@ -50,6 +50,12 @@ class ComparisonRequest(BaseModel):
     winner: Literal["TD", "IBD"]
     comments:str
 
+# Assessment submission schema
+class AssessmentSubmit(BaseModel):
+    attempt_id: int
+    question_id: int
+    user_response: str
+    user_id:int
 
 # --------------------------RESPONSE MODELS--------------------
 
@@ -187,3 +193,37 @@ class ComparisonResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+
+class AssessmentQuestionResponse(BaseModel):
+    id: int
+    question: str
+    choices: Dict[str, str]
+
+
+class AssessmentResponse(BaseModel):
+    attempt_id: int
+    documentation_id: int
+    documentation_title: str
+    documentation_type: str
+    documentation: str
+    questions: List[AssessmentQuestionResponse]
+
+# Schema for user submission
+class AssessmentAnswerResponse(BaseModel):
+    id: int
+    attempt_id: int
+    question_id: int
+    user_response: str
+    is_correct: bool
+
+    class Config:
+        orm_mode=True
+
+# Schema for user stats
+class AssessmentStatsResponse(BaseModel):
+    total_answered: int
+    total_correct: int
+    total_incorrect: int
+    percentage_correct: float

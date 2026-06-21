@@ -33,13 +33,23 @@ async def login(user_credential:OAuth2PasswordRequestForm=Depends(), db:Session 
     access_token = oath2.create_access_token(data={"user_id":user.id})
     return {"access_token":access_token, "token_type":"bearer"}
     
-    
 
+@router.post("/admin", response_model=Token)
+async def login_admin(user_credential:OAuth2PasswordRequestForm=Depends(), db:Session = Depends(get_db)):
+    """function logs in the admin"""
+    admin_user = db.query(models.AdminUser).filter(models.AdminUser.email == user_credential.username).first()
+    if not admin_user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"INVALID CREDENTIALS!")
 
+    if not verify(user_credential.password, admin_user.password):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"INVALID CREDENTIALS")
 
+    user = db.query(models.User).filter(models.User.email == admin_user.email).first()
+    if user is None:
+        user = models.User(email=admin_user.email, password=admin_user.password)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
-
-
-
-
-
+    access_token = oath2.create_access_token(data={"user_id": user.id})
+    return {"access_token": access_token, "token_type": "bearer"}

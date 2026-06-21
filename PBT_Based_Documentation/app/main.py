@@ -15,7 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import database
-from routers import auth, documentation, metrics, model_api, users
+from routers import auth, comparison, documentation, metrics, model_api, users, assessments
 
 # Define the app
 app = FastAPI()
@@ -24,19 +24,24 @@ app = FastAPI()
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(documentation.router)
+app.include_router(comparison.router)
 app.include_router(metrics.router)
 app.include_router(model_api.router)
+app.include_router(assessments.router)
 
 # Include server.py-compatible /api/... routes used by the current frontend.
 app.include_router(documentation.api_router)
 app.include_router(metrics.api_router)
 app.include_router(model_api.api_router)
 
+
+
 # Check to see if the database loaded properly.
 print(database.Base.metadata.tables.keys())
 
 # Create all tables defined by the ORM models.
-database.Base.metadata.create_all(bind=database.engine)
+# Alembic should auto do this :D
+#database.Base.metadata.create_all(bind=database.engine)
 
 # Serve index.html, app.js, styles.css, assets/, examples/, etc. from the same
 # project root that server.py used to host through SimpleHTTPRequestHandler.

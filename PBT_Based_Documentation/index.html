@@ -164,8 +164,13 @@
           <p id="area-limit-message" role="status">Default is unlimited.</p>
         </section>
 
+        <div class="area-mode-tabs" role="tablist" aria-label="Arena activity">
+          <button type="button" class="area-mode-tab is-active" id="area-compare-tab" data-area-mode="compare" role="tab" aria-selected="true">Compare preference</button>
+          <button type="button" class="area-mode-tab" id="area-comprehension-tab" data-area-mode="comprehension" role="tab" aria-selected="false">Comprehension</button>
+        </div>
+
         <main class="area-layout">
-          <section class="area-battle area-study-view" id="area-study-view" aria-labelledby="area-battle-title">
+          <section class="area-battle area-study-view" id="area-study-view" data-area-panel="compare" aria-labelledby="area-battle-title">
             <div class="area-battle-head">
               <div>
                 <p class="eyebrow">Current post</p>
@@ -206,6 +211,54 @@
                 <p id="area-vote-message" role="status">Blind study mode. Statistics are hidden until after your vote.</p>
               </div>
             </section>
+          </section>
+
+          <section class="area-battle area-comprehension-view is-hidden" id="area-comprehension-view" data-area-panel="comprehension" aria-labelledby="area-comprehension-title">
+            <div class="area-battle-head">
+              <div>
+                <p class="eyebrow">Comprehension check</p>
+                <h2 id="area-comprehension-title">Read, reason, answer</h2>
+              </div>
+              <button type="button" class="secondary-button" id="assessment-next-button">Next assessment</button>
+            </div>
+
+            <div class="assessment-layout">
+              <aside class="assessment-resource-panel" aria-label="Assessment resources">
+                <div class="assessment-resource-head">
+                  <p class="eyebrow">Reference material</p>
+                  <strong id="assessment-doc-title">Documentation sample</strong>
+                </div>
+                <div class="assessment-resource-tabs" role="tablist" aria-label="Reference tabs">
+                  <button type="button" class="assessment-resource-tab is-active" data-assessment-resource="documentation" role="tab" aria-selected="true">Documentation</button>
+                  <button type="button" class="assessment-resource-tab" data-assessment-resource="source" role="tab" aria-selected="false">Source code</button>
+                </div>
+                <details class="assessment-resource-details" open>
+                  <summary id="assessment-resource-summary">Open documentation</summary>
+                  <div class="markdown-rendered landing-doc-scroll assessment-resource-body" id="assessment-resource-body">
+                    <p class="placeholder">Open the comprehension tab to load an assessment.</p>
+                  </div>
+                </details>
+              </aside>
+
+              <section class="assessment-card" aria-live="polite">
+                <div class="assessment-progress">
+                  <span id="assessment-progress-text">Question 0 of 0</span>
+                  <div class="assessment-progress-track"><span id="assessment-progress-bar"></span></div>
+                </div>
+                <h3 id="assessment-question-text">Load a comprehension question</h3>
+                <div class="assessment-choice-list" id="assessment-choice-list"></div>
+                <div class="assessment-actions">
+                  <button type="button" class="landing-primary-button" id="assessment-submit-button">Check answer</button>
+                  <button type="button" class="secondary-button" id="assessment-skip-button">Skip</button>
+                </div>
+                <p class="assessment-message" id="assessment-message" role="status">Khan-style practice: read the reference, answer, then move through the set.</p>
+                <div class="assessment-stats-panel" id="assessment-stats-panel">
+                  <span><strong id="assessment-correct-count">0</strong> correct</span>
+                  <span><strong id="assessment-answered-count">0</strong> answered</span>
+                  <span><strong id="assessment-percent-correct">0%</strong> accuracy</span>
+                </div>
+              </section>
+            </div>
           </section>
         </main>
       </div>

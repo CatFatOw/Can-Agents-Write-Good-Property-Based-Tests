@@ -1,0 +1,415 @@
+import admin 
+from fastapi import APIRouter, Body, HTTPException, Depends, Query, status
+from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import func 
+import models 
+from database import get_db 
+from openai import OpenAI
+import os, json
+import legacy_backend
+import random 
+import oath2
+from collections import defaultdict
+from schemas import AssessmentResponse, AssessmentSubmit, AssessmentAnswerResponse, AssessmentStatsResponse, DocumentationResponse
+from fastapi.responses import FileResponse
+import pandas as pd 
+router = APIRouter(prefix="/assessments", tags=["assessments"])
+ASSESSMENT_MODEL = os.environ.get("OPENAI_ASSESSMENT_METRICS_MODEL", "gpt-5.5")
+
+
+def generate_assessment_json(prompt: str, payload: dict) -> dict:
+    """Generate assessment JSON with any configured model provider."""
+    config = legacy_backend.model_provider_config(
+        payload,
+        fallback_model=ASSESSMENT_MODEL,
+        model_field="metrics_model",
+    )
+    if config["provider"] == "openai" and not config["api_key"] and not os.environ.get("OPENAI_API_KEY"):
+        raise RuntimeError("OpenAI key is required. Paste a key or set OPENAI_API_KEY.")
+
+    if config["provider"] == "claude":
+        raw = legacy_backend.anthropic_response_text(
+            config["model"],
+            prompt,
+            config["api_key"],
+        )
+    else:
+        client_kwargs = {}
+        if config["api_key"]:
+            client_kwargs["api_key"] = config["api_key"]
+        if config["base_url"]:
+            client_kwargs["base_url"] = config["base_url"]
+        client = OpenAI(**client_kwargs)
+        if not legacy_backend.prefers_chat_completions(config) and hasattr(client, "responses"):
+            response = client.responses.create(
+                model=config["model"],
+                input=prompt,
+            )
+            raw = response.output_text
+        else:
+            response = client.chat.completions.create(
+                model=config["model"],
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an expert software engineer and technical educator.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            raw = response.choices[0].message.content or ""
+
+    return json.loads(legacy_backend.strip_fences(raw))
+
+
+def request_payload_from_provider_fields(
+    body: dict | None,
+    model_provider: str | None,
+    model: str | None,
+    api_key: str | None,
+    base_url: str | None,
+) -> dict:
+    """Merge JSON body provider settings with query-param overrides."""
+    payload = dict(body or {})
+    if model_provider:
+        payload["model_provider"] = model_provider
+    if model:
+        payload["metrics_model"] = model
+    if api_key:
+        payload["api_key"] = api_key
+    if base_url:
+        payload["base_url"] = base_url
+    return payload
+
+
+
+# CODEX VIBE CODED OPEN LOGIC ABOVE
+
+
+# ADMIN SIDE ROUTES
+@router.post("/generate/{documentation_id}")
+async def generate_questions(
+    documentation_id:int,
+    model: str | None = None,
+    n_questions:int = 10,
+    choice:int=4,
+    model_provider: str | None = Query(None),
+    api_key: str | None = Query(None),
+    base_url: str | None = Query(None),
+    provider_payload: dict | None = Body(None),
+    db:Session=Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """Function (mostly for demo purposes) lets an AI model generate a couple of multiple choice questions where the can answer only using source code 
+    and provided documentation
+    """
+
+    random_documentation = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
+    if random_documentation is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Documentation not found"
+        )
+    
+    PROMPT = f"""You are an expert software engineer and technical educator.
+
+Your task is to create a standardized comprehension assessment for a software function.
+
+Requirements:
+
+* Generate exactly {n_questions} multiple-choice questions.
+* Every question must have exactly {choice} answer choices.
+* Exactly one answer choice must be correct.
+* Questions should test function behavior, parameters, return values, assumptions, edge cases, exceptions, and common misunderstandings.
+* Questions should NOT test variable names, coding style, line-by-line source code knowledge, or documentation wording.
+* Avoid trick questions and duplicate concepts.
+* Include a brief explanation for the correct answer.
+
+MANDATORY COVERAGE REQUIREMENTS:
+
+* At least 2 questions MUST focus on edge cases or boundary conditions.
+* At least 2 questions MUST focus on exceptions, errors, invalid inputs, or situations that cause the function to fail.
+* At least 1 question MUST focus on return values or output behavior.
+* At least 1 question MUST focus on parameter behavior or parameter interactions.
+* Remaining questions may cover general behavior, assumptions, or common misconceptions.
+
+For exception-related questions:
+* Ask what exception is raised, when an exception occurs, or what input/state causes failure.
+* Use only exceptions that are actually possible according to the source code.
+
+For edge-case questions:
+* Focus on empty inputs, null values, boundary values, degenerate cases, special parameter combinations, or unusual but valid inputs when applicable.
+
+Questions should collectively cover the function's most important behaviors rather than repeatedly testing the same concept.
+
+Return ONLY valid JSON.
+
+Schema:
+
+{{
+  "questions": [
+    {{
+      "question": "string",
+      "choices": {{
+        "A": "string",
+        "B": "string",
+        "C": "string",
+        "D": "string"
+      }},
+      "correct_answer": "A",
+      "explanation": "string"
+    }}
+  ]
+}}
+
+Function Name:
+{random_documentation.documentation_title}
+
+Source Code:
+{random_documentation.source_code}
+"""
+    
+    payload = request_payload_from_provider_fields(
+        provider_payload,
+        model_provider,
+        model,
+        api_key,
+        base_url,
+    )
+    try:
+        output = generate_assessment_json(PROMPT, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
+
+    # Update the database. 
+    # assessment_questions is where we store the documentation_id, question(s), and the correct response
+
+    new_QA = None
+    for q in output["questions"]:
+        new_QA = models.AssessmentQuestion(
+            documentation_id=documentation_id,
+            question=q["question"],
+            choices=q["choices"],
+            correct_response=q["correct_answer"],
+            explanation=q["explanation"]
+        )
+
+        db.add(new_QA)
+    db.commit()
+    if new_QA is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="No questions were generated")
+    db.refresh(new_QA)
+    return new_QA
+
+
+
+
+
+
+    # USER SIDE ROUTES 
+
+# Get a random assessment 
+@router.get("/random", response_model=AssessmentResponse)
+async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+    """function gets random assessment and also ranodmly chooses to do TD or IBD """
+    random_question = db.query(models.AssessmentQuestion).order_by(func.random()).first()
+    if not random_question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
+
+    documentation = db.query(models.Documentation).filter(
+        models.Documentation.id == random_question.documentation_id
+    ).first()
+    if not documentation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
+
+    assessment = db.query(models.AssessmentQuestion).filter(
+        models.AssessmentQuestion.documentation_id == documentation.id
+    ).all()
+
+    # randomly geneate if TD or IBD 
+    choices = ["TD", "IBD"]
+    if random.choice(choices) == "TD":
+        markdown = documentation.TD_md
+        doc_type = "TD" 
+    else:
+        markdown = documentation.IBD_generated_md
+        doc_type = "IBD" 
+    # now update 
+    new_attempt = models.AssessmentAttempt(documentation_id = documentation.id, user_id = curr_user.id, 
+                                           documentation_type = doc_type, 
+                                           total_questions = len(assessment), 
+                                           total_correct = 0)
+    db.add(new_attempt)
+    db.commit()
+    db.refresh(new_attempt)
+
+    return {
+        "attempt_id": new_attempt.id,
+        "documentation_id": documentation.id,
+        "documentation_title": documentation.documentation_title,
+        "documentation_type": doc_type,
+        "documentation": markdown,
+        "questions": [
+            {
+                "id": q.id,
+                "question": q.question,
+                "choices": q.choices
+            }
+            for q in assessment
+        ]
+    }
+
+
+# Route allows user to submit their answer
+@router.post("/submit", response_model=AssessmentAnswerResponse)
+async def submit_answers(response:AssessmentSubmit, db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+    """Function allows user to submit response to the database"""
+    attempting_question = db.query(models.AssessmentQuestion).filter(models.AssessmentQuestion.id == response.question_id).first()
+    if not attempting_question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"QUESTION WAS NOT FOUND")
+    
+    
+    attempt = (
+        db.query(models.AssessmentAttempt)
+        .filter(
+            models.AssessmentAttempt.id == response.attempt_id,
+            models.AssessmentAttempt.user_id == curr_user.id
+        )
+        .first()
+    )
+
+    if not attempt:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Attempt was not found"
+        )
+    
+    existing_answer = (
+    db.query(models.AssessmentAnswer)
+    .filter(
+        models.AssessmentAnswer.attempt_id == response.attempt_id,
+        models.AssessmentAnswer.question_id == response.question_id,
+        models.AssessmentAnswer.user_id == curr_user.id
+    )
+    .first()
+    )
+
+    if existing_answer:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You already answered this question for this attempt"
+        )
+    
+
+    # If the user answers correct
+    is_correct = attempting_question.correct_response == response.user_response
+       
+
+    user_response = models.AssessmentAnswer(attempt_id = response.attempt_id, question_id = response.question_id, 
+                                            user_response = response.user_response, 
+                                            is_correct = is_correct,
+                                            user_id = curr_user.id)
+
+    
+    db.add(user_response)
+
+    # update the questions/correct asnwers attempted
+    if is_correct:
+        attempt.total_correct += 1
+    db.commit()
+    db.refresh(user_response)
+    return user_response
+    
+
+
+# Get assessment statistics 
+@router.get("/stats", response_model=AssessmentStatsResponse)
+async def get_stats(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+    """function gets the statistics of the current user """
+    all_user_attempts = db.query(models.AssessmentAnswer).filter(models.AssessmentAnswer.user_id == curr_user.id).all()
+    if not all_user_attempts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"USER WAS NOT FOUND")
+
+
+    total_answered = len(all_user_attempts)
+    total_correct = sum(answer.is_correct for answer in all_user_attempts)
+
+    percentage_correct = (
+        total_correct / total_answered * 100
+        if total_answered > 0
+        else 0
+    )
+    return  {
+    "total_answered": total_answered,
+    "total_correct": total_correct,
+    "total_incorrect": total_answered-total_correct,
+    "percentage_correct": percentage_correct
+}
+
+# Allow the user to download the data as a CSV file 
+
+# Download EVERYTHING
+
+
+@router.get("/export")
+async def export_assessment_question_table_csv(
+    db: Session = Depends(get_db),
+    curr_user = Depends(oath2.get_current_user)
+):
+    """Function exports assessment data as a CSV."""
+
+    data = (
+        db.query(
+            models.AssessmentQuestion.id.label("question_id"),
+            models.AssessmentQuestion.documentation_id,
+            models.AssessmentQuestion.question,
+            models.AssessmentQuestion.choices,
+            models.AssessmentQuestion.correct_response,
+            models.AssessmentQuestion.explanation,
+
+            models.AssessmentAttempt.id.label("attempt_id"),
+            models.AssessmentAttempt.user_id,
+            models.AssessmentAttempt.documentation_type,
+            models.AssessmentAttempt.total_questions,
+            models.AssessmentAttempt.total_correct,
+            models.AssessmentAttempt.created_at,
+
+            models.AssessmentAnswer.id.label("answer_id"),
+            models.AssessmentAnswer.user_response,
+            models.AssessmentAnswer.is_correct,
+        )
+        .join(
+            models.AssessmentAnswer,
+            models.AssessmentAnswer.question_id == models.AssessmentQuestion.id
+        )
+        .join(
+            models.AssessmentAttempt,
+            models.AssessmentAttempt.id == models.AssessmentAnswer.attempt_id
+        )
+        .filter(models.AssessmentAnswer.user_id == curr_user.id)
+        .all()
+    )
+
+
+
+    result = [row._asdict() for row in data]
+
+    df = pd.DataFrame(result)
+    df["percentage_correct"] = (
+    df["total_correct"] / df["total_questions"] * 100
+)
+
+    file_name = "User_Assessment_Table.csv"
+    df.to_csv(file_name, index=False)
+
+    return FileResponse(
+        path=file_name,
+        filename=file_name,
+        media_type="text/csv"
+    )
+
+
+
+

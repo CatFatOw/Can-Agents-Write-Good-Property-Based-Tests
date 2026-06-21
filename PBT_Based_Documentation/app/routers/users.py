@@ -6,6 +6,7 @@ from database import get_db
 from schemas import UserModel, UserResponse, PasswordChange
 import utils, oath2
 from sqlalchemy.orm import Session
+import admin
 
 router = APIRouter(
     prefix="/users",
@@ -32,11 +33,39 @@ async def create_user(user:UserModel, db:Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
+
+@router.post("/admin", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
+async def create_admin_user(user: UserModel, db: Session = Depends(get_db)):
+    """Create an admin account and ensure it can authenticate through JWT."""
+    admin_user = db.query(models.AdminUser).filter(models.AdminUser.email == user.email).first()
+    if admin_user:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"YOU CANNOT USE THE SAME EMAIL {user.email} TWICE")
+
+    hashed_password = utils.hash(user.password)
+    curr_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if curr_user is None:
+        curr_user = models.User(email=user.email, password=hashed_password)
+        db.add(curr_user)
+    new_admin = models.AdminUser(email=user.email, password=hashed_password)
+    db.add(new_admin)
+    db.commit()
+    db.refresh(curr_user)
+    return curr_user
+
+
+
+    
+
 # CURRENT USER (ACCOUNT) ENDPOINT LOGIC START----
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(curr_user: models.User = Depends(oath2.get_current_user)):
     """Return the profile (name/email, created time) for the logged-in user."""
     return curr_user
+
+@router.get("/me/admin", response_model=UserResponse)
+async def get_current_admin_profile(curr_admin: models.AdminUser = Depends(admin.get_current_admin)):
+    """Return the profile for the logged-in admin user."""
+    return curr_admin
 
 
 @router.put("/me/password", response_model=UserResponse)
@@ -86,7 +115,6 @@ async def get_user(id:int, db:Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"ID: {id} not FOUND!")
     return user
-
 
 
 

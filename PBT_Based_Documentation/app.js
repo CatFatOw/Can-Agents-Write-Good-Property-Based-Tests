@@ -25,6 +25,24 @@ const areaStudyView = document.querySelector("#area-study-view");
 const areaStudyTab = document.querySelector("#area-study-tab");
 const areaResultsTab = document.querySelector("#area-results-tab");
 const areaLeaderboardList = document.querySelector("#area-leaderboard-list");
+const areaModeTabs = Array.from(document.querySelectorAll(".area-mode-tab"));
+const areaPanels = Array.from(document.querySelectorAll("[data-area-panel]"));
+const areaComprehensionView = document.querySelector("#area-comprehension-view");
+const assessmentNextButton = document.querySelector("#assessment-next-button");
+const assessmentDocTitle = document.querySelector("#assessment-doc-title");
+const assessmentResourceTabs = Array.from(document.querySelectorAll(".assessment-resource-tab"));
+const assessmentResourceSummary = document.querySelector("#assessment-resource-summary");
+const assessmentResourceBody = document.querySelector("#assessment-resource-body");
+const assessmentProgressText = document.querySelector("#assessment-progress-text");
+const assessmentProgressBar = document.querySelector("#assessment-progress-bar");
+const assessmentQuestionText = document.querySelector("#assessment-question-text");
+const assessmentChoiceList = document.querySelector("#assessment-choice-list");
+const assessmentSubmitButton = document.querySelector("#assessment-submit-button");
+const assessmentSkipButton = document.querySelector("#assessment-skip-button");
+const assessmentMessage = document.querySelector("#assessment-message");
+const assessmentCorrectCount = document.querySelector("#assessment-correct-count");
+const assessmentAnsweredCount = document.querySelector("#assessment-answered-count");
+const assessmentPercentCorrect = document.querySelector("#assessment-percent-correct");
 const landingLeaderboardSection = document.querySelector("#leaderboard");
 const landingLeaderboardList = document.querySelector("#landing-leaderboard-list");
 const areaChoices = Array.from(document.querySelectorAll(".area-choice"));
@@ -227,6 +245,15 @@ let activeAreaSides = { A: "TD", B: "IBD" };
 let areaVoteSubmitted = false;
 let areaLoading = false;
 let currentAreaPost = null;
+let activeAreaMode = "compare";
+let currentAssessment = null;
+let currentAssessmentDoc = null;
+let currentAssessmentQuestionIndex = 0;
+let selectedAssessmentChoice = "";
+let answeredAssessmentQuestions = new Set();
+let assessmentAnsweredCountValue = 0;
+let assessmentCorrectCountValue = 0;
+let activeAssessmentResource = "documentation";
 const areaFallbackPosts = [
   {
     title: "Anonymous np.pad documentation comparison",
@@ -602,9 +629,9 @@ function renderBradleyTerryStats(entry) {
       </div>
       <p class="bt-stat-note">Model-estimated probability from the vote pattern, not the raw observed win rate.</p>
       <div class="area-stat-grid">
-        <span><strong>${formatSignedStatistic(entry.bt_ibd_rating)}</strong> IBD BT rating</span>
-        <span><strong>${formatSignedStatistic(entry.bt_td_rating)}</strong> TD BT rating</span>
-        <span><strong>${formatPercentValue(winProb)}</strong> Model-estimated IBD win probability</span>
+        <span><strong>${formatSignedStatistic(entry.bt_ibd_rating)}</strong> Invariant-based BT rating</span>
+        <span><strong>${formatSignedStatistic(entry.bt_td_rating)}</strong> Baseline BT rating</span>
+        <span><strong>${formatPercentValue(winProb)}</strong> Model-estimated invariant-based win probability</span>
         <span><strong>${hasCi ? `${formatPercentValue(ciLower)}-${formatPercentValue(ciUpper)}` : "—"}</strong> 95% CI</span>
       </div>
     </section>
@@ -624,13 +651,13 @@ function renderLeaderboardDocumentationMenu(entry) {
     <div class="leaderboard-doc-menu">
       ${ibdMarkdown ? `
         <details>
-          <summary>IBD Markdown</summary>
+          <summary>Invariant-based Markdown</summary>
           <div class="markdown-rendered landing-doc-scroll leaderboard-doc-preview">${renderMarkdown(ibdMarkdown)}</div>
         </details>
       ` : ""}
       ${tdMarkdown ? `
         <details>
-          <summary>TD Markdown</summary>
+          <summary>Baseline Markdown</summary>
           <div class="markdown-rendered landing-doc-scroll leaderboard-doc-preview">${renderMarkdown(tdMarkdown)}</div>
         </details>
       ` : ""}
@@ -725,7 +752,7 @@ async function renderLandingLeaderboard() {
       .filter((entry) => String(entry.IBD_generated_md || entry.ibd_doc || "").trim() && String(entry.TD_md || entry.td_doc || "").trim());
     if (!ranked.length) {
       landingLeaderboardSection?.classList.add("is-hidden");
-      landingLeaderboardList.innerHTML = '<li class="placeholder">No documentation pairs with both TD and IBD are ready for the leaderboard yet.</li>';
+      landingLeaderboardList.innerHTML = '<li class="placeholder">No documentation pairs with both baseline and invariant-based Markdown are ready for the leaderboard yet.</li>';
       return;
     }
     landingLeaderboardSection?.classList.remove("is-hidden");
@@ -751,20 +778,20 @@ async function renderLandingLeaderboard() {
             <details class="area-ranking-details">
               <summary>Show study stats</summary>
               <div class="area-stat-grid">
-                <span><strong>${Number(entry.ibd_doc_elo_rating || 0)}</strong> IBD Elo</span>
-                <span><strong>${Number(entry.td_doc_elo_rating || 0)}</strong> TD Elo</span>
+                <span><strong>${Number(entry.ibd_doc_elo_rating || 0)}</strong> Invariant-based Elo</span>
+                <span><strong>${Number(entry.td_doc_elo_rating || 0)}</strong> Baseline Elo</span>
                 <span><strong>${voteCount >= 2 ? formatPercentValue(entry.bt_ibd_win_prob) : "Pending"}</strong> Bradley-Terry model probability</span>
                 <span><strong>${voteCount}</strong> comparisons</span>
               </div>
               ${renderBradleyTerryStats(entry)}
               <div class="area-distribution" aria-label="Preference distribution">
                 <div class="area-distribution-bar">
-                  <span style="--share: ${ibdPct}%" title="IBD ${ibdPct}%"></span>
-                  <span style="--share: ${tdPct}%" title="TD ${tdPct}%"></span>
+                  <span style="--share: ${ibdPct}%" title="Invariant-based ${ibdPct}%"></span>
+                  <span style="--share: ${tdPct}%" title="Baseline ${tdPct}%"></span>
                 </div>
                 <div class="area-distribution-labels">
-                  <small>Observed IBD wins ${ibdPct}%</small>
-                  <small>Observed TD wins ${tdPct}%</small>
+                  <small>Observed invariant-based wins ${ibdPct}%</small>
+                  <small>Observed baseline wins ${tdPct}%</small>
                 </div>
               </div>
               ${renderLeaderboardViz({
@@ -820,8 +847,8 @@ function renderAreaLeaderboard() {
           <details class="area-ranking-details">
             <summary>Show more stats</summary>
             <div class="area-stat-grid">
-              <span><strong>${post.ibdElo}</strong> IBD Elo</span>
-              <span><strong>${post.tdElo}</strong> TD Elo</span>
+              <span><strong>${post.ibdElo}</strong> Invariant-based Elo</span>
+              <span><strong>${post.tdElo}</strong> Baseline Elo</span>
               <span><strong>${voteCount >= 2 ? formatPercentValue(post.bt) : "Pending"}</strong> Bradley-Terry model probability</span>
               <span><strong>${voteCount}</strong> comparisons</span>
             </div>
@@ -835,12 +862,12 @@ function renderAreaLeaderboard() {
             })}
             <div class="area-distribution" aria-label="Preference distribution">
               <div class="area-distribution-bar">
-                <span style="--share: ${ibdPct}%" title="IBD ${ibdPct}%"></span>
-                <span style="--share: ${tdPct}%" title="TD ${tdPct}%"></span>
+                <span style="--share: ${ibdPct}%" title="Invariant-based ${ibdPct}%"></span>
+                <span style="--share: ${tdPct}%" title="Baseline ${tdPct}%"></span>
               </div>
               <div class="area-distribution-labels">
-                <small>Observed IBD wins ${ibdPct}%</small>
-                <small>Observed TD wins ${tdPct}%</small>
+                <small>Observed invariant-based wins ${ibdPct}%</small>
+                <small>Observed baseline wins ${tdPct}%</small>
               </div>
             </div>
           </details>
@@ -887,8 +914,8 @@ function renderAccountRankingSummary(doc) {
           <span style="--share: ${tdPct}%" title="Baseline ${tdPct}%"></span>
         </div>
         <div class="area-distribution-labels">
-          <small>Observed IBD wins ${ibdPct}%</small>
-          <small>Observed TD wins ${tdPct}%</small>
+          <small>Observed invariant-based wins ${ibdPct}%</small>
+          <small>Observed baseline wins ${tdPct}%</small>
         </div>
       </div>
       ${renderLeaderboardViz({ ibdPct, tdPct, ibdElo, tdElo, voteCount: comparisonCount })}
@@ -932,6 +959,220 @@ function renderAreaPost() {
     choice.setAttribute("aria-pressed", String(active));
   });
   updateAreaSessionUI();
+}
+
+function setAreaMode(nextMode) {
+  activeAreaMode = nextMode === "comprehension" ? "comprehension" : "compare";
+  areaModeTabs.forEach((button) => {
+    const active = button.dataset.areaMode === activeAreaMode;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  areaPanels.forEach((panel) => {
+    panel.classList.toggle("is-hidden", panel.dataset.areaPanel !== activeAreaMode);
+  });
+  if (activeAreaMode === "comprehension" && !currentAssessment) {
+    loadAssessment();
+  }
+}
+
+function anonymizeStudyReference(text, label = "Reference") {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((line) => {
+      if (/^\s*(?:>\s*)?(?:source|url|original source|reference source)\s*:/i.test(line)) {
+        return "";
+      }
+      return line
+        .replace(/\[[^\]]+\]\((?:https?:\/\/|www\.)[^)]+\)/gi, "reference")
+        .replace(/https?:\/\/\S+|www\.\S+/gi, "")
+        .replace(/\b(?:TD|IBD)\b/gi, label)
+        .replace(/\b(?:original|traditional|baseline)\s+documentation\b/gi, `${label} documentation`)
+        .replace(/\binvariant[-\s]?based documentation\b/gi, `${label} documentation`)
+        .replace(/\b(?:public|official|original)?\s*(?:NumPy\s+)?reference documentation\b/gi, "reference documentation");
+    })
+    .filter((line) => line.trim())
+    .join("\n");
+}
+
+async function fetchAssessmentDocumentation(documentationId) {
+  if (!documentationId) return null;
+  try {
+    const response = await fetch(apiUrl(`/documentation/${documentationId}`), {
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    const data = await response.json().catch(() => ({}));
+    return response.ok ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+function currentAssessmentQuestion() {
+  return currentAssessment?.questions?.[currentAssessmentQuestionIndex] || null;
+}
+
+function renderAssessmentResource() {
+  if (!assessmentResourceBody || !currentAssessment) return;
+  assessmentResourceTabs.forEach((button) => {
+    const active = button.dataset.assessmentResource === activeAssessmentResource;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  const title = currentAssessment.documentation_title || "Documentation sample";
+  if (assessmentDocTitle) assessmentDocTitle.textContent = title;
+  if (activeAssessmentResource === "source") {
+    const source = anonymizeStudyReference(currentAssessmentDoc?.source_code || "", "Reference");
+    if (assessmentResourceSummary) assessmentResourceSummary.textContent = "Open source code";
+    assessmentResourceBody.innerHTML = source
+      ? `<pre class="md-code"><code>${escapeHtml(source)}</code></pre>`
+      : '<p class="placeholder">Source code is not available for this assessment.</p>';
+    return;
+  }
+  const doc = anonymizeStudyReference(currentAssessment.documentation || "", "Reference");
+  if (assessmentResourceSummary) assessmentResourceSummary.textContent = "Open documentation";
+  assessmentResourceBody.innerHTML = doc ? renderMarkdown(doc) : '<p class="placeholder">Documentation is not available for this assessment.</p>';
+}
+
+function updateAssessmentStatsUI(stats = null) {
+  const totalAnswered = stats?.total_answered ?? assessmentAnsweredCountValue;
+  const totalCorrect = stats?.total_correct ?? assessmentCorrectCountValue;
+  const pct = stats?.percentage_correct ?? (totalAnswered ? (totalCorrect / totalAnswered) * 100 : 0);
+  if (assessmentCorrectCount) assessmentCorrectCount.textContent = String(totalCorrect);
+  if (assessmentAnsweredCount) assessmentAnsweredCount.textContent = String(totalAnswered);
+  if (assessmentPercentCorrect) assessmentPercentCorrect.textContent = `${Math.round(pct)}%`;
+}
+
+async function fetchAssessmentStats() {
+  try {
+    const response = await fetch(apiUrl("/assessments/stats"), {
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) updateAssessmentStatsUI(data);
+  } catch {
+    updateAssessmentStatsUI();
+  }
+}
+
+function renderAssessmentQuestion() {
+  const question = currentAssessmentQuestion();
+  selectedAssessmentChoice = "";
+  if (!question) {
+    if (assessmentQuestionText) assessmentQuestionText.textContent = "No questions are available for this assessment.";
+    if (assessmentChoiceList) assessmentChoiceList.innerHTML = "";
+    if (assessmentProgressText) assessmentProgressText.textContent = "Question 0 of 0";
+    if (assessmentProgressBar) assessmentProgressBar.style.width = "0%";
+    return;
+  }
+  const total = currentAssessment.questions.length;
+  if (assessmentProgressText) assessmentProgressText.textContent = `Question ${currentAssessmentQuestionIndex + 1} of ${total}`;
+  if (assessmentProgressBar) assessmentProgressBar.style.width = `${((currentAssessmentQuestionIndex + 1) / Math.max(total, 1)) * 100}%`;
+  if (assessmentQuestionText) assessmentQuestionText.textContent = question.question;
+  if (assessmentChoiceList) {
+    assessmentChoiceList.innerHTML = Object.entries(question.choices || {}).map(([key, value]) => `
+      <button type="button" class="assessment-choice" data-assessment-choice="${escapeHtml(key)}">
+        <span>${escapeHtml(key)}</span>
+        <strong>${escapeHtml(value)}</strong>
+      </button>
+    `).join("");
+  }
+  if (assessmentMessage) assessmentMessage.textContent = answeredAssessmentQuestions.has(question.id)
+    ? "You already answered this one. Move to the next question when ready."
+    : "Choose the best answer using only the documentation and source reference.";
+  if (assessmentSubmitButton) assessmentSubmitButton.disabled = answeredAssessmentQuestions.has(question.id);
+}
+
+async function loadAssessment() {
+  if (assessmentMessage) assessmentMessage.textContent = "Loading comprehension practice...";
+  if (assessmentSubmitButton) assessmentSubmitButton.disabled = true;
+  try {
+    const response = await fetch(apiUrl("/assessments/random"), {
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(response.status === 401 ? "Log in to load comprehension practice." : data.detail || "Could not load an assessment.");
+    }
+    currentAssessment = data;
+    currentAssessmentQuestionIndex = 0;
+    answeredAssessmentQuestions = new Set();
+    assessmentAnsweredCountValue = 0;
+    assessmentCorrectCountValue = 0;
+    currentAssessmentDoc = await fetchAssessmentDocumentation(data.documentation_id);
+    activeAssessmentResource = "documentation";
+    renderAssessmentResource();
+    renderAssessmentQuestion();
+    updateAssessmentStatsUI();
+    fetchAssessmentStats();
+  } catch (error) {
+    currentAssessment = null;
+    if (assessmentQuestionText) assessmentQuestionText.textContent = "Could not load comprehension practice";
+    if (assessmentChoiceList) assessmentChoiceList.innerHTML = "";
+    if (assessmentMessage) assessmentMessage.textContent = error.message || "Could not load assessment.";
+  } finally {
+    if (assessmentSubmitButton) assessmentSubmitButton.disabled = !currentAssessmentQuestion();
+  }
+}
+
+function selectAssessmentChoice(choice) {
+  selectedAssessmentChoice = choice;
+  assessmentChoiceList?.querySelectorAll(".assessment-choice").forEach((button) => {
+    button.classList.toggle("is-selected", button.dataset.assessmentChoice === choice);
+  });
+}
+
+async function submitAssessmentAnswer() {
+  const question = currentAssessmentQuestion();
+  if (!currentAssessment || !question) return;
+  if (!selectedAssessmentChoice) {
+    if (assessmentMessage) assessmentMessage.textContent = "Choose an answer first.";
+    return;
+  }
+  if (answeredAssessmentQuestions.has(question.id)) {
+    moveAssessmentQuestion(1);
+    return;
+  }
+  if (assessmentSubmitButton) assessmentSubmitButton.disabled = true;
+  try {
+    const response = await fetch(apiUrl("/assessments/submit"), {
+      method: "POST",
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
+      body: JSON.stringify({
+        attempt_id: currentAssessment.attempt_id,
+        question_id: question.id,
+        user_response: selectedAssessmentChoice,
+        user_id: 0
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(response.status === 409 ? "You already answered this question." : data.detail || "Could not submit answer.");
+    }
+    answeredAssessmentQuestions.add(question.id);
+    assessmentAnsweredCountValue += 1;
+    if (data.is_correct) assessmentCorrectCountValue += 1;
+    updateAssessmentStatsUI();
+    assessmentChoiceList?.querySelectorAll(".assessment-choice").forEach((button) => {
+      const selected = button.dataset.assessmentChoice === selectedAssessmentChoice;
+      button.classList.toggle(data.is_correct && selected ? "is-correct" : "is-incorrect", selected);
+    });
+    if (assessmentMessage) assessmentMessage.textContent = data.is_correct
+      ? "Correct. Nice reading."
+      : "Not quite. Review the reference, then continue.";
+    fetchAssessmentStats();
+  } catch (error) {
+    if (assessmentMessage) assessmentMessage.textContent = error.message || "Could not submit answer.";
+  } finally {
+    if (assessmentSubmitButton) assessmentSubmitButton.disabled = false;
+  }
+}
+
+function moveAssessmentQuestion(direction) {
+  if (!currentAssessment?.questions?.length) return;
+  const total = currentAssessment.questions.length;
+  currentAssessmentQuestionIndex = (currentAssessmentQuestionIndex + direction + total) % total;
+  renderAssessmentQuestion();
 }
 
 function selectAreaWinner(winner) {
@@ -4031,6 +4272,10 @@ areaBackButton?.addEventListener("click", () => {
 
 areaNextButton?.addEventListener("click", showNextAreaPost);
 
+areaModeTabs.forEach((button) => {
+  button.addEventListener("click", () => setAreaMode(button.dataset.areaMode));
+});
+
 areaChoices.forEach((choice) => {
   choice.addEventListener("click", () => selectAreaWinner(choice.dataset.areaChoice));
   choice.addEventListener("keydown", (event) => {
@@ -4042,6 +4287,20 @@ areaChoices.forEach((choice) => {
 });
 
 areaVoteButton?.addEventListener("click", submitAreaVote);
+assessmentNextButton?.addEventListener("click", loadAssessment);
+assessmentResourceTabs.forEach((button) => {
+  button.addEventListener("click", () => {
+    activeAssessmentResource = button.dataset.assessmentResource || "documentation";
+    renderAssessmentResource();
+  });
+});
+assessmentChoiceList?.addEventListener("click", (event) => {
+  const button = event.target.closest(".assessment-choice");
+  if (!button) return;
+  selectAssessmentChoice(button.dataset.assessmentChoice);
+});
+assessmentSubmitButton?.addEventListener("click", submitAssessmentAnswer);
+assessmentSkipButton?.addEventListener("click", () => moveAssessmentQuestion(1));
 tdFormatButton?.addEventListener("click", formatTraditionalMarkdown);
 tdSaveButton?.addEventListener("click", saveTraditionalMarkdown);
 researchConfirmButton?.addEventListener("click", confirmResearchMode);
