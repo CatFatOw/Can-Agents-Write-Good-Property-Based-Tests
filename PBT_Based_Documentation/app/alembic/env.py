@@ -23,10 +23,13 @@ from database import Base
 config = context.config
 
 
-config.set_main_option(
-    "sqlalchemy.url",
-    os.getenv("DATABASE_URL", f"sqlite:///{APP_DIR / 'ibd_local.db'}")
-)
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{APP_DIR / 'ibd_local.db'}")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:

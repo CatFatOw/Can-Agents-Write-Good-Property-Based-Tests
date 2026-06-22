@@ -1,16 +1,19 @@
-import admin 
+import admin
 from fastapi import APIRouter, Body, HTTPException, Depends, Query, status
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import func 
-import models 
-from database import get_db 
+from sqlalchemy.sql.expression import func
+import models
+from database import get_db
 from openai import OpenAI
 import os, json
 import legacy_backend
-import random 
+import random
 import oath2
 from collections import defaultdict
+from fastapi import Response
 from schemas import (
+    AssessmentQuestionSubmit,
     AssessmentAnswerResponse,
     AssessmentAnswerAdminResponse,
     AssessmentDocumentationOption,
@@ -24,7 +27,7 @@ from schemas import (
     DocumentationResponse,
 )
 from fastapi.responses import FileResponse
-import pandas as pd 
+import pandas as pd
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 ASSESSMENT_MODEL = os.environ.get("OPENAI_ASSESSMENT_METRICS_MODEL", "gpt-5.5")
 
@@ -224,6 +227,27 @@ async def grant_documentation_retake_access(
     return grant
 
 
+@router.delete("/attempts")
+async def reset_all_assessment_attempts(
+    db:Session=Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """Delete every assessment attempt and submitted answer for all users."""
+    deleted_answers = db.query(models.AssessmentAnswer).delete(synchronize_session=False)
+    deleted_attempts = db.query(models.AssessmentAttempt).delete(synchronize_session=False)
+    deleted_retake_grants = 0
+    retake_grants_table_found = inspect(db.bind).has_table("assessment_retake_grants")
+    if retake_grants_table_found:
+        deleted_retake_grants = db.query(models.AssessmentRetakeGrant).delete(synchronize_session=False)
+    db.commit()
+    return {
+        "deleted_answers": deleted_answers,
+        "deleted_attempts": deleted_attempts,
+        "deleted_retake_grants": deleted_retake_grants,
+        "retake_grants_table_found": retake_grants_table_found,
+    }
+
+
 @router.post("/generate/{documentation_id}")
 async def generate_questions(
     documentation_id:int,
@@ -237,7 +261,7 @@ async def generate_questions(
     db:Session=Depends(get_db),
     curr_user:Session=Depends(admin.get_current_admin),
 ):
-    """Function (mostly for demo purposes) lets an AI model generate a couple of multiple choice questions where the can answer only using source code 
+    """Function (mostly for demo purposes) lets an AI model generate a couple of multiple choice questions where the can answer only using source code
     and provided documentation
     """
 
@@ -247,7 +271,7 @@ async def generate_questions(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Documentation not found"
         )
-    
+
     PROMPT = f"""You are an expert software engineer and technical educator.
 
 Your task is to create a standardized comprehension assessment for a software function.
@@ -308,7 +332,7 @@ Function Name:
 Source Code:
 {random_documentation.source_code}
 """
-    
+
     payload = request_payload_from_provider_fields(
         provider_payload,
         model_provider,
@@ -323,7 +347,7 @@ Source Code:
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
 
-    # Update the database. 
+    # Update the database.
     # assessment_questions is where we store the documentation_id, question(s), and the correct response
 
     new_QA = None
@@ -343,14 +367,73 @@ Source Code:
     db.refresh(new_QA)
     return new_QA
 
+# Enable admin to submit questions etc
+@router.post("/admin_submit", response_model=AssessmentQuestionAdminResponse)
+async def question_submit(
+    assessment:AssessmentQuestionSubmit,
+    db:Session=Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """Function allows admin users to submit questions etc """
+    new_question = models.AssessmentQuestion(documentation_id=assessment.documentation_id,
+                                             question = assessment.question,
+                                             choices = assessment.choices,
+                                             correct_response = assessment.correct_response,
+                                             explanation = assessment.explanation)
+    db.add(new_question)
+    db.commit()
+    db.refresh(new_question)
+    return new_question
+
+# Enable to alter the questions
+@router.put("/submit/update", response_model=AssessmentQuestionAdminResponse)
+async def question_update(
+    assessment:AssessmentQuestionSubmit,
+    db:Session = Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """Function allows admin users to update their questions"""
+    question = db.query(models.AssessmentQuestion).filter(models.AssessmentQuestion.id == assessment.id).first()
+    if not question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND!")
+    # Updating...
+    question.documentation_id = assessment.documentation_id
+    question.question = assessment.question
+    question.choices = assessment.choices
+    question.correct_response = assessment.correct_response
+    question.explanation = assessment.explanation
+
+
+    db.commit()
+    db.refresh(question)
+    return question
+
+# Allow admin to delete submitted responses
+@router.delete("/submit/delete/{id}")
+async def delete_responses(
+    id:int,
+    db:Session = Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """Function deletes a question"""
+    question = db.query(models.AssessmentQuestion).filter(models.AssessmentQuestion.id == id).first()
+    if not question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND!")
+    # Delete the question from the database
+    db.delete(question)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 
 
 
-    # USER SIDE ROUTES 
 
-# Get a random assessment 
+
+
+    # USER SIDE ROUTES
+
+# Get a random assessment
 def latest_attempt_for_user(documentation_id:int, db:Session, curr_user:models.User):
     return (
         db.query(models.AssessmentAttempt)
@@ -420,14 +503,14 @@ def build_assessment_for_documentation(documentation:models.Documentation, db:Se
     choices = ["TD", "IBD"]
     if random.choice(choices) == "TD":
         markdown = documentation.TD_md
-        doc_type = "TD" 
+        doc_type = "TD"
     else:
         markdown = documentation.IBD_generated_md
-        doc_type = "IBD" 
+        doc_type = "IBD"
 
-    new_attempt = models.AssessmentAttempt(documentation_id = documentation.id, user_id = curr_user.id, 
-                                           documentation_type = doc_type, 
-                                           total_questions = len(assessment), 
+    new_attempt = models.AssessmentAttempt(documentation_id = documentation.id, user_id = curr_user.id,
+                                           documentation_type = doc_type,
+                                           total_questions = len(assessment),
                                            total_correct = 0)
     db.add(new_attempt)
     db.commit()
@@ -485,8 +568,8 @@ async def submit_answers(response:AssessmentSubmit, db:Session = Depends(get_db)
     attempting_question = db.query(models.AssessmentQuestion).filter(models.AssessmentQuestion.id == response.question_id).first()
     if not attempting_question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"QUESTION WAS NOT FOUND")
-    
-    
+
+
     attempt = (
         db.query(models.AssessmentAttempt)
         .filter(
@@ -501,7 +584,7 @@ async def submit_answers(response:AssessmentSubmit, db:Session = Depends(get_db)
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Attempt was not found"
         )
-    
+
     existing_answer = (
     db.query(models.AssessmentAnswer)
     .filter(
@@ -517,18 +600,18 @@ async def submit_answers(response:AssessmentSubmit, db:Session = Depends(get_db)
             status_code=status.HTTP_409_CONFLICT,
             detail="You already answered this question for this attempt"
         )
-    
+
 
     # If the user answers correct
     is_correct = attempting_question.correct_response == response.user_response
-       
 
-    user_response = models.AssessmentAnswer(attempt_id = response.attempt_id, question_id = response.question_id, 
-                                            user_response = response.user_response, 
+
+    user_response = models.AssessmentAnswer(attempt_id = response.attempt_id, question_id = response.question_id,
+                                            user_response = response.user_response,
                                             is_correct = is_correct,
                                             user_id = curr_user.id)
 
-    
+
     db.add(user_response)
 
     # update the questions/correct asnwers attempted
@@ -545,10 +628,10 @@ async def submit_answers(response:AssessmentSubmit, db:Session = Depends(get_db)
         "correct_response": attempting_question.correct_response,
         "explanation": attempting_question.explanation,
     }
-    
 
 
-# Get assessment statistics 
+
+# Get assessment statistics
 @router.get("/stats", response_model=AssessmentStatsResponse)
 async def get_stats(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
     """function gets the statistics of the current user """
@@ -572,7 +655,7 @@ async def get_stats(db:Session = Depends(get_db), curr_user:Session = Depends(oa
     "percentage_correct": percentage_correct
 }
 
-# Allow the user to download the data as a CSV file 
+# Allow the user to download the data as a CSV file
 
 # Download EVERYTHING
 

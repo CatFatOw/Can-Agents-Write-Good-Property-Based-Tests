@@ -1646,6 +1646,175 @@
             "description": "Exports assessment data as CSV for the logged-in user. Run Auth/Login first so {{accessToken}} is set."
           },
           "response": []
+        },
+        {
+          "name": "Admin Submit Assessment Question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Admin assessment question submitted\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set(\"assessmentQuestionId\", response.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{assessmentQuestionId}},\n  \"documentation_id\": {{documentationId}},\n  \"question\": \"{{assessmentQuestionText}}\",\n  \"choices\": {\n    \"A\": \"{{assessmentChoiceA}}\",\n    \"B\": \"{{assessmentChoiceB}}\",\n    \"C\": \"{{assessmentChoiceC}}\",\n    \"D\": \"{{assessmentChoiceD}}\"\n  },\n  \"correct_response\": \"{{assessmentCorrectResponse}}\",\n  \"explanation\": \"{{assessmentExplanation}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/assessments/admin_submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "admin_submit"
+              ]
+            },
+            "description": "Manually creates one assessment question as an admin. Requires admin auth; run Auth/Admin Login first so {{adminAccessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Assessment Question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Assessment question updated\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set(\"assessmentQuestionId\", response.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"{{assessmentQuestionText}}\",\n  \"choices\": {\n    \"A\": \"{{assessmentChoiceA}}\",\n    \"B\": \"{{assessmentChoiceB}}\",\n    \"C\": \"{{assessmentChoiceC}}\",\n    \"D\": \"{{assessmentChoiceD}}\"\n  },\n  \"correct_response\": \"{{assessmentCorrectResponse}}\",\n  \"explanation\": \"{{assessmentExplanation}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/assessments/questions/{{assessmentQuestionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "questions",
+                "{{assessmentQuestionId}}"
+              ]
+            },
+            "description": "Updates one assessment question. Requires admin auth; run Auth/Admin Login first so {{adminAccessToken}} is set."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Assessment Question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Assessment question deleted\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assessments/questions/{{assessmentQuestionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "questions",
+                "{{assessmentQuestionId}}"
+              ]
+            },
+            "description": "Deletes one assessment question. Requires admin auth; run Auth/Admin Login first so {{adminAccessToken}} is set."
+          },
+          "response": []
         }
       ]
     },
@@ -2067,6 +2236,41 @@
     {
       "key": "tokenType",
       "value": "bearer",
+      "type": "string"
+    },
+    {
+      "key": "assessmentQuestionText",
+      "value": "What does this function return for the documented input?",
+      "type": "string"
+    },
+    {
+      "key": "assessmentChoiceA",
+      "value": "It returns the expected value.",
+      "type": "string"
+    },
+    {
+      "key": "assessmentChoiceB",
+      "value": "It raises an exception.",
+      "type": "string"
+    },
+    {
+      "key": "assessmentChoiceC",
+      "value": "It returns None.",
+      "type": "string"
+    },
+    {
+      "key": "assessmentChoiceD",
+      "value": "It mutates global state.",
+      "type": "string"
+    },
+    {
+      "key": "assessmentCorrectResponse",
+      "value": "A",
+      "type": "string"
+    },
+    {
+      "key": "assessmentExplanation",
+      "value": "The source code returns the expected value for this input.",
       "type": "string"
     }
   ]

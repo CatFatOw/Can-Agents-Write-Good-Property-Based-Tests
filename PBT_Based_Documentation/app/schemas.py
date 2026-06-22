@@ -22,9 +22,9 @@ class InvariantsUpdate(BaseModel):
     """Payload for updating saved invariants without replacing the whole doc."""
     invariants: str | list[Any] | dict[str, Any]
 
-# Create the oath2 scheme 
+# Create the oath2 scheme
 class TokenData(BaseModel):
-    id:Optional[int] = None 
+    id:Optional[int] = None
 
 # Users
 class UserModel(BaseModel):
@@ -56,6 +56,15 @@ class AssessmentSubmit(BaseModel):
     question_id: int
     user_response: str
     user_id:int
+
+
+class AssessmentQuestionSubmit(BaseModel):
+    id:int
+    documentation_id:int
+    question:str
+    choices: dict
+    correct_response: str
+    explanation: str
 
 # --------------------------RESPONSE MODELS--------------------
 
@@ -104,13 +113,13 @@ class PostTDResponse(BaseModel):
     post_TD: str | None = None
 # auth
 class Token(BaseModel):
-    access_token:str 
+    access_token:str
     token_type:str
 
-# User 
+# User
 class UserResponse(BaseModel):
-    id:int 
-    email:str 
+    id:int
+    email:str
     created_at:datetime
 
     class Config:

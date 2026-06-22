@@ -1,7 +1,9 @@
 from pathlib import Path
+import os
 import sys
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 # Existing route files use local imports like `import models`.
@@ -19,6 +21,25 @@ from routers import auth, comparison, documentation, metrics, model_api, users, 
 
 # Define the app
 app = FastAPI()
+
+frontend_origins = [
+    origin.strip()
+    for origin in os.getenv("FRONTEND_ORIGINS", "").split(",")
+    if origin.strip()
+]
+if frontend_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=frontend_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
 # Include the database-backed routers you already started.
 app.include_router(users.router)
