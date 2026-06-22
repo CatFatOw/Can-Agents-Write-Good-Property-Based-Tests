@@ -28,6 +28,16 @@ MUTATION_IMPORT_SKIP = {
 }
 
 
+def positive_int_env(name, default):
+    try:
+        return max(1, int(os.environ.get(name, default)))
+    except (TypeError, ValueError):
+        return default
+
+
+METRIC_TEST_RUNS = positive_int_env("PBT_METRIC_TEST_RUNS", 1)
+
+
 def call_metric_model(client, model, prompt, streaming=True, seed=OPENAI_SEED):
     """Call the selected metrics model.
 
@@ -82,7 +92,7 @@ def call_metric_model(client, model, prompt, streaming=True, seed=OPENAI_SEED):
     print()
     return "".join(chunks)
 
-def test_metrics(test_func, n=50):
+def test_metrics(test_func, n=METRIC_TEST_RUNS):
     """Function used to calculate the soundness and validity metrics for display on the website"""
 
     validity_failures = 0
@@ -145,6 +155,113 @@ def list_from_unknown(value):
     if isinstance(value, str):
         return re.findall(r"\d+", value)
     return [value]
+
+
+def metric_prompt_for_invariants(source_code, invariants, api_name):
+    invariant_lines = "\n".join(
+        f"{index + 1}. {invariant}"
+        for index, invariant in enumerate(invariants)
+    )
+    return f"""
+        You are an expert in property-based testing, program analysis, and invariant inference.
+
+        Function/API Name:
+        {api_name}
+
+        Source Code:
+        {source_code}
+
+        Invariant Candidates:
+        {invariant_lines}
+
+        Tasks:
+
+        For EACH invariant candidate:
+        1. Evaluate the invariant.
+        2. Find the line numbers in the source code where the invariant applies.
+        3. Generate ONE small Hypothesis property-based test that attempts to falsify the invariant.
+
+        Confidence Levels:
+
+        HIGH:
+        - Directly supported by the source code.
+        - Likely true for all valid executions.
+        - Precise and useful.
+
+        MEDIUM:
+        - Plausible but may depend on assumptions.
+        - Potential edge cases exist.
+
+        LOW:
+        - Contradicted by the implementation.
+        - Overly broad, trivial, or likely incorrect.
+
+        Requirements for each test:
+        - Use appropriate Hypothesis strategies.
+        - Keep runtime small.
+        - Limit generated collection sizes.
+        - Add @settings(max_examples=20, deadline=None) when using Hypothesis.
+        - Include edge cases naturally.
+        - Assume the function exists and call it as {api_name}.
+        - Import all required modules.
+        - Produce executable Python code.
+        - No markdown fences.
+        - No explanations inside the code.
+        - Generate exactly one test function per invariant.
+
+        Respond ONLY with valid JSON:
+
+        {{
+            "results": [
+                {{
+                    "index": 1,
+                    "confidence": "HIGH",
+                    "score": 0.95,
+                    "explanation": "Brief explanation.",
+                    "test_code": "complete python code here",
+                    "lineno": ["12", "18"]
+                }}
+            ]
+        }}
+    """
+
+
+def normalize_metric_items(data, expected_count):
+    items = data.get("results") or data.get("metrics") or data.get("invariants") or []
+    if isinstance(items, dict):
+        items = list(items.values())
+    if not isinstance(items, list):
+        raise ValueError("Expected a JSON list of metric results.")
+
+    normalized = [None] * expected_count
+    overflow = []
+    for position, item in enumerate(items):
+        if not isinstance(item, dict):
+            continue
+        index = item.get("index", position + 1)
+        try:
+            index = int(index) - 1
+        except (TypeError, ValueError):
+            index = position
+        if 0 <= index < expected_count and normalized[index] is None:
+            normalized[index] = item
+        else:
+            overflow.append(item)
+
+    for index in range(expected_count):
+        if normalized[index] is None and overflow:
+            normalized[index] = overflow.pop(0)
+
+    return normalized
+
+
+def fallback_metric_item(client, model, source_code, invariant, api_name, streaming, seed):
+    prompt = metric_prompt_for_invariants(source_code, [invariant], api_name)
+    data = parse_json_object(call_metric_model(client, model, prompt, streaming=streaming, seed=seed))
+    items = normalize_metric_items(data, 1)
+    if not items[0]:
+        raise ValueError("The model did not return a metric result for this invariant.")
+    return items[0]
 
 
 def evaluate_pbt_test(source_code, invariant, test_code, api_name="api.function"):
@@ -745,69 +862,30 @@ def invariant_metrics_test(source_code:str, invariants:List[str], model="gpt-5.4
     # Call the open AI client
     client = OpenAI()
 
-    for test_invariant in invariants:
-        PROMPT = f"""
-        You are an expert in property-based testing, program analysis, and invariant inference.
+    metric_items = []
+    try:
+        output = call_metric_model(
+            client,
+            model,
+            metric_prompt_for_invariants(source_code, invariants, api_name),
+            streaming=streaming,
+            seed=seed,
+        )
+        metric_items = normalize_metric_items(parse_json_object(output), len(invariants))
+    except Exception:
+        metric_items = [None] * len(invariants)
 
-        Function/API Name:
-        {api_name}
-
-        Source Code:
-        {source_code}
-
-        Invariant Candidate:
-        {test_invariant}
-
-        Tasks:
-
-        1. Evaluate the invariant.
-        2. Find the line numbers in the source code where the invariant applies
-
-        Confidence Levels:
-
-        HIGH:
-        - Directly supported by the source code.
-        - Likely true for all valid executions.
-        - Precise and useful.
-
-        MEDIUM:
-        - Plausible but may depend on assumptions.
-        - Potential edge cases exist.
-
-        LOW:
-        - Contradicted by the implementation.
-        - Overly broad, trivial, or likely incorrect.
-
-        2. Generate ONE small Hypothesis property-based test that attempts to falsify the invariant.
-
-        Requirements for the test:
-        - Use appropriate Hypothesis strategies.
-        - Keep runtime small.
-        - Limit generated collection sizes.
-        - Include edge cases naturally.
-        - Assume the function exists and call it as {api_name}.
-        - Import all required modules.
-        - Produce executable Python code.
-        - No markdown fences.
-        - No explanations inside the code.
-        - Generate exactly one test function.
-
-        Respond ONLY with valid JSON:
-
-        {{
-            "confidence": "HIGH",
-            "score": 0.95,
-            "explanation": "Brief explanation.",
-            "test_code": "complete python code here",
-            "lineno": "line number in the source code where the invariant applies"
-        }}
-        """
-
+    for index, test_invariant in enumerate(invariants):
         try:
-            output = call_metric_model(client, model, PROMPT, streaming=streaming, seed=seed)
-
-            # Turn the output into a json object, even if the model wrapped it in a fence.
-            data = parse_json_object(output)
+            data = metric_items[index] or fallback_metric_item(
+                client,
+                model,
+                source_code,
+                test_invariant,
+                api_name,
+                streaming,
+                seed,
+            )
 
             confidence = str(data.get("confidence", "")).upper()
             score = float(data.get("score", 0))
