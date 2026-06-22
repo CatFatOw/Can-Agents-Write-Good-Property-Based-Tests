@@ -667,7 +667,9 @@
           <h1 id="account-title">Account</h1>
           <p class="account-subtitle">Manage your profile, password, and everything you have generated.</p>
           <div class="account-admin-actions is-hidden" id="account-admin-actions">
-            <button type="button" class="danger-button" id="account-reset-attempts-all">Reset attempts for all users</button>
+            <button type="button" class="danger-button admin-reset-button" data-reset-scope="ALL">Reset all attempts</button>
+            <button type="button" class="danger-button admin-reset-button" data-reset-scope="QUIZ">Reset quiz only</button>
+            <button type="button" class="danger-button admin-reset-button" data-reset-scope="COMPARISON">Reset comparison only</button>
             <button type="button" class="secondary-button admin-export-button" data-export-path="/documentation/export">Export documentation CSV</button>
             <button type="button" class="secondary-button admin-export-button" data-export-path="/assessments/export-all">Export quiz responses CSV</button>
             <button type="button" class="secondary-button admin-export-button" data-export-path="/comparison/export">Export comparison CSV</button>

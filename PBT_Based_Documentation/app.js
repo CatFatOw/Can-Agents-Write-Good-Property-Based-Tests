@@ -2267,6 +2267,7 @@ async function refreshAccountAdminState() {
 }
 
 function canManageAccountDoc(doc) {
+  if (accountIsAdmin) return true;
   return accountCurrentUserId != null && String(doc?.owner_id) === String(accountCurrentUserId);
 }
 
@@ -3221,10 +3222,9 @@ async function resetAllAccountQuestions(button) {
   }
 }
 
-async function resetAllAssessmentAttempts(button) {
+async function resetAllAssessmentAttempts(button, requestedScope = "ALL") {
   if (!accountIsAdmin) return;
-  const resetScope = window.prompt("Reset what? Type ALL, QUIZ, or COMPARISON.", "ALL");
-  const scope = String(resetScope || "").trim().toUpperCase();
+  const scope = String(requestedScope || "").trim().toUpperCase();
   if (!["ALL", "QUIZ", "COMPARISON"].includes(scope)) {
     if (accountAdminMessage) accountAdminMessage.textContent = "Reset cancelled. Choose ALL, QUIZ, or COMPARISON.";
     return;
@@ -5610,16 +5610,17 @@ savedDocList?.addEventListener("click", (event) => {
 
 logoutButton?.addEventListener("click", logoutCurrentUser);
 accountLogoutButton?.addEventListener("click", logoutCurrentUser);
-accountResetAttemptsAll?.addEventListener("click", () => {
-  if (!accountIsAdmin) {
-    if (accountAdminMessage) accountAdminMessage.textContent = "Only admin users can reset attempts.";
-    accountAdminActions?.classList.add("is-hidden");
+accountAdminActions?.addEventListener("click", (event) => {
+  const resetButton = event.target.closest(".admin-reset-button");
+  if (resetButton) {
+    if (!accountIsAdmin) {
+      if (accountAdminMessage) accountAdminMessage.textContent = "Only admin users can reset attempts.";
+      accountAdminActions?.classList.add("is-hidden");
+      return;
+    }
+    resetAllAssessmentAttempts(resetButton, resetButton.dataset.resetScope);
     return;
   }
-  resetAllAssessmentAttempts(accountResetAttemptsAll);
-});
-
-accountAdminActions?.addEventListener("click", (event) => {
   const button = event.target.closest(".admin-export-button");
   if (!button) return;
   downloadAdminCsv(button.dataset.exportPath, button);

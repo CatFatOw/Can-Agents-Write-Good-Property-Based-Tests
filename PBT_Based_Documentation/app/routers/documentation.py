@@ -195,6 +195,8 @@ async def get_current_user_documentation(
     curr_user:models.User = Depends(oath2.get_current_user)
 ):
     """Function gets all documentation owned by the current user"""
+    if db.query(models.AdminUser).filter(models.AdminUser.email == curr_user.email).first():
+        return db.query(models.Documentation).all()
     all_docs = db.query(models.Documentation).filter(models.Documentation.owner_id == curr_user.id).all()
     return all_docs
 
