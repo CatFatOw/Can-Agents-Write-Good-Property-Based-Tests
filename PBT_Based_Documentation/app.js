@@ -31,6 +31,7 @@ const areaPanels = Array.from(document.querySelectorAll("[data-area-panel]"));
 const areaComprehensionView = document.querySelector("#area-comprehension-view");
 const assessmentNextButton = document.querySelector("#assessment-next-button");
 const assessmentDocSelect = document.querySelector("#assessment-doc-select");
+const assessmentDocRemaining = document.querySelector("#assessment-doc-remaining");
 const assessmentDocTitle = document.querySelector("#assessment-doc-title");
 const assessmentResourceTabs = Array.from(document.querySelectorAll(".assessment-resource-tab"));
 const assessmentResourceSummary = document.querySelector("#assessment-resource-summary");
@@ -1124,14 +1125,21 @@ function renderAssessmentSummary() {
 function renderAssessmentDocumentationOptions() {
   if (!assessmentDocSelect) return;
   const selected = activeAssessmentDocumentationId || "";
+  const remaining = assessmentDocumentationOptions.filter((option) => !option.attempted).length;
+  const total = assessmentDocumentationOptions.length;
   assessmentDocSelect.innerHTML = `
-    <option value="">Random documentation</option>
+    <option value="">Random remaining documentation</option>
     ${assessmentDocumentationOptions.map((option) => `
       <option value="${escapeHtml(String(option.documentation_id))}" ${String(option.documentation_id) === String(selected) ? "selected" : ""}>
-        ${escapeHtml(option.documentation_title || "Untitled documentation")} (${option.question_count} questions)
+        ${escapeHtml(option.documentation_title || "Untitled documentation")} (${option.question_count} questions${option.attempted ? ", completed" : ""})
       </option>
     `).join("")}
   `;
+  if (assessmentDocRemaining) {
+    assessmentDocRemaining.textContent = total
+      ? `${remaining} of ${total} documentation sets remaining in random mode.`
+      : "No documentation sets with questions are available yet.";
+  }
 }
 
 async function loadAssessmentDocumentationOptions() {
@@ -1179,6 +1187,7 @@ async function loadAssessment(documentationId = activeAssessmentDocumentationId)
     renderAssessmentQuestion();
     updateAssessmentStatsUI();
     fetchAssessmentStats();
+    loadAssessmentDocumentationOptions();
   } catch (error) {
     currentAssessment = null;
     if (assessmentQuestionText) assessmentQuestionText.textContent = "Could not load comprehension practice";

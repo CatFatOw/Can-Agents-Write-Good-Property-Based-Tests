@@ -216,6 +216,9 @@ Requirements:
 * Generate exactly {n_questions} multiple-choice questions.
 * Every question must have exactly {choice} answer choices.
 * Exactly one answer choice must be correct.
+* Correct answer letters should be reasonably diverse across the question set.
+* Do NOT cluster most correct answers on the same letter. For example, avoid patterns like A, B, B, B, C, D unless the content genuinely requires it.
+* Some overlap is acceptable, but distribute correct answers across A/B/C/D whenever possible.
 * Questions should test function behavior, parameters, return values, assumptions, edge cases, exceptions, and common misunderstandings.
 * Questions should NOT test variable names, coding style, line-by-line source code knowledge, or documentation wording.
 * Avoid trick questions and duplicate concepts.
@@ -310,6 +313,13 @@ Source Code:
 @router.get("/documentation-options", response_model=list[AssessmentDocumentationOption])
 async def list_assessment_documentation_options(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
     """List documentation rows that have at least one assessment question."""
+    attempted_doc_ids = {
+        row[0]
+        for row in db.query(models.AssessmentAttempt.documentation_id)
+        .filter(models.AssessmentAttempt.user_id == curr_user.id)
+        .distinct()
+        .all()
+    }
     rows = (
         db.query(
             models.Documentation.id,
@@ -326,6 +336,7 @@ async def list_assessment_documentation_options(db:Session = Depends(get_db), cu
             "documentation_id": row.id,
             "documentation_title": row.documentation_title,
             "question_count": row.question_count,
+            "attempted": row.id in attempted_doc_ids,
         }
         for row in rows
     ]
@@ -383,15 +394,23 @@ async def start_documentation_assessment(documentation_id:int, db:Session = Depe
 @router.get("/random", response_model=AssessmentResponse)
 async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
     """function gets random assessment and also ranodmly chooses to do TD or IBD """
-    random_question = db.query(models.AssessmentQuestion).order_by(func.random()).first()
-    if not random_question:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
-
-    documentation = db.query(models.Documentation).filter(
-        models.Documentation.id == random_question.documentation_id
-    ).first()
+    attempted_doc_ids = [
+        row[0]
+        for row in db.query(models.AssessmentAttempt.documentation_id)
+        .filter(models.AssessmentAttempt.user_id == curr_user.id)
+        .distinct()
+        .all()
+    ]
+    query = (
+        db.query(models.Documentation)
+        .join(models.AssessmentQuestion, models.AssessmentQuestion.documentation_id == models.Documentation.id)
+        .group_by(models.Documentation.id)
+    )
+    if attempted_doc_ids:
+        query = query.filter(~models.Documentation.id.in_(attempted_doc_ids))
+    documentation = query.order_by(func.random()).first()
     if not documentation:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No remaining documentation assessments are available")
 
     return build_assessment_for_documentation(documentation, db, curr_user)
 
