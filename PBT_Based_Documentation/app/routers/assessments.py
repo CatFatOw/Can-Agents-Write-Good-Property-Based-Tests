@@ -229,22 +229,53 @@ async def grant_documentation_retake_access(
 
 @router.delete("/attempts")
 async def reset_all_assessment_attempts(
+    scope: str = Query("all"),
+    user_id: int | None = Query(None),
+    user_email: str | None = Query(None),
     db:Session=Depends(get_db),
     curr_user:Session=Depends(admin.get_current_admin),
 ):
-    """Delete every assessment attempt and submitted answer for all users."""
-    deleted_answers = db.query(models.AssessmentAnswer).delete(synchronize_session=False)
-    deleted_attempts = db.query(models.AssessmentAttempt).delete(synchronize_session=False)
+    """Delete assessment attempts and submitted answers for all users or one selected user."""
+    selected_user = None
+    selected_scope = (scope or "all").strip().lower()
+    if selected_scope not in {"all", "user"}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="scope must be all or user")
+    if selected_scope == "user":
+        selected_email = (user_email or "").strip().lower()
+        if user_id is not None:
+            selected_user = db.query(models.User).filter(models.User.id == user_id).first()
+        elif selected_email:
+            selected_user = db.query(models.User).filter(func.lower(models.User.email) == selected_email).first()
+        if selected_user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User was not found")
+
+    answers_query = db.query(models.AssessmentAnswer)
+    attempts_query = db.query(models.AssessmentAttempt)
+    if selected_user is not None:
+        answers_query = answers_query.filter(models.AssessmentAnswer.user_id == selected_user.id)
+        attempts_query = attempts_query.filter(models.AssessmentAttempt.user_id == selected_user.id)
+
+    deleted_answers = answers_query.delete(synchronize_session=False)
+    deleted_attempts = attempts_query.delete(synchronize_session=False)
     deleted_retake_grants = 0
     retake_grants_table_found = inspect(db.bind).has_table("assessment_retake_grants")
     if retake_grants_table_found:
-        deleted_retake_grants = db.query(models.AssessmentRetakeGrant).delete(synchronize_session=False)
+        grants_query = db.query(models.AssessmentRetakeGrant)
+        if selected_user is not None:
+            grants_query = grants_query.filter(
+                (models.AssessmentRetakeGrant.user_id == selected_user.id)
+                | (func.lower(models.AssessmentRetakeGrant.user_email) == (selected_user.email or "").lower())
+            )
+        deleted_retake_grants = grants_query.delete(synchronize_session=False)
     db.commit()
     return {
         "deleted_answers": deleted_answers,
         "deleted_attempts": deleted_attempts,
         "deleted_retake_grants": deleted_retake_grants,
         "retake_grants_table_found": retake_grants_table_found,
+        "scope": selected_scope,
+        "user_id": selected_user.id if selected_user else None,
+        "user_email": selected_user.email if selected_user else None,
     }
 
 

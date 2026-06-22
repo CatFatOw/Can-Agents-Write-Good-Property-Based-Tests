@@ -667,6 +667,18 @@
           <h1 id="account-title">Account</h1>
           <p class="account-subtitle">Manage your profile, password, and everything you have generated.</p>
           <div class="account-admin-actions is-hidden" id="account-admin-actions">
+            <label class="field compact-field admin-reset-target-field" for="account-reset-target">
+              <span>Reset target</span>
+              <select id="account-reset-target">
+                <option value="all">All users</option>
+                <option value="email">User email</option>
+                <option value="id">User id</option>
+              </select>
+            </label>
+            <label class="field compact-field admin-reset-lookup-field is-hidden" for="account-reset-lookup" id="account-reset-lookup-field">
+              <span>Email or id</span>
+              <input id="account-reset-lookup" type="text" placeholder="participant@example.com">
+            </label>
             <button type="button" class="danger-button admin-reset-button" data-reset-scope="ALL">Reset all attempts</button>
             <button type="button" class="danger-button admin-reset-button" data-reset-scope="QUIZ">Reset quiz only</button>
             <button type="button" class="danger-button admin-reset-button" data-reset-scope="COMPARISON">Reset comparison only</button>

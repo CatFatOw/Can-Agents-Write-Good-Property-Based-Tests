@@ -1,5 +1,5 @@
 """File handles the routes to compare the "area-like game" of comparing IBD to TD and assigning an ELO rating :D """
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, Query, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func 
@@ -57,6 +57,57 @@ def comparison_candidate_query(db: Session):
         .filter(models.Documentation.IBD_generated_md.isnot(None))
         .filter(models.Documentation.IBD_generated_md != "")
     )
+
+
+def reset_document_comparison_stats(doc: models.Documentation):
+    doc.comparison_count = 0
+    doc.ibd_wins = 0
+    doc.td_wins = 0
+    doc.ibd_doc_elo_rating = 1000
+    doc.td_doc_elo_rating = 1000
+    doc.bt_ibd_rating = None
+    doc.bt_td_rating = None
+    doc.bt_ibd_win_prob = None
+    doc.bt_ibd_win_prob_ci_lower = None
+    doc.bt_ibd_win_prob_ci_upper = None
+
+
+def recompute_document_comparison_stats(db: Session, doc_ids: list[int] | None = None) -> int:
+    docs_query = db.query(models.Documentation)
+    if doc_ids is not None:
+        docs_query = docs_query.filter(models.Documentation.id.in_(doc_ids))
+    updated_docs = 0
+    for doc in docs_query.all():
+        reset_document_comparison_stats(doc)
+        comparison_rows = (
+            db.query(models.Comparison)
+            .filter(models.Comparison.documentation_id == doc.id)
+            .order_by(models.Comparison.created_at.asc(), models.Comparison.id.asc())
+            .all()
+        )
+        bt_rows = []
+        for row in comparison_rows:
+            td_wins = row.winner == "TD"
+            doc.td_doc_elo_rating, doc.ibd_doc_elo_rating = calculate_elo(
+                int_or_default(doc.td_doc_elo_rating, 1000),
+                int_or_default(doc.ibd_doc_elo_rating, 1000),
+                td_wins,
+            )
+            doc.comparison_count += 1
+            if td_wins:
+                doc.td_wins += 1
+                bt_rows.append((0, 1))
+            else:
+                doc.ibd_wins += 1
+                bt_rows.append((1, 0))
+        if len(bt_rows) >= 2:
+            bradley_terry_results = calculate_bradley_terry(bt_rows)
+            if bradley_terry_results:
+                doc.bt_td_rating = bradley_terry_results["bt_td_rating"]
+                doc.bt_ibd_rating = bradley_terry_results["bt_ibd_rating"]
+                doc.bt_ibd_win_prob = bradley_terry_results["bt_ibd_win_prob"]
+        updated_docs += 1
+    return updated_docs
 
 
 # Randomly get an API's TD and IBD documentation
@@ -299,28 +350,43 @@ async def vote_preference(
 
 @router.delete("/attempts")
 async def reset_all_comparison_attempts(
+    scope: str = Query("all"),
+    user_id: int | None = Query(None),
+    user_email: str | None = Query(None),
     db: Session = Depends(get_db),
     curr_user: Session = Depends(admin.get_current_admin),
 ):
-    """Delete all Arena comparison votes and reset aggregate comparison stats."""
-    deleted_comparisons = db.query(models.Comparison).delete(synchronize_session=False)
-    updated_docs = 0
-    for doc in db.query(models.Documentation).all():
-        doc.comparison_count = 0
-        doc.ibd_wins = 0
-        doc.td_wins = 0
-        doc.ibd_doc_elo_rating = 1000
-        doc.td_doc_elo_rating = 1000
-        doc.bt_ibd_rating = None
-        doc.bt_td_rating = None
-        doc.bt_ibd_win_prob = None
-        doc.bt_ibd_win_prob_ci_lower = None
-        doc.bt_ibd_win_prob_ci_upper = None
-        updated_docs += 1
+    """Delete Arena comparison votes for all users or one selected user and rebuild aggregate stats."""
+    selected_user = None
+    selected_scope = (scope or "all").strip().lower()
+    if selected_scope not in {"all", "user"}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="scope must be all or user")
+    if selected_scope == "user":
+        selected_email = (user_email or "").strip().lower()
+        if user_id is not None:
+            selected_user = db.query(models.User).filter(models.User.id == user_id).first()
+        elif selected_email:
+            selected_user = db.query(models.User).filter(func.lower(models.User.email) == selected_email).first()
+        if selected_user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User was not found")
+
+    comparisons_query = db.query(models.Comparison)
+    affected_doc_ids = None
+    if selected_user is not None:
+        comparisons_query = comparisons_query.filter(models.Comparison.user_id == selected_user.id)
+        affected_doc_ids = [
+            row[0]
+            for row in comparisons_query.with_entities(models.Comparison.documentation_id).distinct().all()
+        ]
+    deleted_comparisons = comparisons_query.delete(synchronize_session=False)
+    updated_docs = recompute_document_comparison_stats(db, affected_doc_ids)
     db.commit()
     return {
         "deleted_comparisons": deleted_comparisons,
         "updated_documents": updated_docs,
+        "scope": selected_scope,
+        "user_id": selected_user.id if selected_user else None,
+        "user_email": selected_user.email if selected_user else None,
     }
 
 
