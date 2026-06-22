@@ -8234,6 +8234,77 @@ body.area-active .area-rank-signal {
   display: block !important;
 }
 
+/* VS Code Dark+-style syntax coloring for rendered Python source blocks. */
+.md-code .syntax-keyword,
+.markdown-rendered .md-code .syntax-keyword,
+.assessment-resource-body .md-code .syntax-keyword,
+.leaderboard-doc-preview .md-code .syntax-keyword,
+.area-doc-body.markdown-rendered .md-code .syntax-keyword {
+  color: #c586c0 !important;
+}
+
+.md-code .syntax-definition,
+.markdown-rendered .md-code .syntax-definition,
+.assessment-resource-body .md-code .syntax-definition,
+.leaderboard-doc-preview .md-code .syntax-definition,
+.area-doc-body.markdown-rendered .md-code .syntax-definition,
+.md-code .syntax-function,
+.markdown-rendered .md-code .syntax-function,
+.assessment-resource-body .md-code .syntax-function,
+.leaderboard-doc-preview .md-code .syntax-function,
+.area-doc-body.markdown-rendered .md-code .syntax-function {
+  color: #dcdcaa !important;
+}
+
+.md-code .syntax-builtin,
+.markdown-rendered .md-code .syntax-builtin,
+.assessment-resource-body .md-code .syntax-builtin,
+.leaderboard-doc-preview .md-code .syntax-builtin,
+.area-doc-body.markdown-rendered .md-code .syntax-builtin {
+  color: #4ec9b0 !important;
+}
+
+.md-code .syntax-string,
+.markdown-rendered .md-code .syntax-string,
+.assessment-resource-body .md-code .syntax-string,
+.leaderboard-doc-preview .md-code .syntax-string,
+.area-doc-body.markdown-rendered .md-code .syntax-string {
+  color: #ce9178 !important;
+}
+
+.md-code .syntax-number,
+.markdown-rendered .md-code .syntax-number,
+.assessment-resource-body .md-code .syntax-number,
+.leaderboard-doc-preview .md-code .syntax-number,
+.area-doc-body.markdown-rendered .md-code .syntax-number {
+  color: #b5cea8 !important;
+}
+
+.md-code .syntax-comment,
+.markdown-rendered .md-code .syntax-comment,
+.assessment-resource-body .md-code .syntax-comment,
+.leaderboard-doc-preview .md-code .syntax-comment,
+.area-doc-body.markdown-rendered .md-code .syntax-comment {
+  color: #6a9955 !important;
+  font-style: italic;
+}
+
+.md-code .syntax-operator,
+.markdown-rendered .md-code .syntax-operator,
+.assessment-resource-body .md-code .syntax-operator,
+.leaderboard-doc-preview .md-code .syntax-operator,
+.area-doc-body.markdown-rendered .md-code .syntax-operator {
+  color: #d4d4d4 !important;
+}
+
+.md-code .syntax-decorator,
+.markdown-rendered .md-code .syntax-decorator,
+.assessment-resource-body .md-code .syntax-decorator,
+.leaderboard-doc-preview .md-code .syntax-decorator,
+.area-doc-body.markdown-rendered .md-code .syntax-decorator {
+  color: #d7ba7d !important;
+}
+
 /* Final source-code rendering override: keep fenced blocks editor-like everywhere. */
 .md-code,
 .markdown-rendered .md-code,

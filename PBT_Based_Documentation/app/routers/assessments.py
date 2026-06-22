@@ -154,6 +154,51 @@ async def list_documentation_answers(
     ]
 
 
+@router.get("/documentation/{documentation_id}/my-answers")
+async def list_my_documentation_answers(
+    documentation_id:int,
+    db:Session=Depends(get_db),
+    curr_user:models.User=Depends(oath2.get_current_user),
+):
+    """List the current user's submitted answers for one documentation row."""
+    doc = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
+    if doc is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documentation not found")
+    rows = (
+        db.query(
+            models.AssessmentAnswer,
+            models.AssessmentQuestion,
+            models.AssessmentAttempt.created_at.label("attempt_created_at"),
+            models.User.email,
+        )
+        .join(models.AssessmentQuestion, models.AssessmentAnswer.question_id == models.AssessmentQuestion.id)
+        .join(models.AssessmentAttempt, models.AssessmentAnswer.attempt_id == models.AssessmentAttempt.id)
+        .outerjoin(models.User, models.AssessmentAnswer.user_id == models.User.id)
+        .filter(models.AssessmentQuestion.documentation_id == documentation_id)
+        .filter(models.AssessmentAnswer.user_id == curr_user.id)
+        .order_by(models.AssessmentAttempt.id.desc(), models.AssessmentAnswer.id.asc())
+        .all()
+    )
+    return [
+        {
+            "id": answer.id,
+            "attempt_id": answer.attempt_id,
+            "attempt_created_at": attempt_created_at,
+            "question_id": question.id,
+            "documentation_id": question.documentation_id,
+            "user_id": answer.user_id,
+            "user_email": user_email,
+            "user_response": answer.user_response,
+            "is_correct": answer.is_correct,
+            "question": question.question,
+            "choices": question.choices,
+            "correct_response": question.correct_response,
+            "explanation": question.explanation,
+        }
+        for answer, question, attempt_created_at, user_email in rows
+    ]
+
+
 @router.put("/questions/{question_id}", response_model=AssessmentQuestionAdminResponse)
 async def update_assessment_question(
     question_id:int,

@@ -1823,6 +1823,120 @@ function renderInlineMarkdown(value) {
     .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
 }
 
+const PYTHON_KEYWORDS = new Set([
+  "and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del",
+  "elif", "else", "except", "False", "finally", "for", "from", "global", "if", "import",
+  "in", "is", "lambda", "None", "nonlocal", "not", "or", "pass", "raise", "return",
+  "True", "try", "while", "with", "yield"
+]);
+
+const PYTHON_BUILTINS = new Set([
+  "abs", "all", "any", "bool", "bytes", "callable", "dict", "dir", "enumerate", "filter",
+  "float", "format", "getattr", "hasattr", "int", "isinstance", "issubclass", "len", "list",
+  "map", "max", "min", "next", "object", "open", "print", "range", "repr", "reversed",
+  "round", "set", "slice", "sorted", "str", "sum", "super", "tuple", "type", "zip"
+]);
+
+function wrapSyntax(className, value) {
+  return `<span class="syntax-${className}">${escapeHtml(value)}</span>`;
+}
+
+function readPythonString(source, start) {
+  const quote = source[start];
+  const triple = source.slice(start, start + 3) === quote.repeat(3);
+  let index = start + (triple ? 3 : 1);
+  while (index < source.length) {
+    if (source[index] === "\\") {
+      index += 2;
+      continue;
+    }
+    if (triple && source.slice(index, index + 3) === quote.repeat(3)) {
+      return source.slice(start, index + 3);
+    }
+    if (!triple && source[index] === quote) {
+      return source.slice(start, index + 1);
+    }
+    index += 1;
+  }
+  return source.slice(start);
+}
+
+function highlightPythonCode(source) {
+  let html = "";
+  let index = 0;
+  let expectDefinitionName = false;
+  const text = String(source || "");
+  while (index < text.length) {
+    const char = text[index];
+    const previous = text[index - 1] || "";
+    const next = text[index + 1] || "";
+
+    if (char === "#") {
+      const end = text.indexOf("\n", index);
+      const comment = end === -1 ? text.slice(index) : text.slice(index, end);
+      html += wrapSyntax("comment", comment);
+      index += comment.length;
+      continue;
+    }
+
+    const stringStart = char === "\"" || char === "'" || ((char === "r" || char === "u" || char === "b" || char === "f" || char === "R" || char === "U" || char === "B" || char === "F") && (next === "\"" || next === "'"));
+    if (stringStart) {
+      const prefixLength = char === "\"" || char === "'" ? 0 : 1;
+      const stringValue = text.slice(index, index + prefixLength) + readPythonString(text, index + prefixLength);
+      html += wrapSyntax("string", stringValue);
+      index += stringValue.length;
+      continue;
+    }
+
+    const numberMatch = /^\d+(?:\.\d+)?(?:e[+-]?\d+)?/i.exec(text.slice(index));
+    if (numberMatch && !/[A-Za-z0-9_]/.test(previous)) {
+      html += wrapSyntax("number", numberMatch[0]);
+      index += numberMatch[0].length;
+      continue;
+    }
+
+    const nameMatch = /^[A-Za-z_][A-Za-z0-9_]*/.exec(text.slice(index));
+    if (nameMatch) {
+      const name = nameMatch[0];
+      const after = text.slice(index + name.length);
+      if (expectDefinitionName) {
+        html += wrapSyntax("definition", name);
+        expectDefinitionName = false;
+      } else if (PYTHON_KEYWORDS.has(name)) {
+        html += wrapSyntax("keyword", name);
+        expectDefinitionName = name === "def" || name === "class";
+      } else if (/^\s*\(/.test(after)) {
+        html += wrapSyntax("function", name);
+      } else if (PYTHON_BUILTINS.has(name)) {
+        html += wrapSyntax("builtin", name);
+      } else {
+        html += escapeHtml(name);
+      }
+      index += name.length;
+      continue;
+    }
+
+    if ("+-*/%=<>!&|^~:.,()[]{}".includes(char)) {
+      html += wrapSyntax("operator", char);
+    } else if (char === "@" && /^[A-Za-z_]/.test(next)) {
+      html += wrapSyntax("decorator", char);
+    } else {
+      html += escapeHtml(char);
+    }
+    index += 1;
+  }
+  return html;
+}
+
+function renderCodeBlock(code, language) {
+  const normalizedLanguage = String(language || "").trim().toLowerCase();
+  const languageClass = normalizedLanguage ? ` language-${escapeHtml(normalizedLanguage)}` : "";
+  const highlighted = normalizedLanguage === "python" || normalizedLanguage === "py"
+    ? highlightPythonCode(code)
+    : escapeHtml(code);
+  return `<pre class="md-code${languageClass}" data-language="${escapeHtml(normalizedLanguage || "code")}"><code class="${languageClass.trim()}">${highlighted}</code></pre>`;
+}
+
 function renderMarkdown(markdown) {
   const lines = markdown.split(/\r?\n/);
   const html = [];
@@ -1844,7 +1958,7 @@ function renderMarkdown(markdown) {
         index += 1;
       }
       index += 1;
-      html.push(`<pre class="md-code"><code class="language-${escapeHtml(language)}">${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+      html.push(renderCodeBlock(codeLines.join("\n"), language));
       continue;
     }
 
@@ -2420,7 +2534,7 @@ function renderAccountDocs() {
         </div>
         <div class="account-doc-actions">
           ${accountIsAdmin ? `<button type="button" class="landing-primary-button account-doc-questions" data-doc-id="${doc.id}">Questions</button>` : ""}
-          ${accountIsAdmin ? `<button type="button" class="secondary-button account-doc-responses" data-doc-id="${doc.id}">Responses</button>` : ""}
+          <button type="button" class="secondary-button account-doc-responses" data-doc-id="${doc.id}">${accountIsAdmin ? "Responses" : "My responses"}</button>
           ${accountIsAdmin ? `<button type="button" class="secondary-button account-doc-retake" data-doc-id="${doc.id}">Retake access</button>` : ""}
           ${accountIsAdmin ? `<button type="button" class="danger-button account-doc-reset-questions" data-doc-id="${doc.id}">Reset questions</button>` : ""}
           <button type="button" class="secondary-button account-doc-view" data-doc-id="${doc.id}">View more</button>
@@ -2628,24 +2742,24 @@ function showAccountResponses(docId) {
   if (!doc || !accountDetailModal) return;
   activeAccountDoc = doc;
   activeAccountResponseUserFilter = "all";
-  accountDetailTitle.textContent = "User responses";
+  accountDetailTitle.textContent = accountIsAdmin ? "User responses" : "My responses";
   accountDetailEyebrow.textContent = doc.documentation_title || "Selected documentation";
   accountDetailBody.innerHTML = `
     <section class="account-question-builder">
       <div class="account-question-head">
         <div>
-          <p class="eyebrow">Admin responses</p>
-          <h3>Assessment response summary</h3>
-          <p>Review submitted answers, filter by all users or a specific user, and inspect each attempt without editing questions.</p>
+          <p class="eyebrow">${accountIsAdmin ? "Admin responses" : "Assessment history"}</p>
+          <h3>${accountIsAdmin ? "Assessment response summary" : "Your submitted answers"}</h3>
+          <p>${accountIsAdmin ? "Review submitted answers, filter by all users or a specific user, and inspect each attempt without editing questions." : "Review your submitted answers, correct answers, and explanations for this documentation."}</p>
         </div>
       </div>
       <section class="account-response-dashboard">
         <div class="account-question-list-head">
           <div>
-            <p class="eyebrow">User responses</p>
+            <p class="eyebrow">${accountIsAdmin ? "User responses" : "Your responses"}</p>
             <h4 id="account-response-count">Response summary</h4>
           </div>
-          <label class="field compact-field" for="account-response-user-filter">
+          <label class="field compact-field ${accountIsAdmin ? "" : "is-hidden"}" for="account-response-user-filter">
             <span>User</span>
             <select id="account-response-user-filter">
               <option value="all">All users</option>
@@ -2661,7 +2775,11 @@ function showAccountResponses(docId) {
   accountDetailModal.classList.remove("is-hidden");
   document.body.classList.add("account-detail-open");
   accountDetailClose?.focus();
-  loadAccountQuestions();
+  if (accountIsAdmin) {
+    loadAccountQuestions();
+  } else {
+    loadAccountUserResponses();
+  }
 }
 
 function showAccountRetakeAccess(docId) {
@@ -3045,6 +3163,39 @@ async function loadAccountQuestions() {
     activeAccountQuestions = [];
     activeAccountAnswers = [];
     if (list) list.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load questions.")}</p>`;
+  }
+}
+
+async function loadAccountUserResponses() {
+  if (!activeAccountDoc) return;
+  const summary = accountDetailBody?.querySelector("#account-response-summary");
+  if (summary) summary.innerHTML = '<p class="placeholder">Loading your responses...</p>';
+  try {
+    const response = await fetch(apiUrl(`/assessments/documentation/${activeAccountDoc.id}/my-answers`), {
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    const data = await response.json().catch(() => []);
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not load your responses.");
+    activeAccountAnswers = Array.isArray(data) ? data : [];
+    const questionMap = new Map();
+    activeAccountAnswers.forEach((answer) => {
+      if (!questionMap.has(String(answer.question_id))) {
+        questionMap.set(String(answer.question_id), {
+          id: answer.question_id,
+          documentation_id: answer.documentation_id,
+          question: answer.question,
+          choices: answer.choices || {},
+          correct_response: answer.correct_response,
+          explanation: answer.explanation
+        });
+      }
+    });
+    activeAccountQuestions = Array.from(questionMap.values());
+    renderAccountResponseDashboard();
+  } catch (error) {
+    activeAccountQuestions = [];
+    activeAccountAnswers = [];
+    if (summary) summary.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load your responses.")}</p>`;
   }
 }
 
@@ -5703,7 +5854,6 @@ accountDocsList?.addEventListener("click", (event) => {
   }
   const responsesButton = event.target.closest(".account-doc-responses");
   if (responsesButton) {
-    if (!accountIsAdmin) return;
     showAccountResponses(responsesButton.dataset.docId);
     return;
   }
