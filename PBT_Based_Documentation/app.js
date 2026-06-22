@@ -39,7 +39,6 @@ const assessmentProgressBar = document.querySelector("#assessment-progress-bar")
 const assessmentQuestionText = document.querySelector("#assessment-question-text");
 const assessmentChoiceList = document.querySelector("#assessment-choice-list");
 const assessmentSubmitButton = document.querySelector("#assessment-submit-button");
-const assessmentSkipButton = document.querySelector("#assessment-skip-button");
 const assessmentMessage = document.querySelector("#assessment-message");
 const assessmentCorrectCount = document.querySelector("#assessment-correct-count");
 const assessmentAnsweredCount = document.querySelector("#assessment-answered-count");
@@ -2320,55 +2319,78 @@ function renderAccountQuestions() {
     const choiceKeys = Object.keys(choices).length ? Object.keys(choices) : ["A", "B", "C", "D"];
     const answers = activeAccountAnswers.filter((answer) => String(answer.question_id) === String(question.id));
     return `
-      <article class="account-question-item" data-question-id="${question.id}">
-        <div class="account-question-item-head">
-          <strong>Question ${index + 1}</strong>
-          <button type="button" class="danger-button account-question-delete" data-question-id="${question.id}">Delete</button>
+      <details class="account-question-item" data-question-id="${question.id}">
+        <summary class="account-question-summary">
+          <span>
+            <strong>Question ${index + 1}</strong>
+            <small>${answers.length} response${answers.length === 1 ? "" : "s"}</small>
+          </span>
+          <b>${escapeHtml(question.question || "Untitled question")}</b>
+        </summary>
+        <div class="account-question-readonly">
+          <p>${escapeHtml(question.question || "")}</p>
+          <ol type="A" class="account-question-choice-preview">
+            ${choiceKeys.map((choice) => `
+              <li class="${question.correct_response === choice ? "is-correct" : ""}">
+                <span>${escapeHtml(choices[choice] || "")}</span>
+              </li>
+            `).join("")}
+          </ol>
+          <p class="account-question-explanation"><strong>Explanation:</strong> ${escapeHtml(question.explanation || "No explanation stored.")}</p>
+          <div class="account-question-actions">
+            <button type="button" class="secondary-button account-question-edit" data-question-id="${question.id}">Edit</button>
+            <button type="button" class="danger-button account-question-delete" data-question-id="${question.id}">Delete</button>
+            <p class="account-message" data-question-message="${question.id}"></p>
+          </div>
         </div>
-        <label class="field">
-          <span>Question</span>
-          <textarea data-question-field="question" rows="3">${escapeHtml(question.question || "")}</textarea>
-        </label>
-        <div class="manual-choice-grid">
-          ${choiceKeys.map((choice) => `
-            <label class="field">
-              <span>Choice ${escapeHtml(choice)}</span>
-              <input data-choice-key="${escapeHtml(choice)}" type="text" value="${escapeHtml(choices[choice] || "")}">
-            </label>
-          `).join("")}
-        </div>
-        <div class="manual-answer-row">
-          <label class="field compact-field">
-            <span>Correct</span>
-            <select data-question-field="correct_response">
-              ${choiceKeys.map((choice) => `<option value="${escapeHtml(choice)}" ${question.correct_response === choice ? "selected" : ""}>${escapeHtml(choice)}</option>`).join("")}
-            </select>
-          </label>
+        <div class="account-question-edit-panel is-hidden">
           <label class="field">
-            <span>Explanation</span>
-            <input data-question-field="explanation" type="text" value="${escapeHtml(question.explanation || "")}">
+            <span>Question</span>
+            <textarea data-question-field="question" rows="3">${escapeHtml(question.question || "")}</textarea>
           </label>
-        </div>
-        <div class="account-question-actions">
-          <button type="button" class="landing-primary-button account-question-save" data-question-id="${question.id}">Save changes</button>
-          <p class="account-message" data-question-message="${question.id}"></p>
+          <div class="manual-choice-grid">
+            ${choiceKeys.map((choice) => `
+              <label class="field">
+                <span>Choice ${escapeHtml(choice)}</span>
+                <input data-choice-key="${escapeHtml(choice)}" type="text" value="${escapeHtml(choices[choice] || "")}">
+              </label>
+            `).join("")}
+          </div>
+          <div class="manual-answer-row">
+            <label class="field compact-field">
+              <span>Correct</span>
+              <select data-question-field="correct_response">
+                ${choiceKeys.map((choice) => `<option value="${escapeHtml(choice)}" ${question.correct_response === choice ? "selected" : ""}>${escapeHtml(choice)}</option>`).join("")}
+              </select>
+            </label>
+            <label class="field">
+              <span>Explanation</span>
+              <input data-question-field="explanation" type="text" value="${escapeHtml(question.explanation || "")}">
+            </label>
+          </div>
+          <div class="account-question-actions">
+            <button type="button" class="landing-primary-button account-question-save" data-question-id="${question.id}">Save changes</button>
+            <button type="button" class="secondary-button account-question-cancel" data-question-id="${question.id}">Cancel</button>
+          </div>
         </div>
         <details class="account-question-responses">
           <summary>${answers.length} user response${answers.length === 1 ? "" : "s"}</summary>
           ${answers.length ? `
             <div class="account-response-list">
               ${answers.map((answer) => `
-                <span>
-                  <strong>User #${escapeHtml(String(answer.user_id))}</strong>
-                  chose <code>${escapeHtml(answer.user_response || "")}</code>
-                  <em>${answer.is_correct ? "correct" : "incorrect"}</em>
-                  <small>Attempt #${escapeHtml(String(answer.attempt_id))}</small>
-                </span>
+                <article class="account-response-comment ${answer.is_correct ? "is-correct" : "is-incorrect"}">
+                  <div>
+                    <strong>User #${escapeHtml(String(answer.user_id))}</strong>
+                    <small>Attempt #${escapeHtml(String(answer.attempt_id))}</small>
+                  </div>
+                  <p>Selected <code>${escapeHtml(answer.user_response || "")}</code></p>
+                  <em>${answer.is_correct ? "Correct" : "Incorrect"}</em>
+                </article>
               `).join("")}
             </div>
           ` : '<p class="placeholder">No submitted answers yet.</p>'}
         </details>
-      </article>
+      </details>
     `;
   }).join("");
 }
@@ -4721,7 +4743,7 @@ areaChoices.forEach((choice) => {
 });
 
 areaVoteButton?.addEventListener("click", submitAreaVote);
-assessmentNextButton?.addEventListener("click", loadAssessment);
+assessmentNextButton?.addEventListener("click", () => moveAssessmentQuestion(1));
 assessmentResourceTabs.forEach((button) => {
   button.addEventListener("click", () => {
     activeAssessmentResource = button.dataset.assessmentResource || "documentation";
@@ -4734,7 +4756,6 @@ assessmentChoiceList?.addEventListener("click", (event) => {
   selectAssessmentChoice(button.dataset.assessmentChoice);
 });
 assessmentSubmitButton?.addEventListener("click", submitAssessmentAnswer);
-assessmentSkipButton?.addEventListener("click", () => moveAssessmentQuestion(1));
 tdFormatButton?.addEventListener("click", formatTraditionalMarkdown);
 tdSaveButton?.addEventListener("click", saveTraditionalMarkdown);
 researchConfirmButton?.addEventListener("click", confirmResearchMode);
@@ -4839,6 +4860,20 @@ accountDetailBody?.addEventListener("click", (event) => {
   const questionSaveButton = event.target.closest(".account-question-save");
   if (questionSaveButton) {
     saveAccountQuestion(questionSaveButton.dataset.questionId, questionSaveButton);
+    return;
+  }
+  const questionEditButton = event.target.closest(".account-question-edit");
+  if (questionEditButton) {
+    const item = questionEditButton.closest(".account-question-item");
+    item?.querySelector(".account-question-edit-panel")?.classList.remove("is-hidden");
+    item?.querySelector(".account-question-readonly")?.classList.add("is-hidden");
+    return;
+  }
+  const questionCancelButton = event.target.closest(".account-question-cancel");
+  if (questionCancelButton) {
+    const item = questionCancelButton.closest(".account-question-item");
+    item?.querySelector(".account-question-edit-panel")?.classList.add("is-hidden");
+    item?.querySelector(".account-question-readonly")?.classList.remove("is-hidden");
     return;
   }
   const questionDeleteButton = event.target.closest(".account-question-delete");

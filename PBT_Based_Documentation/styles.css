@@ -6390,22 +6390,153 @@ body.dark-mode .account-delete-confirm {
 .account-question-item {
   display: grid;
   gap: 12px;
-  padding: 14px;
   border: 1px solid color-mix(in srgb, var(--clay) 12%, var(--line));
   border-radius: 8px;
   background: rgba(255, 250, 242, 0.72);
+  overflow: hidden;
 }
 
-.account-question-item-head {
+.account-question-summary {
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.account-question-summary::-webkit-details-marker {
+  display: none;
+}
+
+.account-question-summary span {
+  display: grid;
+  gap: 3px;
+  min-width: 108px;
+}
+
+.account-question-summary strong {
+  color: var(--ink);
+  font-size: 0.98rem;
+}
+
+.account-question-summary small {
+  color: var(--muted);
+  font-weight: 760;
+}
+
+.account-question-summary b {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 0.96rem;
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+}
+
+.account-question-readonly,
+.account-question-edit-panel,
+.account-question-responses {
+  margin: 0 14px 14px;
+}
+
+.account-question-readonly {
+  display: grid;
   gap: 12px;
 }
 
-.account-question-item-head strong {
+.account-question-readonly p {
+  margin: 0;
   color: var(--ink);
-  font-size: 0.98rem;
+  line-height: 1.48;
+}
+
+.account-question-choice-preview {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.account-question-choice-preview li {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.account-question-choice-preview li.is-correct {
+  color: #276b61;
+  font-weight: 820;
+}
+
+.account-question-explanation {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(39, 107, 97, 0.08);
+}
+
+.account-question-edit-panel {
+  display: grid;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.account-question-responses {
+  border-top: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  padding-top: 12px;
+}
+
+.account-question-responses summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 820;
+}
+
+.account-response-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.account-response-comment {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.74);
+}
+
+.account-response-comment > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.account-response-comment p {
+  margin: 0;
+  color: var(--ink);
+}
+
+.account-response-comment small,
+.account-response-comment em {
+  color: var(--muted);
+}
+
+.account-response-comment.is-correct {
+  border-color: rgba(39, 107, 97, 0.22);
+}
+
+.account-response-comment.is-correct em {
+  color: #276b61;
+}
+
+.account-response-comment.is-incorrect {
+  border-color: rgba(182, 90, 55, 0.2);
+}
+
+.account-response-comment.is-incorrect em {
+  color: var(--clay-dark);
 }
 
 body.dark-mode .account-question-builder {
@@ -6432,12 +6563,23 @@ body.dark-mode .account-question-builder .field textarea {
 }
 
 body.dark-mode .account-question-list-head h4,
-body.dark-mode .account-question-item-head strong,
+body.dark-mode .account-question-summary strong,
+body.dark-mode .account-question-summary b,
 body.dark-mode .account-ai-generate-panel h4 {
   color: #fff8ed;
 }
 
 body.dark-mode .account-question-item {
+  border-color: rgba(255, 248, 237, 0.14);
+  background: rgba(255, 248, 237, 0.06);
+}
+
+body.dark-mode .account-question-readonly p,
+body.dark-mode .account-response-comment p {
+  color: #fff8ed;
+}
+
+body.dark-mode .account-response-comment {
   border-color: rgba(255, 248, 237, 0.14);
   background: rgba(255, 248, 237, 0.06);
 }
@@ -7836,40 +7978,39 @@ body.area-active .area-rank-signal {
   display: block !important;
 }
 
-/* Final light-mode palette pass: keep the dark-mode personality, but remove
-   the muddy cream/tan cast from the light UI. */
+/* Final light-mode palette pass: warm cream paper with teal accents. */
 body:not(.dark-mode) {
-  --ink: #241c34;
-  --muted: #655f78;
-  --paper: #fbf9ff;
-  --panel: #f1edf9;
-  --line: rgba(81, 63, 120, 0.18);
-  --clay: #9b5fca;
-  --clay-dark: #5b3f91;
-  --sage: #3f7f79;
-  --blue: #415f9d;
-  --gold: #b8823d;
-  --violet: #7150a5;
-  --shadow: 0 24px 60px rgba(42, 29, 72, 0.14);
+  --ink: #261f1a;
+  --muted: #62584d;
+  --paper: #fffaf2;
+  --panel: #f3ecdf;
+  --line: rgba(83, 68, 54, 0.18);
+  --clay: #b65a37;
+  --clay-dark: #843f2c;
+  --sage: #596f5f;
+  --blue: #276b61;
+  --gold: #c99843;
+  --violet: #5a786f;
+  --shadow: 0 24px 60px rgba(72, 56, 42, 0.15);
   color: var(--ink);
   background:
-    radial-gradient(circle at 14% 12%, rgba(113, 80, 165, 0.18), transparent 28rem),
-    radial-gradient(circle at 86% 16%, rgba(65, 95, 157, 0.14), transparent 24rem),
-    radial-gradient(circle at 78% 82%, rgba(63, 127, 121, 0.1), transparent 26rem),
-    linear-gradient(135deg, #f9f7ff 0%, #f3f0fb 48%, #eef3fb 100%) !important;
+    radial-gradient(circle at 14% 12%, rgba(39, 107, 97, 0.14), transparent 28rem),
+    radial-gradient(circle at 86% 16%, rgba(201, 152, 67, 0.13), transparent 24rem),
+    radial-gradient(circle at 78% 82%, rgba(182, 90, 55, 0.08), transparent 26rem),
+    linear-gradient(135deg, #fff8ec 0%, #f7efe2 48%, #edf4ee 100%) !important;
 }
 
 body:not(.dark-mode)::before {
   background-image:
-    linear-gradient(rgba(81, 63, 120, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(81, 63, 120, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(83, 68, 54, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(83, 68, 54, 0.03) 1px, transparent 1px);
 }
 
 body:not(.dark-mode)::after {
   opacity: 0.38;
   background:
-    linear-gradient(90deg, transparent 0 22px, rgba(81, 63, 120, 0.08) 23px 24px, transparent 25px),
-    linear-gradient(rgba(81, 63, 120, 0.05) 1px, transparent 1px);
+    linear-gradient(90deg, transparent 0 22px, rgba(83, 68, 54, 0.07) 23px 24px, transparent 25px),
+    linear-gradient(rgba(83, 68, 54, 0.04) 1px, transparent 1px);
 }
 
 body:not(.dark-mode) .workspace,
@@ -7881,9 +8022,9 @@ body:not(.dark-mode) .area-battle,
 body:not(.dark-mode) .area-leaderboard,
 body:not(.dark-mode) .area-signal-board,
 body:not(.dark-mode) .area-comment-panel {
-  border-color: rgba(81, 63, 120, 0.16) !important;
-  background: rgba(251, 249, 255, 0.78) !important;
-  box-shadow: 0 24px 70px rgba(42, 29, 72, 0.12);
+  border-color: rgba(83, 68, 54, 0.16) !important;
+  background: rgba(255, 250, 242, 0.82) !important;
+  box-shadow: 0 24px 70px rgba(72, 56, 42, 0.12);
 }
 
 body:not(.dark-mode) .paper,
@@ -7906,30 +8047,30 @@ body:not(.dark-mode) .generated-doc-tab,
 body:not(.dark-mode) .saved-doc-card,
 body:not(.dark-mode) .area-ranking-card,
 body:not(.dark-mode) .bt-stat-panel {
-  border-color: rgba(81, 63, 120, 0.16) !important;
-  background: rgba(255, 255, 255, 0.74) !important;
+  border-color: rgba(83, 68, 54, 0.16) !important;
+  background: rgba(255, 252, 246, 0.78) !important;
   color: var(--ink) !important;
 }
 
 body:not(.dark-mode) .step-tab.is-active,
 body:not(.dark-mode) .docs-example-choice.is-active,
 body:not(.dark-mode) .landing-example-choice.is-active {
-  border-color: rgba(113, 80, 165, 0.34) !important;
+  border-color: rgba(39, 107, 97, 0.28) !important;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(242, 237, 252, 0.9)),
-    linear-gradient(90deg, rgba(113, 80, 165, 0.18), rgba(65, 95, 157, 0.12)) !important;
-  color: #2a1d48 !important;
-  box-shadow: 0 16px 34px rgba(81, 63, 120, 0.14);
+    linear-gradient(135deg, rgba(255, 250, 242, 0.96), rgba(239, 247, 242, 0.9)),
+    linear-gradient(90deg, rgba(39, 107, 97, 0.16), rgba(201, 152, 67, 0.1)) !important;
+  color: #1d332f !important;
+  box-shadow: 0 16px 34px rgba(39, 107, 97, 0.12);
 }
 
 body:not(.dark-mode) .landing-primary-button,
 body:not(.dark-mode) #run-button,
 body:not(.dark-mode) .approve-button,
 body:not(.dark-mode) .area-vote-actions .landing-primary-button {
-  border-color: rgba(81, 63, 120, 0.22) !important;
-  background: linear-gradient(135deg, #44306d, #415f9d) !important;
-  color: #fff !important;
-  box-shadow: 0 18px 38px rgba(65, 48, 109, 0.22);
+  border-color: rgba(39, 107, 97, 0.28) !important;
+  background: linear-gradient(135deg, #276b61, #1f4f48) !important;
+  color: #fffaf2 !important;
+  box-shadow: 0 18px 38px rgba(39, 107, 97, 0.2);
 }
 
 body:not(.dark-mode) .eyebrow,
@@ -7937,20 +8078,20 @@ body:not(.dark-mode) .step-tab span,
 body:not(.dark-mode) .landing-stats strong,
 body:not(.dark-mode) .area-viz-label,
 body:not(.dark-mode) .td-preview > .eyebrow {
-  color: #7a569d !important;
+  color: #2f7c70 !important;
 }
 
 body:not(.dark-mode) .markdown-rendered code {
-  border-color: rgba(81, 63, 120, 0.16);
-  background: rgba(113, 80, 165, 0.1);
-  color: #39285d;
+  border-color: rgba(83, 68, 54, 0.16);
+  background: rgba(39, 107, 97, 0.08);
+  color: #1f4f48;
 }
 
 body:not(.dark-mode) .markdown-rendered .md-code,
 body:not(.dark-mode) .source-preview,
 body:not(.dark-mode) #coverage-source-lines {
-  border-color: rgba(81, 63, 120, 0.14);
-  background: linear-gradient(180deg, rgba(250, 248, 255, 0.96), rgba(239, 235, 249, 0.96));
+  border-color: rgba(83, 68, 54, 0.14);
+  background: linear-gradient(180deg, rgba(255, 250, 242, 0.96), rgba(243, 236, 223, 0.96));
 }
 
 body:not(.dark-mode) .area-rating,
@@ -7964,16 +8105,16 @@ body:not(.dark-mode) .area-leaderboard li.is-leading .area-rank {
 body:not(.dark-mode) .area-ranking-details summary,
 body:not(.dark-mode) .area-choice-badge,
 body:not(.dark-mode) .area-rank {
-  color: #74519b;
-  background: rgba(113, 80, 165, 0.12);
+  color: #276b61;
+  background: rgba(39, 107, 97, 0.1);
 }
 
 body.landing-active:not(.dark-mode),
 body.area-active:not(.dark-mode) {
   background:
-    radial-gradient(circle at 16% 12%, rgba(113, 80, 165, 0.18), transparent 30rem),
-    radial-gradient(circle at 86% 14%, rgba(65, 95, 157, 0.14), transparent 26rem),
-    linear-gradient(135deg, #f9f7ff 0%, #f3f0fb 52%, #eef3fb 100%) !important;
+    radial-gradient(circle at 16% 12%, rgba(39, 107, 97, 0.15), transparent 30rem),
+    radial-gradient(circle at 86% 14%, rgba(201, 152, 67, 0.13), transparent 26rem),
+    linear-gradient(135deg, #fff8ec 0%, #f7efe2 52%, #edf4ee 100%) !important;
 }
 
 /* Arena hero visual: a quiet blind-comparison flow instead of the old spinner. */

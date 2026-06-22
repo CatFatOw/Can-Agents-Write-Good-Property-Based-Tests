@@ -321,7 +321,7 @@ async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session 
 
     assessment = db.query(models.AssessmentQuestion).filter(
         models.AssessmentQuestion.documentation_id == documentation.id
-    ).all()
+    ).order_by(models.AssessmentQuestion.id.asc()).all()
 
     # randomly geneate if TD or IBD 
     choices = ["TD", "IBD"]
