@@ -3380,16 +3380,19 @@ async function saveCompletedDocumentation(acceptedInvariants) {
 
   // The streaming route cannot easily return a saved row id, so logged-in users
   // get a second authenticated save once the human-reviewed Markdown is complete.
-  const response = await fetch(apiUrl("/documentation/create_ibd"), {
+  const data = await fetchJsonWithRetry(apiUrl("/documentation/create_ibd"), {
     method: "POST",
     headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
     body: JSON.stringify(payload)
+  }, {
+    retries: 2,
+    timeout: API_BASE_URL ? 20000 : 10000,
+    retryDelay: 1800
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || data.error || "Could not save generated Markdown.");
   activeSavedDocumentation = data;
   savedDocumentation = [data, ...savedDocumentation.filter((doc) => doc.id !== data.id)];
   renderSavedDocs();
+  refreshDatabaseStatus();
   return data;
 }
 
@@ -3527,6 +3530,32 @@ async function postJson(path, payload, options = {}) {
     requestCache.set(cacheKey, data);
   }
   return data;
+}
+
+async function fetchJsonWithRetry(url, options = {}, { retries = 1, timeout = 15000, retryDelay = 1200 } = {}) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.detail || data.error || `Request failed with ${response.status}.`);
+      }
+      return data;
+    } catch (error) {
+      lastError = error;
+      if (attempt >= retries) break;
+      await wait(retryDelay);
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  }
+  throw lastError || new Error("Request failed.");
 }
 
 async function postTextStream(path, payload, onChunk) {
