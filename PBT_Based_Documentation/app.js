@@ -10,12 +10,15 @@ const areaOpenButtons = Array.from(document.querySelectorAll(".area-open-button"
 const homeButton = document.querySelector("#home-button");
 const areaBackButton = document.querySelector(".area-back-button");
 const areaNextButton = document.querySelector("#area-next-button");
+const areaNextBottomButton = document.querySelector("#area-next-bottom-button");
 const areaVoteButton = document.querySelector("#area-vote-button");
 const areaVoteMessage = document.querySelector("#area-vote-message");
 const areaCommentInput = document.querySelector("#area-comment-input");
 const areaRankCount = document.querySelector("#area-rank-count");
 const areaRankLimitInput = document.querySelector("#area-rank-limit");
 const areaLimitMessage = document.querySelector("#area-limit-message");
+const areaSessionProgressBar = document.querySelector("#area-session-progress-bar");
+const areaResetButton = document.querySelector("#area-reset-button");
 const areaTitle = document.querySelector("#area-battle-title");
 const areaTdTitle = document.querySelector("#area-td-title");
 const areaIbdTitle = document.querySelector("#area-ibd-title");
@@ -242,6 +245,7 @@ const ACCESS_TOKEN_STORAGE_KEY = "ibd-access-token";
 const USER_EMAIL_STORAGE_KEY = "ibd-user-email";
 const ARENA_RANK_COUNT_STORAGE_KEY = "ibd-arena-rank-count";
 const ARENA_RANK_LIMIT_STORAGE_KEY = "ibd-arena-rank-limit";
+const ARENA_COMPLETED_COMPARISONS_STORAGE_KEY = "ibd-arena-completed-comparisons";
 const RESEARCH_MODE_STORAGE_KEY = "ibd-research-mode";
 const RESEARCH_PHRASE_STORAGE_KEY = "ibd-research-phrase";
 const RUNTIME_API_BASE_URL = window.__IBD_CONFIG__?.apiBaseUrl || window.__APP_CONFIG__?.apiBaseUrl || "";
@@ -439,6 +443,35 @@ function areaRankCountValue() {
   return Number(localStorage.getItem(ARENA_RANK_COUNT_STORAGE_KEY) || 0);
 }
 
+function areaCompletedComparisonIds() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ARENA_COMPLETED_COMPARISONS_STORAGE_KEY) || "[]");
+    return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveAreaCompletedComparisonIds(ids) {
+  localStorage.setItem(ARENA_COMPLETED_COMPARISONS_STORAGE_KEY, JSON.stringify([...ids]));
+}
+
+function markAreaComparisonCompleted(documentationId) {
+  if (!documentationId) return;
+  const completed = areaCompletedComparisonIds();
+  completed.add(String(documentationId));
+  saveAreaCompletedComparisonIds(completed);
+}
+
+function resetLocalAreaSession() {
+  localStorage.setItem(ARENA_RANK_COUNT_STORAGE_KEY, "0");
+  localStorage.removeItem(ARENA_COMPLETED_COMPARISONS_STORAGE_KEY);
+  selectedAreaWinner = null;
+  areaVoteSubmitted = false;
+  if (areaCommentInput) areaCommentInput.value = "";
+  updateAreaSessionUI();
+}
+
 function areaRankLimitValue() {
   if (!isResearchModeActive()) return 0;
   return Number(localStorage.getItem(ARENA_RANK_LIMIT_STORAGE_KEY) || 0);
@@ -447,20 +480,26 @@ function areaRankLimitValue() {
 function updateAreaSessionUI() {
   const count = areaRankCountValue();
   const limit = areaRankLimitValue();
+  const completed = areaCompletedComparisonIds().size;
+  const denominator = limit || Math.max(completed, count, comparisonLeaderboardRows.length || areaFallbackPosts.length, 1);
+  const progress = Math.max(0, Math.min(100, (Math.max(count, completed) / denominator) * 100));
   if (areaRankCount) {
-    areaRankCount.textContent = limit ? `${count} / ${limit} ranked` : `${count} ranked`;
+    areaRankCount.textContent = limit ? `${count} / ${limit} ranked` : `${completed || count} completed`;
   }
+  if (areaSessionProgressBar) areaSessionProgressBar.style.width = `${progress}%`;
   if (areaRankLimitInput) {
     areaRankLimitInput.value = limit ? String(limit) : "";
   }
   if (areaLimitMessage) {
     areaLimitMessage.textContent = isResearchModeActive()
-      ? (limit && count >= limit ? "Research limit reached. Enter the phrase to exit or increase the limit." : "Research mode limit is enforced.")
-      : "Normal mode is unlimited.";
+      ? (limit && count >= limit ? "Research limit reached. Enter the phrase to exit, increase the limit, or reset the session." : "Research mode limit is enforced.")
+      : "Normal mode tracks completed comparisons in this browser.";
   }
   if (areaVoteButton) {
-    areaVoteButton.disabled = Boolean((limit && count >= limit) || !selectedAreaWinner);
+    areaVoteButton.disabled = Boolean(areaVoteSubmitted || (limit && count >= limit) || !selectedAreaWinner);
   }
+  areaNextButton?.classList.toggle("assessment-next-ready", areaVoteSubmitted);
+  areaNextBottomButton?.classList.toggle("assessment-next-ready", areaVoteSubmitted);
 }
 
 function incrementAreaRankCount() {
@@ -524,18 +563,36 @@ async function hydrateAreaPostDocs(post) {
 
 async function loadAreaComparison() {
   if (areaLoading) return;
+  const completed = areaCompletedComparisonIds();
+  const hasRemainingFallback = areaFallbackPosts.some((post, index) => !completed.has(String(post.id || post.title || index)));
+  if (!getAccessToken() && !hasRemainingFallback) {
+    areaVoteSubmitted = true;
+    selectedAreaWinner = null;
+    if (areaVoteMessage) areaVoteMessage.textContent = "You have completed every bundled comparison in this browser. Ask an admin to reset comparison progress, or use Reset session for this browser.";
+    updateAreaSessionUI();
+    return;
+  }
   areaLoading = true;
   areaVoteSubmitted = false;
+  selectedAreaWinner = null;
   randomizeAreaSides();
   if (areaVoteMessage) areaVoteMessage.textContent = "Loading anonymous documentation samples...";
   if (areaVoteButton) areaVoteButton.disabled = true;
   try {
-    const response = await fetch(apiUrl("/comparison/random"));
+    const response = await fetch(apiUrl(getAccessToken() ? "/comparison/random-user" : "/comparison/random"), {
+      headers: authHeaders({ Accept: "application/json" })
+    });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || "No comparison documents are available yet.");
     currentAreaPost = normalizeAreaPost(data);
   } catch (error) {
-    currentAreaPost = areaFallbackPosts[activeAreaIndex] || areaFallbackPosts[0];
+    const fallbackIndex = areaFallbackPosts.findIndex((post, index) => !completed.has(String(post.id || post.title || index)));
+    activeAreaIndex = fallbackIndex >= 0 ? fallbackIndex : 0;
+    currentAreaPost = fallbackIndex >= 0 ? areaFallbackPosts[fallbackIndex] : null;
+    if (!currentAreaPost) {
+      if (areaVoteMessage) areaVoteMessage.textContent = error.message || "No remaining comparisons are available.";
+      return;
+    }
     await hydrateAreaPostDocs(currentAreaPost).catch((fallbackError) => {
       if (areaVoteMessage) areaVoteMessage.textContent = fallbackError.message;
     });
@@ -968,7 +1025,7 @@ function renderAreaPost() {
   }
   if (areaVoteMessage) {
     areaVoteMessage.textContent = areaVoteSubmitted
-      ? "Vote recorded. Source labels and rankings stay hidden in the ranking flow."
+      ? "Vote recorded. Use Next comparison to continue."
       : "Blind study mode. Pick a candidate without seeing source labels, rankings, or statistics.";
   }
   areaChoices.forEach((choice, index) => {
@@ -977,7 +1034,9 @@ function renderAreaPost() {
     choice.dataset.areaChoice = activeAreaSides[label];
     const active = choice.dataset.areaChoice === selectedAreaWinner;
     choice.classList.toggle("is-selected", active);
+    choice.classList.toggle("is-locked", areaVoteSubmitted);
     choice.setAttribute("aria-pressed", String(active));
+    choice.setAttribute("aria-disabled", String(areaVoteSubmitted));
   });
   updateAreaSessionUI();
 }
@@ -1347,6 +1406,10 @@ function moveAssessmentQuestion(direction) {
 }
 
 function selectAreaWinner(winner) {
+  if (areaVoteSubmitted) {
+    if (areaVoteMessage) areaVoteMessage.textContent = "This comparison is locked after voting. Continue to the next comparison.";
+    return;
+  }
   const nextWinner = winner === "TD" ? "TD" : "IBD";
   selectedAreaWinner = selectedAreaWinner === nextWinner ? null : nextWinner;
   renderAreaPost();
@@ -1375,12 +1438,17 @@ async function submitAreaVote() {
   }
   if (!post?.id) {
     areaVoteSubmitted = true;
+    markAreaComparisonCompleted(post?.id || post?.title || activeAreaIndex);
     incrementAreaRankCount();
     renderAreaPost();
     return;
   }
   if (areaVoteButton) areaVoteButton.disabled = true;
-  if (areaVoteMessage) areaVoteMessage.textContent = "Recording blind preference...";
+  areaVoteButton?.classList.add("is-submitting");
+  if (areaVoteMessage) {
+    areaVoteMessage.className = "area-vote-message is-submitting";
+    areaVoteMessage.textContent = "Recording blind preference in the study database...";
+  }
   try {
     const response = await fetch(apiUrl("/comparison/vote"), {
       method: "POST",
@@ -1406,20 +1474,39 @@ async function submitAreaVote() {
       bt: Number(data.bt_ibd_win_prob || post.bt)
     };
     areaVoteSubmitted = true;
+    markAreaComparisonCompleted(post.id);
     incrementAreaRankCount();
     renderAreaPost();
+    areaVoteButton?.classList.remove("is-submitting");
+    areaVoteButton?.classList.add("is-success");
+    if (areaVoteMessage) {
+      areaVoteMessage.className = "area-vote-message is-success";
+      areaVoteMessage.textContent = `Vote saved. ${areaRankCountValue()} comparison${areaRankCountValue() === 1 ? "" : "s"} completed in this session.`;
+    }
+    window.setTimeout(() => areaVoteButton?.classList.remove("is-success"), 900);
     await fetchComparisonLeaderboard().catch(() => []);
     renderLandingLeaderboard();
   } catch (error) {
     areaVoteSubmitted = false;
-    if (areaVoteMessage) areaVoteMessage.textContent = error.message || "Vote was not recorded.";
+    areaVoteButton?.classList.remove("is-submitting");
+    areaVoteButton?.classList.add("is-error");
+    if (areaVoteMessage) {
+      areaVoteMessage.className = "area-vote-message is-error";
+      areaVoteMessage.textContent = error.message || "Vote was not recorded.";
+    }
+    window.setTimeout(() => areaVoteButton?.classList.remove("is-error"), 900);
   } finally {
     if (areaVoteButton) areaVoteButton.disabled = false;
   }
 }
 
 function showNextAreaPost() {
-  activeAreaIndex = (activeAreaIndex + 1) % areaFallbackPosts.length;
+  const completed = areaCompletedComparisonIds();
+  const nextIndex = areaFallbackPosts.findIndex((post, index) => {
+    if (index <= activeAreaIndex) return false;
+    return !completed.has(String(post.id || post.title || index));
+  });
+  activeAreaIndex = nextIndex >= 0 ? nextIndex : 0;
   if (areaCommentInput) areaCommentInput.value = "";
   loadAreaComparison();
 }
@@ -3136,34 +3223,57 @@ async function resetAllAccountQuestions(button) {
 
 async function resetAllAssessmentAttempts(button) {
   if (!accountIsAdmin) return;
-  const phrase = "RESET ALL ATTEMPTS";
-  const typed = window.prompt(`Type ${phrase} to delete all assessment attempts and submitted answers for every user.`);
-  if (typed !== phrase) {
-    if (accountAdminMessage) accountAdminMessage.textContent = "Attempt reset cancelled. Phrase did not match.";
+  const resetScope = window.prompt("Reset what? Type ALL, QUIZ, or COMPARISON.", "ALL");
+  const scope = String(resetScope || "").trim().toUpperCase();
+  if (!["ALL", "QUIZ", "COMPARISON"].includes(scope)) {
+    if (accountAdminMessage) accountAdminMessage.textContent = "Reset cancelled. Choose ALL, QUIZ, or COMPARISON.";
     return;
   }
-  if (accountAdminMessage) accountAdminMessage.textContent = "Resetting all assessment attempts...";
+  const phrase = `RESET ${scope}`;
+  const typed = window.prompt(`Type ${phrase} to confirm.`);
+  if (typed !== phrase) {
+    if (accountAdminMessage) accountAdminMessage.textContent = "Reset cancelled. Phrase did not match.";
+    return;
+  }
+  if (accountAdminMessage) accountAdminMessage.textContent = `Resetting ${scope.toLowerCase()} data...`;
   if (button) button.disabled = true;
   try {
-    const response = await fetch(apiUrl("/assessments/attempts"), {
-      method: "DELETE",
-      headers: authHeaders({ Accept: "application/json" })
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      const detail = data.detail || data.error || "No backend detail returned.";
-      throw new Error(`Could not reset attempts (HTTP ${response.status}). ${detail}`);
-    }
-    if (accountAdminMessage) {
+    const messages = [];
+    if (scope === "ALL" || scope === "QUIZ") {
+      const response = await fetch(apiUrl("/assessments/attempts"), {
+        method: "DELETE",
+        headers: authHeaders({ Accept: "application/json" })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const detail = data.detail || data.error || "No backend detail returned.";
+        throw new Error(`Could not reset quiz attempts (HTTP ${response.status}). ${detail}`);
+      }
       const grantNote = data.retake_grants_table_found === false
-        ? " Retake grant table was not present, so grants were skipped."
+        ? " Retake grant table was skipped."
         : ` ${Number(data.deleted_retake_grants || 0)} retake grants deleted.`;
-      accountAdminMessage.textContent = `Reset complete: ${Number(data.deleted_answers || 0)} answers and ${Number(data.deleted_attempts || 0)} attempts deleted.${grantNote}`;
+      messages.push(`Quiz: ${Number(data.deleted_answers || 0)} answers and ${Number(data.deleted_attempts || 0)} attempts deleted.${grantNote}`);
     }
+
+    if (scope === "ALL" || scope === "COMPARISON") {
+      const response = await fetch(apiUrl("/comparison/attempts"), {
+        method: "DELETE",
+        headers: authHeaders({ Accept: "application/json" })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const detail = data.detail || data.error || "No backend detail returned.";
+        throw new Error(`Could not reset comparisons (HTTP ${response.status}). ${detail}`);
+      }
+      resetLocalAreaSession();
+      messages.push(`Comparison: ${Number(data.deleted_comparisons || 0)} votes deleted and ${Number(data.updated_documents || 0)} documents reset.`);
+    }
+
+    if (accountAdminMessage) accountAdminMessage.textContent = `Reset complete. ${messages.join(" ")}`;
     await fetchAccountDocs();
     refreshAccountDataSoon();
   } catch (error) {
-    if (accountAdminMessage) accountAdminMessage.textContent = error.message || "Could not reset attempts.";
+    if (accountAdminMessage) accountAdminMessage.textContent = error.message || "Could not reset.";
   } finally {
     if (button) button.disabled = false;
   }
@@ -3552,6 +3662,43 @@ function downloadMarkdown(text, filename) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+async function downloadAdminCsv(path, button) {
+  if (!accountIsAdmin) return;
+  const originalText = button?.textContent || "Export CSV";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Exporting...";
+  }
+  try {
+    const response = await fetch(apiUrl(path), {
+      headers: authHeaders({ Accept: "text/csv" })
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      throw new Error(detail || `Export failed with HTTP ${response.status}.`);
+    }
+    const blob = await response.blob();
+    const disposition = response.headers.get("content-disposition") || "";
+    const filename = disposition.match(/filename="?([^"]+)"?/i)?.[1] || "export.csv";
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    if (accountAdminMessage) accountAdminMessage.textContent = `${filename} downloaded.`;
+  } catch (error) {
+    if (accountAdminMessage) accountAdminMessage.textContent = error.message || "Could not export CSV.";
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
 }
 
 async function postJson(path, payload, options = {}) {
@@ -5384,6 +5531,11 @@ areaBackButton?.addEventListener("click", () => {
 });
 
 areaNextButton?.addEventListener("click", showNextAreaPost);
+areaNextBottomButton?.addEventListener("click", showNextAreaPost);
+areaResetButton?.addEventListener("click", () => {
+  resetLocalAreaSession();
+  loadAreaComparison();
+});
 
 areaModeTabs.forEach((button) => {
   button.addEventListener("click", () => setAreaMode(button.dataset.areaMode));
@@ -5465,6 +5617,12 @@ accountResetAttemptsAll?.addEventListener("click", () => {
     return;
   }
   resetAllAssessmentAttempts(accountResetAttemptsAll);
+});
+
+accountAdminActions?.addEventListener("click", (event) => {
+  const button = event.target.closest(".admin-export-button");
+  if (!button) return;
+  downloadAdminCsv(button.dataset.exportPath, button);
 });
 
 accountPageButton?.addEventListener("click", showAccountPage);

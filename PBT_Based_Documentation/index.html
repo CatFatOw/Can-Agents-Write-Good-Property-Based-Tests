@@ -161,12 +161,16 @@
           <div>
             <p class="eyebrow">Ranking session</p>
             <strong id="area-rank-count">0 ranked</strong>
+            <div class="area-session-progress" aria-hidden="true"><span id="area-session-progress-bar"></span></div>
           </div>
           <label class="field compact-field" for="area-rank-limit">
             <span>Ranking limit</span>
             <input id="area-rank-limit" type="number" min="0" step="1" placeholder="Unlimited">
           </label>
-          <p id="area-limit-message" role="status">Default is unlimited.</p>
+          <div class="area-session-status">
+            <p id="area-limit-message" role="status">Default is unlimited.</p>
+            <button type="button" class="secondary-button" id="area-reset-button">Reset session</button>
+          </div>
         </section>
 
         <div class="area-mode-tabs" role="tablist" aria-label="Arena activity">
@@ -214,6 +218,9 @@
               <div class="area-vote-actions">
                 <button type="button" class="landing-primary-button" id="area-vote-button">Vote for Candidate B</button>
                 <p id="area-vote-message" role="status">Blind study mode. Statistics are hidden until after your vote.</p>
+              </div>
+              <div class="area-bottom-actions">
+                <button type="button" class="secondary-button" id="area-next-bottom-button">Next comparison</button>
               </div>
             </section>
           </section>
@@ -661,6 +668,9 @@
           <p class="account-subtitle">Manage your profile, password, and everything you have generated.</p>
           <div class="account-admin-actions is-hidden" id="account-admin-actions">
             <button type="button" class="danger-button" id="account-reset-attempts-all">Reset attempts for all users</button>
+            <button type="button" class="secondary-button admin-export-button" data-export-path="/documentation/export">Export documentation CSV</button>
+            <button type="button" class="secondary-button admin-export-button" data-export-path="/assessments/export-all">Export quiz responses CSV</button>
+            <button type="button" class="secondary-button admin-export-button" data-export-path="/comparison/export">Export comparison CSV</button>
             <p class="account-message" id="account-admin-message" role="status"></p>
           </div>
         </header>
