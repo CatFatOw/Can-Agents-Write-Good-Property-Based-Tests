@@ -68,6 +68,8 @@ const researchPhraseMessage = document.querySelector("#research-phrase-message")
 const databaseStatus = document.querySelector("#database-status");
 const databaseStatusText = document.querySelector("#database-status-text");
 let databaseStatusRetryTimer = 0;
+let databaseStatusRetryDelay = 5000;
+const DATABASE_STATUS_STORAGE_KEY = "pbt_database_status";
 const accountMenuButton = document.querySelector("#account-menu-button");
 const accountMenuLabel = document.querySelector("#account-menu-label");
 const accountMenu = document.querySelector("#account-menu");
@@ -829,8 +831,9 @@ async function renderLandingLeaderboard() {
       `;
     }).join("");
   } catch (error) {
-    landingLeaderboardSection?.classList.add("is-hidden");
-    landingLeaderboardList.innerHTML = `<li class="placeholder">${escapeHtml(error.message || "Could not load leaderboard.")}</li>`;
+    landingLeaderboardSection?.classList.remove("is-hidden");
+    landingLeaderboardList.innerHTML = `<li class="placeholder">${escapeHtml(error.message || "Could not load leaderboard.")} Retrying when the cloud database wakes up.</li>`;
+    window.setTimeout(renderLandingLeaderboard, 7000);
   }
 }
 
@@ -1379,13 +1382,32 @@ function updateAccountMenuLabel() {
   });
 }
 
+function cachedDatabaseStatusText() {
+  try {
+    return localStorage.getItem(DATABASE_STATUS_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function cacheDatabaseStatusText(text) {
+  try {
+    localStorage.setItem(DATABASE_STATUS_STORAGE_KEY, text);
+  } catch {
+    // Ignore storage failures; the live status still renders.
+  }
+}
+
 async function refreshDatabaseStatus() {
   if (!databaseStatus || !databaseStatusText) return;
   window.clearTimeout(databaseStatusRetryTimer);
   databaseStatus.dataset.state = "checking";
-  databaseStatusText.textContent = API_BASE_URL ? "Checking cloud database..." : "Checking local database...";
+  const cached = cachedDatabaseStatusText();
+  databaseStatusText.textContent = cached
+    ? `${cached} · checking...`
+    : (API_BASE_URL ? "Checking cloud database..." : "Checking local database...");
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 2800);
+  const timeoutId = window.setTimeout(() => controller.abort(), API_BASE_URL ? 12000 : 5000);
   try {
     const response = await fetch(apiUrl("/api/status"), {
       cache: "no-store",
@@ -1399,16 +1421,24 @@ async function refreshDatabaseStatus() {
     databaseStatus.dataset.state = "connected";
     const environment = database.environment ? `${database.environment} ` : "";
     const fallback = database.using_local_fallback ? " fallback" : "";
-    databaseStatusText.textContent = `${environment}${database.backend || "database"}${fallback}: ${database.name || "default"}`;
+    const label = `${environment}${database.backend || "database"}${fallback}: ${database.name || "default"}`;
+    databaseStatusText.textContent = label;
+    cacheDatabaseStatusText(label);
+    databaseStatusRetryDelay = 5000;
   } catch (error) {
     if (error?.name === "AbortError") {
       databaseStatus.dataset.state = "checking";
-      databaseStatusText.textContent = API_BASE_URL ? "Cloud database warming..." : "Local database still checking...";
-      databaseStatusRetryTimer = window.setTimeout(refreshDatabaseStatus, 5000);
+      databaseStatusText.textContent = API_BASE_URL
+        ? "Cloud database still waking up..."
+        : "Local database still checking...";
+      databaseStatusRetryTimer = window.setTimeout(refreshDatabaseStatus, databaseStatusRetryDelay);
+      databaseStatusRetryDelay = Math.min(databaseStatusRetryDelay + 3000, 15000);
       return;
     }
-    databaseStatus.dataset.state = "error";
-    databaseStatusText.textContent = error.message || "Database unavailable";
+    databaseStatus.dataset.state = "checking";
+    databaseStatusText.textContent = `${error.message || "Database unavailable"} · retrying`;
+    databaseStatusRetryTimer = window.setTimeout(refreshDatabaseStatus, databaseStatusRetryDelay);
+    databaseStatusRetryDelay = Math.min(databaseStatusRetryDelay + 3000, 15000);
   } finally {
     window.clearTimeout(timeoutId);
   }
@@ -1961,7 +1991,7 @@ function renderSavedDocs() {
   }).join("");
 }
 
-async function fetchSavedDocs() {
+async function fetchSavedDocs({ retry = true } = {}) {
   if (!getAccessToken()) {
     renderSavedDocs();
     return;
@@ -1976,7 +2006,8 @@ async function fetchSavedDocs() {
     savedDocumentation = Array.isArray(data) ? data : [];
     renderSavedDocs();
   } catch (error) {
-    if (savedDocList) savedDocList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load saved Markdown.")}</p>`;
+    if (savedDocList) savedDocList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load saved Markdown.")}${retry ? " Retrying..." : ""}</p>`;
+    if (retry) window.setTimeout(() => fetchSavedDocs({ retry: false }), 5000);
   }
 }
 
@@ -2233,7 +2264,7 @@ function renderAccountDocs() {
   }).join("");
 }
 
-async function fetchAccountDocs() {
+async function fetchAccountDocs({ retry = true } = {}) {
   if (!getAccessToken()) {
     renderAccountDocs();
     return;
@@ -2251,7 +2282,8 @@ async function fetchAccountDocs() {
     renderAccountStats();
     renderAccountDocs();
   } catch (error) {
-    if (accountDocsList) accountDocsList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load documents.")}</p>`;
+    if (accountDocsList) accountDocsList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load documents.")}${retry ? " Retrying..." : ""}</p>`;
+    if (retry) window.setTimeout(() => fetchAccountDocs({ retry: false }), 5000);
   }
 }
 
@@ -4213,6 +4245,31 @@ function metricForInvariant(invariant, index = -1) {
   return currentMetrics[index] || null;
 }
 
+function selectedInvariantIndexes() {
+  const inputs = Array.from(reviewPanel.querySelectorAll(".invariant-item input[type='checkbox']"));
+  if (!inputs.length) {
+    return currentInvariants.map((_invariant, index) => index);
+  }
+  return inputs
+    .filter((input) => input.checked)
+    .map((input) => Number(input.dataset.index))
+    .filter((index) => Number.isInteger(index) && index >= 0 && index < currentInvariants.length);
+}
+
+function selectedInvariantTexts() {
+  return selectedInvariantIndexes()
+    .map((index) => invariantText(currentInvariants[index]))
+    .filter(Boolean);
+}
+
+function checkedInvariantIndexSet(invariants) {
+  const checked = new Set(selectedInvariantIndexes());
+  if (checked.size || reviewPanel.querySelector(".invariant-item input[type='checkbox']")) {
+    return checked;
+  }
+  return new Set(invariants.map((_invariant, index) => index));
+}
+
 function metricMarkup(metric) {
   if (!metric) {
     return "";
@@ -4413,6 +4470,7 @@ async function renderInvariantReviewAnimated(invariants) {
 }
 
 function renderInvariantReviewWithMetrics(invariants, loading = false) {
+  const checkedIndexes = checkedInvariantIndexSet(invariants);
   renderInvariantReview([]);
   const list = document.querySelector("#invariant-list");
   list.innerHTML = invariants.map((invariant, index) => {
@@ -4420,7 +4478,7 @@ function renderInvariantReviewWithMetrics(invariants, loading = false) {
     const range = invariantRange(invariant);
     return `
       <label class="invariant-item" data-index="${index}">
-        <input type="checkbox" checked data-index="${index}">
+        <input type="checkbox" ${checkedIndexes.has(index) ? "checked" : ""} data-index="${index}">
         <div class="invariant-copy">${renderMarkdown(invariantText(invariant))}</div>
         ${range ? `<span class="line-chip">Lines ${range.start}${range.end !== range.start ? `-${range.end}` : ""}</span>` : '<span class="line-chip line-chip-muted" title="No line metadata returned for this invariant">No lines</span>'}
         ${metricMarkup(metric)}
@@ -4820,7 +4878,8 @@ async function runMutationAnalysis(index, button) {
 }
 
 async function assessMetricsForReview() {
-  if (!assessMetricsInput.checked || !currentInvariants.length) {
+  const selectedInvariants = selectedInvariantTexts();
+  if (!assessMetricsInput.checked || !selectedInvariants.length) {
     currentMetrics = [];
     renderTestsPanel();
     return;
@@ -4833,7 +4892,7 @@ async function assessMetricsForReview() {
   const data = await postJson("/api/metrics", {
     api_name: apiNameInput.value.trim() || "api.function",
     source_code: currentSource,
-    invariants: invariantTexts(currentInvariants),
+    invariants: selectedInvariants,
     // Honor the mutation toggle here so mutation scores are available in
     // the review table when the user asks for them.
     show_mutation_tests: showMutationTestingInput.checked,
@@ -4849,9 +4908,7 @@ async function assessMetricsForReview() {
 
 async function generateMarkdownFromReview() {
   const apiName = apiNameInput.value.trim() || "api.function";
-  const accepted = Array.from(reviewPanel.querySelectorAll("input[type='checkbox']"))
-    .filter((input) => input.checked)
-    .map((input) => invariantText(currentInvariants[Number(input.dataset.index)]));
+  const accepted = selectedInvariantTexts();
 
   const approveButton = document.querySelector("#approve-button");
   approveButton.disabled = true;
