@@ -5713,6 +5713,8 @@ body.landing-active .landing-examples {
 
 .database-status,
 .account-menu-button {
+  position: relative;
+  overflow: hidden;
   min-height: 36px;
   padding: 0 12px;
   display: inline-flex;
@@ -5736,6 +5738,31 @@ body.landing-active .landing-examples {
 
 .database-status[data-state="checking"] .status-dot {
   background: var(--gold);
+}
+
+.database-status[data-state="checking"]::after {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  content: "";
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(49, 92, 104, 0.18) 18%,
+      rgba(201, 152, 67, 0.9) 48%,
+      rgba(49, 92, 104, 0.18) 78%,
+      transparent 100%
+    );
+  background-size: 220% 100%;
+  animation: database-status-scan 1.2s linear infinite;
+}
+
+@keyframes database-status-scan {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
 }
 
 .global-database-status {

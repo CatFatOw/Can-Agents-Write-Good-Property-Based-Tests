@@ -5581,6 +5581,7 @@ showLandingPage();
 setStage("input");
 updateAccountMenuLabel();
 updateAccountDocsScopeUi();
+refreshDatabaseStatus();
 // Keep the session across refreshes: the stored token is preserved so the user
 // stays logged in. Validate it in the background and only drop it if it has
 // actually expired (401) — a refresh on its own never logs the user out.
