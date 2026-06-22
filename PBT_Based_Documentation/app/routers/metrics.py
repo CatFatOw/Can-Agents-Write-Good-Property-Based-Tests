@@ -10,6 +10,7 @@ FOLLOWING ROUTES
 import sys
 from fastapi import APIRouter, HTTPException, status, Depends, Response
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 import models 
 import database 
@@ -44,7 +45,7 @@ def legacy_error(exc: Exception) -> JSONResponse:
 async def calculate_metrics(payload: dict):
     """Drop-in replacement for server.py's /api/metrics endpoint."""
     try:
-        return legacy_backend.generate_metrics(payload)
+        return await run_in_threadpool(legacy_backend.generate_metrics, payload)
     except Exception as exc:
         return legacy_error(exc)
 
@@ -53,7 +54,7 @@ async def calculate_metrics(payload: dict):
 async def calculate_mutation_analysis(payload: dict):
     """Analyze mutation survivors for one generated Hypothesis test."""
     try:
-        return legacy_backend.generate_mutation_analysis(payload)
+        return await run_in_threadpool(legacy_backend.generate_mutation_analysis, payload)
     except Exception as exc:
         return legacy_error(exc)
 
@@ -62,7 +63,7 @@ async def calculate_mutation_analysis(payload: dict):
 async def rerun_generated_test(payload: dict):
     """Re-run one generated test and return the metric object."""
     try:
-        return legacy_backend.rerun_test(payload)
+        return await run_in_threadpool(legacy_backend.rerun_test, payload)
     except Exception as exc:
         return legacy_error(exc)
 
@@ -71,6 +72,6 @@ async def rerun_generated_test(payload: dict):
 async def calculate_documentation_coverage(payload: dict):
     """Map generated documentation claims back to source-code evidence."""
     try:
-        return legacy_backend.generate_coverage(payload)
+        return await run_in_threadpool(legacy_backend.generate_coverage, payload)
     except Exception as exc:
         return legacy_error(exc)

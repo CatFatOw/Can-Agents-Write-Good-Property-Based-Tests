@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse
 from fastapi import APIRouter, HTTPException, status, Depends, Response
 from fastapi.responses import JSONResponse
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 import models 
 import schemas
@@ -53,6 +54,7 @@ def legacy_error(exc: Exception) -> JSONResponse:
 # Documentation table requires an owner. Persist generations under a shared
 # placeholder account so saving works without changing the existing schema.
 ANONYMOUS_OWNER_EMAIL = "anonymous@local"
+STREAM_END = object()
 
 
 def get_anonymous_owner_id(db: Session) -> int:
@@ -101,11 +103,26 @@ def persist_generated_documentation(db: Session, payload: dict, markdown: str):
         return None
 
 
+def next_stream_chunk(iterator):
+    try:
+        return next(iterator)
+    except StopIteration:
+        return STREAM_END
+
+
+def persist_generated_documentation_in_new_session(payload: dict, markdown: str):
+    db = database.SessionLocal()
+    try:
+        return persist_generated_documentation(db, payload, markdown)
+    finally:
+        db.close()
+
+
 @api_router.post("/source")
 async def lookup_source(payload: dict):
     """Drop-in FastAPI replacement for server.py's /api/source endpoint."""
     try:
-        return legacy_backend.resolve_source(str(payload.get("object_name") or ""))
+        return await run_in_threadpool(legacy_backend.resolve_source, str(payload.get("object_name") or ""))
     except Exception as exc:
         return legacy_error(exc)
 
@@ -114,7 +131,7 @@ async def lookup_source(payload: dict):
 async def generate_invariants(payload: dict):
     """Generate candidate invariants from pasted or looked-up source code."""
     try:
-        return legacy_backend.generate_invariants(payload)
+        return await run_in_threadpool(legacy_backend.generate_invariants, payload)
     except Exception as exc:
         return legacy_error(exc)
 
@@ -123,7 +140,7 @@ async def generate_invariants(payload: dict):
 async def generate_documentation(payload: dict, db: Session = Depends(get_db)):
     """Generate invariant-based Markdown documentation and save it."""
     try:
-        result = legacy_backend.generate_documentation(payload)
+        result = await run_in_threadpool(legacy_backend.generate_documentation, payload)
         doc = persist_generated_documentation(db, payload, result.get("markdown", ""))
         if doc is not None:
             result["documentation_id"] = doc.id
@@ -136,25 +153,28 @@ async def generate_documentation(payload: dict, db: Session = Depends(get_db)):
 async def format_traditional_documentation(payload: dict):
     """Convert pasted traditional/reference docs into Markdown for Arena."""
     try:
-        return legacy_backend.generate_traditional_markdown(payload)
+        return await run_in_threadpool(legacy_backend.generate_traditional_markdown, payload)
     except Exception as exc:
         return legacy_error(exc)
 
 
 @api_router.post("/documentation-stream")
-async def generate_documentation_stream(payload: dict, db: Session = Depends(get_db)):
+async def generate_documentation_stream(payload: dict):
     """Stream generated Markdown, then persist the full document once complete."""
     try:
-        chunks: list[str] = []
-
-        def streamer():
-            for chunk in legacy_backend.stream_documentation(payload):
+        async def streamer():
+            chunks: list[str] = []
+            iterator = legacy_backend.stream_documentation(payload)
+            while True:
+                chunk = await run_in_threadpool(next_stream_chunk, iterator)
+                if chunk is STREAM_END:
+                    break
                 chunks.append(chunk)
                 yield chunk
             # Save only after the full markdown has streamed to the client.
             markdown = legacy_backend.strip_markdown_fences("".join(chunks))
             if not payload.get("skip_anonymous_save"):
-                persist_generated_documentation(db, payload, markdown)
+                await run_in_threadpool(persist_generated_documentation_in_new_session, payload, markdown)
 
         return StreamingResponse(streamer(), media_type="text/plain; charset=utf-8")
     except Exception as exc:

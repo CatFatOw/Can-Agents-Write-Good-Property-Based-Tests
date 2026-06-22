@@ -6,6 +6,7 @@ import os
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import text
+from starlette.concurrency import run_in_threadpool
 
 import database
 from schemas import ModelProviderResponse, ModelProviderSelection
@@ -106,8 +107,11 @@ async def get_runtime_status():
     try:
         # A lightweight ping makes the UI reflect the real DB state, not just the
         # configured URL. This catches Postgres being down while sqlite fallback works.
-        with database.engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
+        def ping_database():
+            with database.engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+
+        await run_in_threadpool(ping_database)
         return {
             "database": {
                 "connected": True,
