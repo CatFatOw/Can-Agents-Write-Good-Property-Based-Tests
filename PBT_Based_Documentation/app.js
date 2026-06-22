@@ -1085,6 +1085,7 @@ function renderAssessmentQuestion() {
   if (assessmentNextButton) {
     assessmentNextButton.textContent = "Next question";
     assessmentNextButton.disabled = !question || !answeredAssessmentQuestions.has(question.id);
+    assessmentNextButton.classList.remove("assessment-next-ready");
   }
   if (!question) {
     if (assessmentQuestionText) assessmentQuestionText.textContent = "No questions are available for this assessment.";
@@ -1109,6 +1110,37 @@ function renderAssessmentQuestion() {
     ? "You already answered this one. Move to the next question when ready."
     : "Choose the best answer using only the documentation and source reference.";
   if (assessmentSubmitButton) assessmentSubmitButton.disabled = answeredAssessmentQuestions.has(question.id);
+}
+
+function renderAssessmentFeedback(question, result) {
+  const selectedKey = selectedAssessmentChoice;
+  const correctKey = result.correct_response || question.correct_response || "";
+  const selectedText = question.choices?.[selectedKey] || "";
+  const correctText = question.choices?.[correctKey] || "";
+  const explanation = result.explanation || question.explanation || "";
+  const feedback = document.createElement("article");
+  feedback.className = `assessment-feedback-card ${result.is_correct ? "is-correct" : "is-incorrect"}`;
+  feedback.innerHTML = `
+    <div class="assessment-feedback-head">
+      <span>${result.is_correct ? "Correct" : "Review this one"}</span>
+      <strong>${result.is_correct ? "Nice work." : `Correct answer: ${escapeHtml(correctKey)}`}</strong>
+    </div>
+    <div class="assessment-feedback-grid">
+      <p>
+        <span>Your choice</span>
+        <code>${escapeHtml(selectedKey)}</code>
+        ${selectedText ? escapeHtml(selectedText) : ""}
+      </p>
+      <p>
+        <span>Correct choice</span>
+        <code>${escapeHtml(correctKey)}</code>
+        ${correctText ? escapeHtml(correctText) : ""}
+      </p>
+    </div>
+    ${explanation ? `<p class="assessment-feedback-explanation">${escapeHtml(explanation)}</p>` : ""}
+  `;
+  assessmentChoiceList?.appendChild(feedback);
+  feedback.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
 function renderAssessmentSummary() {
@@ -1213,10 +1245,16 @@ async function loadAssessment(documentationId = activeAssessmentDocumentationId)
 }
 
 function selectAssessmentChoice(choice) {
+  const question = currentAssessmentQuestion();
+  if (question && answeredAssessmentQuestions.has(question.id)) {
+    if (assessmentMessage) assessmentMessage.textContent = "This answer is locked. Continue to the next question.";
+    return;
+  }
   selectedAssessmentChoice = choice;
   assessmentChoiceList?.querySelectorAll(".assessment-choice").forEach((button) => {
     button.classList.toggle("is-selected", button.dataset.assessmentChoice === choice);
   });
+  if (assessmentMessage) assessmentMessage.textContent = "Answer selected. Check it when you are ready.";
 }
 
 async function submitAssessmentAnswer() {
@@ -1250,12 +1288,20 @@ async function submitAssessmentAnswer() {
     assessmentAnsweredCountValue += 1;
     if (data.is_correct) assessmentCorrectCountValue += 1;
     updateAssessmentStatsUI();
+    const total = currentAssessment.questions.length;
+    if (assessmentProgressText) {
+      assessmentProgressText.textContent = `Answered ${answeredAssessmentQuestions.size} of ${total} - Question ${currentAssessmentQuestionIndex + 1}`;
+    }
+    if (assessmentProgressBar) {
+      assessmentProgressBar.style.width = `${(answeredAssessmentQuestions.size / Math.max(total, 1)) * 100}%`;
+    }
     assessmentChoiceList?.querySelectorAll(".assessment-choice").forEach((button) => {
       const selected = button.dataset.assessmentChoice === selectedAssessmentChoice;
       const correct = button.dataset.assessmentChoice === data.correct_response;
       button.classList.toggle("is-correct", correct);
       button.classList.toggle("is-incorrect", selected && !correct);
       button.classList.toggle("is-feedback-selected", selected);
+      button.disabled = true;
     });
     const assessmentCard = document.querySelector(".assessment-card");
     assessmentCard?.classList.add(data.is_correct ? "assessment-feedback-correct" : "assessment-feedback-incorrect");
@@ -1265,7 +1311,13 @@ async function submitAssessmentAnswer() {
     if (assessmentMessage) assessmentMessage.textContent = data.is_correct
       ? "Correct. Press Next question when you are ready."
       : `Not quite. Correct answer: ${data.correct_response}. ${data.explanation || ""} Press Next question when you are ready.`;
-    if (assessmentNextButton) assessmentNextButton.disabled = false;
+    renderAssessmentFeedback(question, data);
+    if (assessmentNextButton) {
+      assessmentNextButton.textContent = answeredAssessmentQuestions.size >= total ? "View summary" : "Next question";
+      assessmentNextButton.disabled = false;
+      assessmentNextButton.classList.add("assessment-next-ready");
+      assessmentNextButton.focus({ preventScroll: true });
+    }
     fetchAssessmentStats();
   } catch (error) {
     if (assessmentMessage) assessmentMessage.textContent = error.message || "Could not submit answer.";
