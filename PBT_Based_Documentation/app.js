@@ -30,6 +30,7 @@ const areaModeTabs = Array.from(document.querySelectorAll(".area-mode-tab"));
 const areaPanels = Array.from(document.querySelectorAll("[data-area-panel]"));
 const areaComprehensionView = document.querySelector("#area-comprehension-view");
 const assessmentNextButton = document.querySelector("#assessment-next-button");
+const assessmentDocSelect = document.querySelector("#assessment-doc-select");
 const assessmentDocTitle = document.querySelector("#assessment-doc-title");
 const assessmentResourceTabs = Array.from(document.querySelectorAll(".assessment-resource-tab"));
 const assessmentResourceSummary = document.querySelector("#assessment-resource-summary");
@@ -256,6 +257,8 @@ let assessmentAnsweredCountValue = 0;
 let assessmentCorrectCountValue = 0;
 let activeAssessmentResource = "documentation";
 let assessmentSummaryVisible = false;
+let assessmentDocumentationOptions = [];
+let activeAssessmentDocumentationId = "";
 const areaFallbackPosts = [
   {
     title: "Anonymous np.pad documentation comparison",
@@ -974,8 +977,9 @@ function setAreaMode(nextMode) {
   areaPanels.forEach((panel) => {
     panel.classList.toggle("is-hidden", panel.dataset.areaPanel !== activeAreaMode);
   });
-  if (activeAreaMode === "comprehension" && !currentAssessment) {
-    loadAssessment();
+  if (activeAreaMode === "comprehension") {
+    loadAssessmentDocumentationOptions();
+    if (!currentAssessment) loadAssessment();
   }
 }
 
@@ -1023,7 +1027,8 @@ function renderAssessmentResource() {
     button.setAttribute("aria-selected", active ? "true" : "false");
   });
   const title = currentAssessment.documentation_title || "Documentation sample";
-  if (assessmentDocTitle) assessmentDocTitle.textContent = title;
+  const typeLabel = currentAssessment.documentation_type ? ` (${currentAssessment.documentation_type})` : "";
+  if (assessmentDocTitle) assessmentDocTitle.textContent = `${title}${typeLabel}`;
   if (activeAssessmentResource === "source") {
     const source = anonymizeStudyReference(currentAssessmentDoc?.source_code || "", "Reference");
     if (assessmentResourceSummary) assessmentResourceSummary.textContent = "Open source code";
@@ -1074,7 +1079,7 @@ function renderAssessmentQuestion() {
     return;
   }
   const total = currentAssessment.questions.length;
-  if (assessmentProgressText) assessmentProgressText.textContent = `Question ${currentAssessmentQuestionIndex + 1} of ${total}`;
+  if (assessmentProgressText) assessmentProgressText.textContent = `${currentAssessment.documentation_title || "Documentation"} - Question ${currentAssessmentQuestionIndex + 1} of ${total}`;
   if (assessmentProgressBar) assessmentProgressBar.style.width = `${((currentAssessmentQuestionIndex + 1) / Math.max(total, 1)) * 100}%`;
   if (assessmentQuestionText) assessmentQuestionText.textContent = question.question;
   if (assessmentChoiceList) {
@@ -1104,7 +1109,7 @@ function renderAssessmentSummary() {
       <div class="assessment-summary-card">
         <strong>${correct} / ${total} correct</strong>
         <span>${percent}% score</span>
-        <p>You answered every question for this documentation sample.</p>
+        <p>You answered every question for ${escapeHtml(currentAssessment?.documentation_title || "this documentation sample")}.</p>
       </div>
     `;
   }
@@ -1116,11 +1121,44 @@ function renderAssessmentSummary() {
   }
 }
 
-async function loadAssessment() {
+function renderAssessmentDocumentationOptions() {
+  if (!assessmentDocSelect) return;
+  const selected = activeAssessmentDocumentationId || "";
+  assessmentDocSelect.innerHTML = `
+    <option value="">Random documentation</option>
+    ${assessmentDocumentationOptions.map((option) => `
+      <option value="${escapeHtml(String(option.documentation_id))}" ${String(option.documentation_id) === String(selected) ? "selected" : ""}>
+        ${escapeHtml(option.documentation_title || "Untitled documentation")} (${option.question_count} questions)
+      </option>
+    `).join("")}
+  `;
+}
+
+async function loadAssessmentDocumentationOptions() {
+  if (!assessmentDocSelect || !getAccessToken()) return;
+  try {
+    const response = await fetch(apiUrl("/assessments/documentation-options"), {
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    const data = await response.json().catch(() => []);
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not load documentation options.");
+    assessmentDocumentationOptions = Array.isArray(data) ? data : [];
+    renderAssessmentDocumentationOptions();
+  } catch {
+    assessmentDocumentationOptions = [];
+    renderAssessmentDocumentationOptions();
+  }
+}
+
+async function loadAssessment(documentationId = activeAssessmentDocumentationId) {
   if (assessmentMessage) assessmentMessage.textContent = "Loading comprehension practice...";
   if (assessmentSubmitButton) assessmentSubmitButton.disabled = true;
+  if (assessmentNextButton) assessmentNextButton.disabled = true;
   try {
-    const response = await fetch(apiUrl("/assessments/random"), {
+    const endpoint = documentationId
+      ? `/assessments/documentation/${encodeURIComponent(documentationId)}/start`
+      : "/assessments/random";
+    const response = await fetch(apiUrl(endpoint), {
       headers: authHeaders({ Accept: "application/json" })
     });
     const data = await response.json().catch(() => ({}));
@@ -1133,6 +1171,8 @@ async function loadAssessment() {
     assessmentAnsweredCountValue = 0;
     assessmentCorrectCountValue = 0;
     assessmentSummaryVisible = false;
+    activeAssessmentDocumentationId = documentationId ? String(documentationId) : "";
+    if (assessmentDocSelect) assessmentDocSelect.value = activeAssessmentDocumentationId;
     currentAssessmentDoc = await fetchAssessmentDocumentation(data.documentation_id);
     activeAssessmentResource = "documentation";
     renderAssessmentResource();
@@ -4744,6 +4784,10 @@ areaChoices.forEach((choice) => {
 
 areaVoteButton?.addEventListener("click", submitAreaVote);
 assessmentNextButton?.addEventListener("click", () => moveAssessmentQuestion(1));
+assessmentDocSelect?.addEventListener("change", () => {
+  activeAssessmentDocumentationId = assessmentDocSelect.value || "";
+  loadAssessment(activeAssessmentDocumentationId);
+});
 assessmentResourceTabs.forEach((button) => {
   button.addEventListener("click", () => {
     activeAssessmentResource = button.dataset.assessmentResource || "documentation";

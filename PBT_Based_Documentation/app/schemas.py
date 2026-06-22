@@ -231,6 +231,12 @@ class AssessmentAnswerAdminResponse(BaseModel):
     is_correct: bool
 
 
+class AssessmentDocumentationOption(BaseModel):
+    documentation_id: int
+    documentation_title: str
+    question_count: int
+
+
 class AssessmentResponse(BaseModel):
     attempt_id: int
     documentation_id: int

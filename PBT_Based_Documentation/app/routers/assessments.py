@@ -13,6 +13,7 @@ from collections import defaultdict
 from schemas import (
     AssessmentAnswerResponse,
     AssessmentAnswerAdminResponse,
+    AssessmentDocumentationOption,
     AssessmentQuestionAdminResponse,
     AssessmentQuestionUpdate,
     AssessmentResponse,
@@ -306,24 +307,37 @@ Source Code:
     # USER SIDE ROUTES 
 
 # Get a random assessment 
-@router.get("/random", response_model=AssessmentResponse)
-async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
-    """function gets random assessment and also ranodmly chooses to do TD or IBD """
-    random_question = db.query(models.AssessmentQuestion).order_by(func.random()).first()
-    if not random_question:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
+@router.get("/documentation-options", response_model=list[AssessmentDocumentationOption])
+async def list_assessment_documentation_options(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+    """List documentation rows that have at least one assessment question."""
+    rows = (
+        db.query(
+            models.Documentation.id,
+            models.Documentation.documentation_title,
+            func.count(models.AssessmentQuestion.id).label("question_count"),
+        )
+        .join(models.AssessmentQuestion, models.AssessmentQuestion.documentation_id == models.Documentation.id)
+        .group_by(models.Documentation.id, models.Documentation.documentation_title)
+        .order_by(models.Documentation.documentation_title.asc(), models.Documentation.id.asc())
+        .all()
+    )
+    return [
+        {
+            "documentation_id": row.id,
+            "documentation_title": row.documentation_title,
+            "question_count": row.question_count,
+        }
+        for row in rows
+    ]
 
-    documentation = db.query(models.Documentation).filter(
-        models.Documentation.id == random_question.documentation_id
-    ).first()
-    if not documentation:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
 
+def build_assessment_for_documentation(documentation:models.Documentation, db:Session, curr_user:models.User):
     assessment = db.query(models.AssessmentQuestion).filter(
         models.AssessmentQuestion.documentation_id == documentation.id
     ).order_by(models.AssessmentQuestion.id.asc()).all()
+    if not assessment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No questions found for this documentation")
 
-    # randomly geneate if TD or IBD 
     choices = ["TD", "IBD"]
     if random.choice(choices) == "TD":
         markdown = documentation.TD_md
@@ -331,7 +345,7 @@ async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session 
     else:
         markdown = documentation.IBD_generated_md
         doc_type = "IBD" 
-    # now update 
+
     new_attempt = models.AssessmentAttempt(documentation_id = documentation.id, user_id = curr_user.id, 
                                            documentation_type = doc_type, 
                                            total_questions = len(assessment), 
@@ -355,6 +369,31 @@ async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session 
             for q in assessment
         ]
     }
+
+
+@router.get("/documentation/{documentation_id}/start", response_model=AssessmentResponse)
+async def start_documentation_assessment(documentation_id:int, db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+    """Start an assessment for one selected documentation row."""
+    documentation = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
+    if not documentation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
+    return build_assessment_for_documentation(documentation, db, curr_user)
+
+
+@router.get("/random", response_model=AssessmentResponse)
+async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+    """function gets random assessment and also ranodmly chooses to do TD or IBD """
+    random_question = db.query(models.AssessmentQuestion).order_by(func.random()).first()
+    if not random_question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
+
+    documentation = db.query(models.Documentation).filter(
+        models.Documentation.id == random_question.documentation_id
+    ).first()
+    if not documentation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
+
+    return build_assessment_for_documentation(documentation, db, curr_user)
 
 
 # Route allows user to submit their answer

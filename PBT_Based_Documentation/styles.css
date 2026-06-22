@@ -7385,6 +7385,15 @@ body.area-active .area-session-bar .field {
     color-mix(in srgb, currentColor 5%, transparent);
 }
 
+.assessment-doc-picker {
+  margin: 0;
+}
+
+.assessment-doc-picker select {
+  width: 100%;
+  min-height: 42px;
+}
+
 .assessment-progress {
   display: grid;
   gap: 8px;
