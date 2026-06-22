@@ -114,6 +114,22 @@ class AssessmentAttempt(Base):
 
     documentation = relationship("Documentation")
     user = relationship("User")
+
+
+class AssessmentRetakeGrant(Base):
+    __tablename__ = "assessment_retake_grants"
+
+    id = Column(Integer, primary_key=True)
+    documentation_id = Column(Integer, ForeignKey("documentation.id", ondelete="CASCADE"), nullable=False)
+    allow_all_users = Column(Boolean, nullable=False, server_default=text("false"))
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=True)
+    user_email = Column(Text, nullable=True)
+    created_by = Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+
+    documentation = relationship("Documentation")
+    user = relationship("User", foreign_keys=[user_id])
+    creator = relationship("User", foreign_keys=[created_by])
     
 # User answers for each assessment
 class AssessmentAnswer(Base):

@@ -232,6 +232,24 @@ class AssessmentAnswerAdminResponse(BaseModel):
     is_correct: bool
 
 
+class AssessmentRetakeGrantRequest(BaseModel):
+    scope: Literal["all", "user"] = "all"
+    user_id: int | None = None
+    user_email: str | None = None
+
+
+class AssessmentRetakeGrantResponse(BaseModel):
+    id: int
+    documentation_id: int
+    allow_all_users: bool
+    user_id: int | None = None
+    user_email: str | None = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class AssessmentDocumentationOption(BaseModel):
     documentation_id: int
     documentation_title: str

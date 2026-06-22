@@ -2166,22 +2166,14 @@ function renderAccountDocs() {
         </div>
         <div class="account-doc-actions">
           ${accountIsAdmin ? `<button type="button" class="landing-primary-button account-doc-questions" data-doc-id="${doc.id}">Questions</button>` : ""}
-          ${accountIsAdmin ? `<button type="button" class="secondary-button account-doc-retake" data-doc-id="${doc.id}">Take test again</button>` : ""}
+          ${accountIsAdmin ? `<button type="button" class="secondary-button account-doc-responses" data-doc-id="${doc.id}">Responses</button>` : ""}
+          ${accountIsAdmin ? `<button type="button" class="secondary-button account-doc-retake" data-doc-id="${doc.id}">Retake access</button>` : ""}
           <button type="button" class="secondary-button account-doc-view" data-doc-id="${doc.id}">View more</button>
           ${canManage ? `<button type="button" class="danger-button account-doc-delete" data-doc-id="${doc.id}">Delete</button>` : ""}
         </div>
       </article>
     `;
   }).join("");
-}
-
-async function takeAssessmentAgainForDoc(docId) {
-  if (!docId) return;
-  activeAssessmentDocumentationId = String(docId);
-  currentAssessment = null;
-  closeAccountDocDetail();
-  await showAreaPage();
-  setAreaMode("comprehension");
 }
 
 async function fetchAccountDocs() {
@@ -2298,12 +2290,6 @@ function showAccountQuestionBuilder(docId) {
         </div>
       </div>
 
-      <div class="account-assessment-tabs" role="tablist" aria-label="Admin assessment tabs">
-        <button type="button" class="account-assessment-tab is-active" data-account-assessment-tab="questions" role="tab" aria-selected="true">Questions</button>
-        <button type="button" class="account-assessment-tab" data-account-assessment-tab="responses" role="tab" aria-selected="false">Responses</button>
-      </div>
-
-      <div class="account-assessment-panel" data-account-assessment-panel="questions">
       <section class="account-human-question-panel" aria-labelledby="human-question-title">
         <div class="account-question-section-head">
           <div>
@@ -2372,33 +2358,103 @@ function showAccountQuestionBuilder(docId) {
           <p class="placeholder">Loading questions...</p>
         </div>
       </section>
-      </div>
-
-      <div class="account-assessment-panel is-hidden" data-account-assessment-panel="responses">
-        <section class="account-response-dashboard">
-          <div class="account-question-list-head">
-            <div>
-              <p class="eyebrow">User responses</p>
-              <h4 id="account-response-count">Response summary</h4>
-            </div>
-            <label class="field compact-field" for="account-response-user-filter">
-              <span>User</span>
-              <select id="account-response-user-filter">
-                <option value="all">All users</option>
-              </select>
-            </label>
-          </div>
-          <div id="account-response-summary">
-            <p class="placeholder">Loading responses...</p>
-          </div>
-        </section>
-      </div>
     </section>
   `;
   accountDetailModal.classList.remove("is-hidden");
   document.body.classList.add("account-detail-open");
   accountDetailClose?.focus();
   loadAccountQuestions();
+}
+
+function showAccountResponses(docId) {
+  const doc = accountDocuments.find((item) => String(item.id) === String(docId));
+  if (!doc || !accountDetailModal) return;
+  activeAccountDoc = doc;
+  activeAccountResponseUserFilter = "all";
+  accountDetailTitle.textContent = "User responses";
+  accountDetailEyebrow.textContent = doc.documentation_title || "Selected documentation";
+  accountDetailBody.innerHTML = `
+    <section class="account-question-builder">
+      <div class="account-question-head">
+        <div>
+          <p class="eyebrow">Admin responses</p>
+          <h3>Assessment response summary</h3>
+          <p>Review submitted answers, filter by all users or a specific user, and inspect each attempt without editing questions.</p>
+        </div>
+      </div>
+      <section class="account-response-dashboard">
+        <div class="account-question-list-head">
+          <div>
+            <p class="eyebrow">User responses</p>
+            <h4 id="account-response-count">Response summary</h4>
+          </div>
+          <label class="field compact-field" for="account-response-user-filter">
+            <span>User</span>
+            <select id="account-response-user-filter">
+              <option value="all">All users</option>
+            </select>
+          </label>
+        </div>
+        <div id="account-response-summary">
+          <p class="placeholder">Loading responses...</p>
+        </div>
+      </section>
+    </section>
+  `;
+  accountDetailModal.classList.remove("is-hidden");
+  document.body.classList.add("account-detail-open");
+  accountDetailClose?.focus();
+  loadAccountQuestions();
+}
+
+function showAccountRetakeAccess(docId) {
+  const doc = accountDocuments.find((item) => String(item.id) === String(docId));
+  if (!doc || !accountDetailModal) return;
+  activeAccountDoc = doc;
+  activeAccountAnswers = [];
+  accountDetailTitle.textContent = "Retake access";
+  accountDetailEyebrow.textContent = doc.documentation_title || "Selected documentation";
+  accountDetailBody.innerHTML = `
+    <section class="account-question-builder">
+      <div class="account-question-head">
+        <div>
+          <p class="eyebrow">Admin retake control</p>
+          <h3>Allow another assessment attempt</h3>
+          <p>This does not remove previous attempts or answers. It makes this documentation available again for the selected audience.</p>
+        </div>
+      </div>
+      <section class="account-retake-panel">
+        <label class="field" for="account-retake-scope">
+          <span>Who can retake?</span>
+          <select id="account-retake-scope">
+            <option value="all">All users</option>
+            <option value="user">Specific user</option>
+          </select>
+        </label>
+        <div class="account-retake-user-fields is-hidden" id="account-retake-user-fields">
+          <label class="field" for="account-retake-known-user">
+            <span>Known respondents</span>
+            <select id="account-retake-known-user">
+              <option value="">Select a user who has answered</option>
+            </select>
+          </label>
+          <label class="field" for="account-retake-user-lookup">
+            <span>User ID or email</span>
+            <input id="account-retake-user-lookup" type="text" placeholder="42 or participant@example.com">
+          </label>
+        </div>
+        <div class="account-question-actions">
+          <button type="button" class="landing-primary-button" id="account-retake-grant">Allow retake</button>
+          <button type="button" class="secondary-button" id="account-retake-refresh-users">Refresh users</button>
+          <p class="account-message" id="account-retake-message"></p>
+        </div>
+      </section>
+    </section>
+  `;
+  accountDetailModal.classList.remove("is-hidden");
+  document.body.classList.add("account-detail-open");
+  accountDetailClose?.focus();
+  loadRetakeKnownUsers();
 }
 
 function accountResponseUserKey(answer) {
@@ -2465,6 +2521,28 @@ function renderAccountResponseDashboard() {
   }
 
   const questionById = new Map(activeAccountQuestions.map((question, index) => [String(question.id), { ...question, number: index + 1 }]));
+  const questionCards = activeAccountQuestions.map((question, index) => {
+    const questionAnswers = answers.filter((answer) => String(answer.question_id) === String(question.id));
+    const questionCorrect = questionAnswers.filter((answer) => answer.is_correct).length;
+    const questionPct = questionAnswers.length ? Math.round((questionCorrect / questionAnswers.length) * 100) : 0;
+    const choiceCounts = Object.keys(question.choices || {}).map((choice) => {
+      const countForChoice = questionAnswers.filter((answer) => answer.user_response === choice).length;
+      return `<span class="${choice === question.correct_response ? "is-correct" : ""}">${escapeHtml(choice)}: ${countForChoice}</span>`;
+    }).join("");
+    const correctChoice = question.choices?.[question.correct_response] || "";
+    return `
+      <article class="account-response-question-card">
+        <div>
+          <strong>Question ${index + 1}</strong>
+          <small>${questionAnswers.length} answer${questionAnswers.length === 1 ? "" : "s"} · ${questionPct}% correct · correct ${escapeHtml(question.correct_response || "—")}</small>
+        </div>
+        <p>${escapeHtml(question.question || "Untitled question")}</p>
+        <p class="account-response-answer-key"><strong>Correct answer:</strong> <code>${escapeHtml(question.correct_response || "")}</code>${correctChoice ? ` ${escapeHtml(correctChoice)}` : ""}</p>
+        ${question.explanation ? `<p class="account-response-explanation"><strong>Explanation:</strong> ${escapeHtml(question.explanation)}</p>` : ""}
+        <div class="account-response-choice-counts">${choiceCounts}</div>
+      </article>
+    `;
+  }).join("");
   const attemptCards = Array.from(attempts.entries())
     .sort((a, b) => Number(b[0]) - Number(a[0]))
     .map(([attemptId, attemptAnswers]) => {
@@ -2484,6 +2562,8 @@ function renderAccountResponseDashboard() {
             ${attemptAnswers.map((answer) => {
               const question = questionById.get(String(answer.question_id));
               const choiceText = question?.choices?.[answer.user_response] || "";
+              const correctResponse = question?.correct_response || "";
+              const correctText = correctResponse ? question?.choices?.[correctResponse] || "" : "";
               return `
                 <article class="account-response-comment ${answer.is_correct ? "is-correct" : "is-incorrect"}">
                   <div>
@@ -2491,7 +2571,11 @@ function renderAccountResponseDashboard() {
                     <small>${answer.is_correct ? "Correct" : "Incorrect"}</small>
                   </div>
                   <p>${escapeHtml(question?.question || "Question text unavailable.")}</p>
-                  <p>Selected <code>${escapeHtml(answer.user_response || "")}</code>${choiceText ? `: ${escapeHtml(choiceText)}` : ""}</p>
+                  <div class="account-response-answer-pair">
+                    <p><span>Chosen</span><code>${escapeHtml(answer.user_response || "")}</code>${choiceText ? ` ${escapeHtml(choiceText)}` : ""}</p>
+                    <p><span>Correct</span><code>${escapeHtml(correctResponse)}</code>${correctText ? ` ${escapeHtml(correctText)}` : ""}</p>
+                  </div>
+                  ${question?.explanation ? `<p class="account-response-explanation"><strong>Explanation:</strong> ${escapeHtml(question.explanation)}</p>` : ""}
                 </article>
               `;
             }).join("")}
@@ -2508,15 +2592,104 @@ function renderAccountResponseDashboard() {
       <span><strong>${attempts.size}</strong> attempt${attempts.size === 1 ? "" : "s"}</span>
       <span><strong>${users.size}</strong> user${users.size === 1 ? "" : "s"}</span>
     </div>
+    <div class="account-response-section-label">Question breakdown</div>
+    <div class="account-response-question-grid">${questionCards}</div>
+    <div class="account-response-section-label">Attempts</div>
     <div class="account-response-attempts">${attemptCards}</div>
   `;
+}
+
+function renderRetakeKnownUsers() {
+  const select = accountDetailBody?.querySelector("#account-retake-known-user");
+  if (!select) return;
+  const userMap = new Map();
+  activeAccountAnswers.forEach((answer) => {
+    const key = accountResponseUserKey(answer);
+    if (!userMap.has(key)) userMap.set(key, accountResponseUserLabel(answer));
+  });
+  const sortedUsers = Array.from(userMap.entries()).sort((a, b) => a[1].localeCompare(b[1], undefined, { sensitivity: "base" }));
+  select.innerHTML = `
+    <option value="">Select a user who has answered</option>
+    ${sortedUsers.map(([key, label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`).join("")}
+  `;
+}
+
+function updateRetakeScopeUi() {
+  const scope = accountDetailBody?.querySelector("#account-retake-scope")?.value || "all";
+  accountDetailBody?.querySelector("#account-retake-user-fields")?.classList.toggle("is-hidden", scope !== "user");
+}
+
+async function loadRetakeKnownUsers() {
+  if (!activeAccountDoc) return;
+  const message = accountDetailBody?.querySelector("#account-retake-message");
+  try {
+    const response = await fetch(apiUrl(`/assessments/documentation/${activeAccountDoc.id}/answers`), {
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    const data = await response.json().catch(() => []);
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not load respondents.");
+    activeAccountAnswers = Array.isArray(data) ? data : [];
+    renderRetakeKnownUsers();
+    if (message) message.textContent = activeAccountAnswers.length
+      ? "Choose all users, a known respondent, or type a user id/email."
+      : "No submitted respondents yet. You can still type a user id or email.";
+  } catch (error) {
+    activeAccountAnswers = [];
+    renderRetakeKnownUsers();
+    if (message) message.textContent = error.message || "Could not load respondents.";
+  }
+}
+
+async function grantRetakeAccess(button) {
+  if (!activeAccountDoc) return;
+  const message = accountDetailBody?.querySelector("#account-retake-message");
+  const scope = accountDetailBody?.querySelector("#account-retake-scope")?.value || "all";
+  const knownUser = accountDetailBody?.querySelector("#account-retake-known-user")?.value || "";
+  const lookup = accountDetailBody?.querySelector("#account-retake-user-lookup")?.value.trim() || "";
+  const payload = { scope };
+  if (scope === "user") {
+    const selected = lookup || knownUser;
+    if (!selected) {
+      if (message) message.textContent = "Choose a known user or type a user id/email.";
+      return;
+    }
+    if (/^\d+$/.test(selected)) {
+      payload.user_id = Number(selected);
+    } else {
+      payload.user_email = selected;
+    }
+  }
+  if (message) message.textContent = "Granting retake access...";
+  if (button) button.disabled = true;
+  try {
+    const response = await fetch(apiUrl(`/assessments/documentation/${activeAccountDoc.id}/retake-access`), {
+      method: "POST",
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not grant retake access.");
+    if (message) {
+      const who = data.allow_all_users
+        ? "all users"
+        : data.user_email || (data.user_id ? `User #${data.user_id}` : "the selected user");
+      message.textContent = `Retake access granted for ${who}. Previous answers were kept.`;
+    }
+  } catch (error) {
+    if (message) message.textContent = error.message || "Could not grant retake access.";
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 function renderAccountQuestions() {
   const list = accountDetailBody?.querySelector("#account-question-list");
   const count = accountDetailBody?.querySelector("#account-question-count");
   if (count) count.textContent = `${activeAccountQuestions.length} question${activeAccountQuestions.length === 1 ? "" : "s"}`;
-  if (!list) return;
+  if (!list) {
+    renderAccountResponseDashboard();
+    return;
+  }
   if (!activeAccountQuestions.length) {
     list.innerHTML = '<p class="placeholder">No questions yet. Use AI generate questions to create a first draft.</p>';
     renderAccountResponseDashboard();
@@ -5029,11 +5202,14 @@ accountDocsList?.addEventListener("click", (event) => {
     showAccountQuestionBuilder(questionsButton.dataset.docId);
     return;
   }
+  const responsesButton = event.target.closest(".account-doc-responses");
+  if (responsesButton) {
+    showAccountResponses(responsesButton.dataset.docId);
+    return;
+  }
   const retakeButton = event.target.closest(".account-doc-retake");
   if (retakeButton) {
-    takeAssessmentAgainForDoc(retakeButton.dataset.docId).catch((error) => {
-      if (accountDocsList) accountDocsList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not start assessment.")}</p>`;
-    });
+    showAccountRetakeAccess(retakeButton.dataset.docId);
     return;
   }
   const deleteButton = event.target.closest(".account-doc-delete");
@@ -5061,6 +5237,15 @@ accountDetailBody?.addEventListener("click", (event) => {
   }
   if (event.target.closest("#account-question-refresh")) {
     loadAccountQuestions();
+    return;
+  }
+  if (event.target.closest("#account-retake-refresh-users")) {
+    loadRetakeKnownUsers();
+    return;
+  }
+  const retakeGrantButton = event.target.closest("#account-retake-grant");
+  if (retakeGrantButton) {
+    grantRetakeAccess(retakeGrantButton);
     return;
   }
   const questionSaveButton = event.target.closest(".account-question-save");
@@ -5127,6 +5312,16 @@ accountDetailBody?.addEventListener("change", (event) => {
   if (responseFilter) {
     activeAccountResponseUserFilter = responseFilter.value || "all";
     renderAccountResponseDashboard();
+    return;
+  }
+  if (event.target.closest("#account-retake-scope")) {
+    updateRetakeScopeUi();
+    return;
+  }
+  const knownRetakeUser = event.target.closest("#account-retake-known-user");
+  if (knownRetakeUser && knownRetakeUser.value) {
+    const lookup = accountDetailBody?.querySelector("#account-retake-user-lookup");
+    if (lookup) lookup.value = knownRetakeUser.value;
   }
 });
 document.addEventListener("keydown", (event) => {

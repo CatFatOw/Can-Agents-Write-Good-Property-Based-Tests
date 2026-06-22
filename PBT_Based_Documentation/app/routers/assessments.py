@@ -16,6 +16,8 @@ from schemas import (
     AssessmentDocumentationOption,
     AssessmentQuestionAdminResponse,
     AssessmentQuestionUpdate,
+    AssessmentRetakeGrantRequest,
+    AssessmentRetakeGrantResponse,
     AssessmentResponse,
     AssessmentStatsResponse,
     AssessmentSubmit,
@@ -185,6 +187,43 @@ async def delete_assessment_question(
     return None
 
 
+@router.post("/documentation/{documentation_id}/retake-access", response_model=AssessmentRetakeGrantResponse)
+async def grant_documentation_retake_access(
+    documentation_id:int,
+    payload:AssessmentRetakeGrantRequest,
+    db:Session=Depends(get_db),
+    curr_user:Session=Depends(admin.get_current_admin),
+):
+    """Allow everyone, or one selected user, to take this documentation assessment again."""
+    doc = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
+    if doc is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documentation not found")
+
+    selected_user = None
+    selected_email = (payload.user_email or "").strip().lower() or None
+    if payload.scope == "user":
+        if payload.user_id is not None:
+            selected_user = db.query(models.User).filter(models.User.id == payload.user_id).first()
+        elif selected_email:
+            selected_user = db.query(models.User).filter(func.lower(models.User.email) == selected_email).first()
+        if selected_user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User was not found")
+        selected_email = (selected_user.email or selected_email or "").lower()
+
+    creator = db.query(models.User).filter(models.User.email == curr_user.email).first()
+    grant = models.AssessmentRetakeGrant(
+        documentation_id=documentation_id,
+        allow_all_users=payload.scope == "all",
+        user_id=selected_user.id if selected_user else None,
+        user_email=selected_email,
+        created_by=creator.id if creator else None,
+    )
+    db.add(grant)
+    db.commit()
+    db.refresh(grant)
+    return grant
+
+
 @router.post("/generate/{documentation_id}")
 async def generate_questions(
     documentation_id:int,
@@ -312,16 +351,43 @@ Source Code:
     # USER SIDE ROUTES 
 
 # Get a random assessment 
+def latest_attempt_for_user(documentation_id:int, db:Session, curr_user:models.User):
+    return (
+        db.query(models.AssessmentAttempt)
+        .filter(
+            models.AssessmentAttempt.documentation_id == documentation_id,
+            models.AssessmentAttempt.user_id == curr_user.id,
+        )
+        .order_by(models.AssessmentAttempt.created_at.desc(), models.AssessmentAttempt.id.desc())
+        .first()
+    )
+
+
+def latest_retake_grant_for_user(documentation_id:int, db:Session, curr_user:models.User):
+    return (
+        db.query(models.AssessmentRetakeGrant)
+        .filter(models.AssessmentRetakeGrant.documentation_id == documentation_id)
+        .filter(
+            (models.AssessmentRetakeGrant.allow_all_users == True)
+            | (models.AssessmentRetakeGrant.user_id == curr_user.id)
+            | (func.lower(models.AssessmentRetakeGrant.user_email) == (curr_user.email or "").lower())
+        )
+        .order_by(models.AssessmentRetakeGrant.created_at.desc(), models.AssessmentRetakeGrant.id.desc())
+        .first()
+    )
+
+
+def user_can_start_documentation(documentation_id:int, db:Session, curr_user:models.User) -> bool:
+    latest_attempt = latest_attempt_for_user(documentation_id, db, curr_user)
+    if latest_attempt is None:
+        return True
+    latest_grant = latest_retake_grant_for_user(documentation_id, db, curr_user)
+    return bool(latest_grant and latest_grant.created_at > latest_attempt.created_at)
+
+
 @router.get("/documentation-options", response_model=list[AssessmentDocumentationOption])
 async def list_assessment_documentation_options(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
     """List documentation rows that have at least one assessment question."""
-    attempted_doc_ids = {
-        row[0]
-        for row in db.query(models.AssessmentAttempt.documentation_id)
-        .filter(models.AssessmentAttempt.user_id == curr_user.id)
-        .distinct()
-        .all()
-    }
     rows = (
         db.query(
             models.Documentation.id,
@@ -338,7 +404,7 @@ async def list_assessment_documentation_options(db:Session = Depends(get_db), cu
             "documentation_id": row.id,
             "documentation_title": row.documentation_title,
             "question_count": row.question_count,
-            "attempted": row.id in attempted_doc_ids,
+            "attempted": not user_can_start_documentation(row.id, db, curr_user),
         }
         for row in rows
     ]
@@ -390,27 +456,22 @@ async def start_documentation_assessment(documentation_id:int, db:Session = Depe
     documentation = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
     if not documentation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
+    if not user_can_start_documentation(documentation_id, db, curr_user):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This documentation was already completed. Ask an admin to allow a retake.")
     return build_assessment_for_documentation(documentation, db, curr_user)
 
 
 @router.get("/random", response_model=AssessmentResponse)
 async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
     """function gets random assessment and also ranodmly chooses to do TD or IBD """
-    attempted_doc_ids = [
-        row[0]
-        for row in db.query(models.AssessmentAttempt.documentation_id)
-        .filter(models.AssessmentAttempt.user_id == curr_user.id)
-        .distinct()
-        .all()
-    ]
     query = (
         db.query(models.Documentation)
         .join(models.AssessmentQuestion, models.AssessmentQuestion.documentation_id == models.Documentation.id)
         .group_by(models.Documentation.id)
     )
-    if attempted_doc_ids:
-        query = query.filter(~models.Documentation.id.in_(attempted_doc_ids))
-    documentation = query.order_by(func.random()).first()
+    candidates = query.all()
+    available = [doc for doc in candidates if user_can_start_documentation(doc.id, db, curr_user)]
+    documentation = random.choice(available) if available else None
     if not documentation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No remaining documentation assessments are available")
 
