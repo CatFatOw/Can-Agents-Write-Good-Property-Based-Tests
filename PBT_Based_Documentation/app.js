@@ -260,6 +260,8 @@ let activeAssessmentResource = "documentation";
 let assessmentSummaryVisible = false;
 let assessmentDocumentationOptions = [];
 let activeAssessmentDocumentationId = "";
+let activeAccountAssessmentTab = "questions";
+let activeAccountResponseUserFilter = "all";
 const areaFallbackPosts = [
   {
     title: "Anonymous np.pad documentation comparison",
@@ -980,7 +982,7 @@ function setAreaMode(nextMode) {
   });
   if (activeAreaMode === "comprehension") {
     loadAssessmentDocumentationOptions();
-    if (!currentAssessment) loadAssessment();
+    if (!currentAssessment) loadAssessment(activeAssessmentDocumentationId);
   }
 }
 
@@ -1241,7 +1243,13 @@ async function submitAssessmentAnswer() {
       const correct = button.dataset.assessmentChoice === data.correct_response;
       button.classList.toggle("is-correct", correct);
       button.classList.toggle("is-incorrect", selected && !correct);
+      button.classList.toggle("is-feedback-selected", selected);
     });
+    const assessmentCard = document.querySelector(".assessment-card");
+    assessmentCard?.classList.add(data.is_correct ? "assessment-feedback-correct" : "assessment-feedback-incorrect");
+    window.setTimeout(() => {
+      assessmentCard?.classList.remove("assessment-feedback-correct", "assessment-feedback-incorrect");
+    }, 900);
     if (assessmentMessage) assessmentMessage.textContent = data.is_correct
       ? "Correct. Press Next question when you are ready."
       : `Not quite. Correct answer: ${data.correct_response}. ${data.explanation || ""} Press Next question when you are ready.`;
@@ -2158,12 +2166,22 @@ function renderAccountDocs() {
         </div>
         <div class="account-doc-actions">
           ${accountIsAdmin ? `<button type="button" class="landing-primary-button account-doc-questions" data-doc-id="${doc.id}">Questions</button>` : ""}
+          ${accountIsAdmin ? `<button type="button" class="secondary-button account-doc-retake" data-doc-id="${doc.id}">Take test again</button>` : ""}
           <button type="button" class="secondary-button account-doc-view" data-doc-id="${doc.id}">View more</button>
           ${canManage ? `<button type="button" class="danger-button account-doc-delete" data-doc-id="${doc.id}">Delete</button>` : ""}
         </div>
       </article>
     `;
   }).join("");
+}
+
+async function takeAssessmentAgainForDoc(docId) {
+  if (!docId) return;
+  activeAssessmentDocumentationId = String(docId);
+  currentAssessment = null;
+  closeAccountDocDetail();
+  await showAreaPage();
+  setAreaMode("comprehension");
 }
 
 async function fetchAccountDocs() {
@@ -2266,6 +2284,8 @@ function showAccountQuestionBuilder(docId) {
   const doc = accountDocuments.find((item) => String(item.id) === String(docId));
   if (!doc || !accountDetailModal) return;
   activeAccountDoc = doc;
+  activeAccountAssessmentTab = "questions";
+  activeAccountResponseUserFilter = "all";
   accountDetailTitle.textContent = "Question builder";
   accountDetailEyebrow.textContent = doc.documentation_title || "Selected documentation";
   accountDetailBody.innerHTML = `
@@ -2278,6 +2298,12 @@ function showAccountQuestionBuilder(docId) {
         </div>
       </div>
 
+      <div class="account-assessment-tabs" role="tablist" aria-label="Admin assessment tabs">
+        <button type="button" class="account-assessment-tab is-active" data-account-assessment-tab="questions" role="tab" aria-selected="true">Questions</button>
+        <button type="button" class="account-assessment-tab" data-account-assessment-tab="responses" role="tab" aria-selected="false">Responses</button>
+      </div>
+
+      <div class="account-assessment-panel" data-account-assessment-panel="questions">
       <section class="account-human-question-panel" aria-labelledby="human-question-title">
         <div class="account-question-section-head">
           <div>
@@ -2346,12 +2372,144 @@ function showAccountQuestionBuilder(docId) {
           <p class="placeholder">Loading questions...</p>
         </div>
       </section>
+      </div>
+
+      <div class="account-assessment-panel is-hidden" data-account-assessment-panel="responses">
+        <section class="account-response-dashboard">
+          <div class="account-question-list-head">
+            <div>
+              <p class="eyebrow">User responses</p>
+              <h4 id="account-response-count">Response summary</h4>
+            </div>
+            <label class="field compact-field" for="account-response-user-filter">
+              <span>User</span>
+              <select id="account-response-user-filter">
+                <option value="all">All users</option>
+              </select>
+            </label>
+          </div>
+          <div id="account-response-summary">
+            <p class="placeholder">Loading responses...</p>
+          </div>
+        </section>
+      </div>
     </section>
   `;
   accountDetailModal.classList.remove("is-hidden");
   document.body.classList.add("account-detail-open");
   accountDetailClose?.focus();
   loadAccountQuestions();
+}
+
+function accountResponseUserKey(answer) {
+  return String(answer?.user_id ?? "unknown");
+}
+
+function accountResponseUserLabel(answer) {
+  const email = (answer?.user_email || "").trim();
+  const id = answer?.user_id ?? "unknown";
+  return email ? `${email} (User #${id})` : `User #${id}`;
+}
+
+function setAccountAssessmentTab(nextTab) {
+  activeAccountAssessmentTab = nextTab === "responses" ? "responses" : "questions";
+  accountDetailBody?.querySelectorAll(".account-assessment-tab").forEach((button) => {
+    const active = button.dataset.accountAssessmentTab === activeAccountAssessmentTab;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  accountDetailBody?.querySelectorAll("[data-account-assessment-panel]").forEach((panel) => {
+    panel.classList.toggle("is-hidden", panel.dataset.accountAssessmentPanel !== activeAccountAssessmentTab);
+  });
+}
+
+function renderAccountResponseDashboard() {
+  const summary = accountDetailBody?.querySelector("#account-response-summary");
+  const count = accountDetailBody?.querySelector("#account-response-count");
+  const filter = accountDetailBody?.querySelector("#account-response-user-filter");
+  if (!summary) return;
+
+  const userMap = new Map();
+  activeAccountAnswers.forEach((answer) => {
+    const key = accountResponseUserKey(answer);
+    if (!userMap.has(key)) userMap.set(key, accountResponseUserLabel(answer));
+  });
+  const sortedUsers = Array.from(userMap.entries()).sort((a, b) => a[1].localeCompare(b[1], undefined, { sensitivity: "base" }));
+  if (filter) {
+    const previous = activeAccountResponseUserFilter;
+    filter.innerHTML = `
+      <option value="all">All users</option>
+      ${sortedUsers.map(([key, label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`).join("")}
+    `;
+    activeAccountResponseUserFilter = previous !== "all" && userMap.has(previous) ? previous : "all";
+    filter.value = activeAccountResponseUserFilter;
+  }
+
+  const answers = activeAccountResponseUserFilter === "all"
+    ? activeAccountAnswers
+    : activeAccountAnswers.filter((answer) => accountResponseUserKey(answer) === activeAccountResponseUserFilter);
+  const total = answers.length;
+  const correct = answers.filter((answer) => answer.is_correct).length;
+  const attempts = new Map();
+  answers.forEach((answer) => {
+    const attemptKey = String(answer.attempt_id);
+    if (!attempts.has(attemptKey)) attempts.set(attemptKey, []);
+    attempts.get(attemptKey).push(answer);
+  });
+  const users = new Set(answers.map(accountResponseUserKey));
+  const pct = total ? Math.round((correct / total) * 100) : 0;
+  if (count) count.textContent = total ? `${total} submitted answer${total === 1 ? "" : "s"}` : "No submitted answers";
+  if (!total) {
+    summary.innerHTML = '<p class="placeholder">No submitted answers match this user filter.</p>';
+    return;
+  }
+
+  const questionById = new Map(activeAccountQuestions.map((question, index) => [String(question.id), { ...question, number: index + 1 }]));
+  const attemptCards = Array.from(attempts.entries())
+    .sort((a, b) => Number(b[0]) - Number(a[0]))
+    .map(([attemptId, attemptAnswers]) => {
+      const attemptCorrect = attemptAnswers.filter((answer) => answer.is_correct).length;
+      const first = attemptAnswers[0] || {};
+      const attemptPct = attemptAnswers.length ? Math.round((attemptCorrect / attemptAnswers.length) * 100) : 0;
+      return `
+        <details class="account-response-attempt">
+          <summary>
+            <span>
+              <strong>${escapeHtml(accountResponseUserLabel(first))}</strong>
+              <small>Attempt #${escapeHtml(attemptId)}</small>
+            </span>
+            <b>${attemptCorrect}/${attemptAnswers.length} correct (${attemptPct}%)</b>
+          </summary>
+          <div class="account-response-list">
+            ${attemptAnswers.map((answer) => {
+              const question = questionById.get(String(answer.question_id));
+              const choiceText = question?.choices?.[answer.user_response] || "";
+              return `
+                <article class="account-response-comment ${answer.is_correct ? "is-correct" : "is-incorrect"}">
+                  <div>
+                    <strong>Question ${escapeHtml(String(question?.number || answer.question_id))}</strong>
+                    <small>${answer.is_correct ? "Correct" : "Incorrect"}</small>
+                  </div>
+                  <p>${escapeHtml(question?.question || "Question text unavailable.")}</p>
+                  <p>Selected <code>${escapeHtml(answer.user_response || "")}</code>${choiceText ? `: ${escapeHtml(choiceText)}` : ""}</p>
+                </article>
+              `;
+            }).join("")}
+          </div>
+        </details>
+      `;
+    }).join("");
+
+  summary.innerHTML = `
+    <div class="account-response-summary-grid">
+      <span><strong>${correct}</strong> correct</span>
+      <span><strong>${total - correct}</strong> incorrect</span>
+      <span><strong>${pct}%</strong> accuracy</span>
+      <span><strong>${attempts.size}</strong> attempt${attempts.size === 1 ? "" : "s"}</span>
+      <span><strong>${users.size}</strong> user${users.size === 1 ? "" : "s"}</span>
+    </div>
+    <div class="account-response-attempts">${attemptCards}</div>
+  `;
 }
 
 function renderAccountQuestions() {
@@ -2361,6 +2519,8 @@ function renderAccountQuestions() {
   if (!list) return;
   if (!activeAccountQuestions.length) {
     list.innerHTML = '<p class="placeholder">No questions yet. Use AI generate questions to create a first draft.</p>';
+    renderAccountResponseDashboard();
+    setAccountAssessmentTab(activeAccountAssessmentTab);
     return;
   }
   list.innerHTML = activeAccountQuestions.map((question, index) => {
@@ -2422,26 +2582,11 @@ function renderAccountQuestions() {
             <button type="button" class="secondary-button account-question-cancel" data-question-id="${question.id}">Cancel</button>
           </div>
         </div>
-        <details class="account-question-responses">
-          <summary>${answers.length} user response${answers.length === 1 ? "" : "s"}</summary>
-          ${answers.length ? `
-            <div class="account-response-list">
-              ${answers.map((answer) => `
-                <article class="account-response-comment ${answer.is_correct ? "is-correct" : "is-incorrect"}">
-                  <div>
-                    <strong>User #${escapeHtml(String(answer.user_id))}</strong>
-                    <small>Attempt #${escapeHtml(String(answer.attempt_id))}</small>
-                  </div>
-                  <p>Selected <code>${escapeHtml(answer.user_response || "")}</code></p>
-                  <em>${answer.is_correct ? "Correct" : "Incorrect"}</em>
-                </article>
-              `).join("")}
-            </div>
-          ` : '<p class="placeholder">No submitted answers yet.</p>'}
-        </details>
       </details>
     `;
   }).join("");
+  renderAccountResponseDashboard();
+  setAccountAssessmentTab(activeAccountAssessmentTab);
 }
 
 async function loadAccountQuestions() {
@@ -2464,6 +2609,7 @@ async function loadAccountQuestions() {
     activeAccountQuestions = Array.isArray(questionData) ? questionData : [];
     activeAccountAnswers = Array.isArray(answerData) ? answerData : [];
     renderAccountQuestions();
+    renderAccountResponseDashboard();
   } catch (error) {
     activeAccountQuestions = [];
     activeAccountAnswers = [];
@@ -4883,6 +5029,13 @@ accountDocsList?.addEventListener("click", (event) => {
     showAccountQuestionBuilder(questionsButton.dataset.docId);
     return;
   }
+  const retakeButton = event.target.closest(".account-doc-retake");
+  if (retakeButton) {
+    takeAssessmentAgainForDoc(retakeButton.dataset.docId).catch((error) => {
+      if (accountDocsList) accountDocsList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not start assessment.")}</p>`;
+    });
+    return;
+  }
   const deleteButton = event.target.closest(".account-doc-delete");
   if (deleteButton) {
     deleteAccountDocument(deleteButton.dataset.docId).catch((error) => {
@@ -4943,6 +5096,11 @@ accountDetailBody?.addEventListener("click", (event) => {
     generateAssessmentForActiveDoc(assessmentGenerateButton);
     return;
   }
+  const assessmentTabButton = event.target.closest(".account-assessment-tab");
+  if (assessmentTabButton) {
+    setAccountAssessmentTab(assessmentTabButton.dataset.accountAssessmentTab);
+    return;
+  }
   if (event.target.closest("#account-md-edit")) {
     setAccountMarkdownEditing(true);
     return;
@@ -4961,6 +5119,14 @@ accountDetailBody?.addEventListener("click", (event) => {
   const saveButton = event.target.closest("#account-md-save");
   if (saveButton) {
     saveAccountMarkdown(saveButton);
+  }
+});
+
+accountDetailBody?.addEventListener("change", (event) => {
+  const responseFilter = event.target.closest("#account-response-user-filter");
+  if (responseFilter) {
+    activeAccountResponseUserFilter = responseFilter.value || "all";
+    renderAccountResponseDashboard();
   }
 });
 document.addEventListener("keydown", (event) => {

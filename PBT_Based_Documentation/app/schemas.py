@@ -227,6 +227,7 @@ class AssessmentAnswerAdminResponse(BaseModel):
     question_id: int
     documentation_id: int
     user_id: int
+    user_email: str | None = None
     user_response: str
     is_correct: bool
 

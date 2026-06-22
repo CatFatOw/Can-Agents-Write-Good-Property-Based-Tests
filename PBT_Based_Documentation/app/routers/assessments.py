@@ -126,8 +126,9 @@ async def list_documentation_answers(
     if doc is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Documentation not found")
     rows = (
-        db.query(models.AssessmentAnswer, models.AssessmentQuestion.documentation_id)
+        db.query(models.AssessmentAnswer, models.AssessmentQuestion.documentation_id, models.User.email)
         .join(models.AssessmentQuestion, models.AssessmentAnswer.question_id == models.AssessmentQuestion.id)
+        .outerjoin(models.User, models.AssessmentAnswer.user_id == models.User.id)
         .filter(models.AssessmentQuestion.documentation_id == documentation_id)
         .order_by(models.AssessmentAnswer.id.asc())
         .all()
@@ -139,10 +140,11 @@ async def list_documentation_answers(
             "question_id": answer.question_id,
             "documentation_id": doc_id,
             "user_id": answer.user_id,
+            "user_email": user_email,
             "user_response": answer.user_response,
             "is_correct": answer.is_correct,
         }
-        for answer, doc_id in rows
+        for answer, doc_id, user_email in rows
     ]
 
 

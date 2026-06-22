@@ -7994,6 +7994,363 @@ body.area-active .area-rank-signal {
   display: block !important;
 }
 
+/* Final source-code rendering override: keep fenced blocks editor-like everywhere. */
+.md-code,
+.markdown-rendered .md-code,
+.assessment-resource-body .md-code,
+.leaderboard-doc-preview .md-code,
+.leaderboard-doc-preview.markdown-rendered .md-code,
+.area-doc-body.markdown-rendered .md-code,
+body.area-active .area-doc-body.markdown-rendered .md-code {
+  position: relative !important;
+  display: block !important;
+  max-width: 100% !important;
+  margin: 10px 0 16px !important;
+  padding: 38px 0 16px !important;
+  overflow: auto !important;
+  border: 1px solid #3c3c3c !important;
+  border-radius: 8px !important;
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 44px rgba(0, 0, 0, 0.18) !important;
+}
+
+.md-code::before,
+.markdown-rendered .md-code::before,
+.assessment-resource-body .md-code::before,
+.leaderboard-doc-preview .md-code::before,
+.leaderboard-doc-preview.markdown-rendered .md-code::before,
+.area-doc-body.markdown-rendered .md-code::before,
+body.area-active .area-doc-body.markdown-rendered .md-code::before {
+  content: "PYTHON" !important;
+  position: absolute !important;
+  inset: 0 0 auto 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 28px !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  border-bottom: 1px solid #333842 !important;
+  background: #252526 !important;
+  color: #9cdcfe !important;
+  font-family: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+}
+
+.md-code::after,
+.markdown-rendered .md-code::after,
+.assessment-resource-body .md-code::after,
+.leaderboard-doc-preview .md-code::after,
+.leaderboard-doc-preview.markdown-rendered .md-code::after,
+.area-doc-body.markdown-rendered .md-code::after,
+body.area-active .area-doc-body.markdown-rendered .md-code::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 10px !important;
+  right: 14px !important;
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 999px !important;
+  background: #89d185 !important;
+  box-shadow: -14px 0 #f2cc60, -28px 0 #f48771 !important;
+}
+
+.md-code code,
+.markdown-rendered .md-code code,
+.assessment-resource-body .md-code code,
+.leaderboard-doc-preview .md-code code,
+.leaderboard-doc-preview.markdown-rendered .md-code code,
+.area-doc-body.markdown-rendered .md-code code,
+body.area-active .area-doc-body.markdown-rendered .md-code code {
+  display: block !important;
+  min-width: max-content !important;
+  padding: 0 18px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #d4d4d4 !important;
+  font-family: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace !important;
+  font-size: 0.92rem !important;
+  font-weight: 500 !important;
+  line-height: 1.7 !important;
+  white-space: pre !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.account-assessment-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.account-assessment-tab {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid rgba(49, 92, 104, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 252, 246, 0.78);
+  color: #554941;
+  font-weight: 860;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.account-assessment-tab:hover,
+.account-assessment-tab.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(39, 107, 97, 0.38);
+  background: #d9f2e6;
+  color: #243b37;
+}
+
+.account-assessment-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.account-response-dashboard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(49, 92, 104, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.72);
+}
+
+.account-response-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.account-response-summary-grid span {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(49, 92, 104, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.88);
+  color: #5f554c;
+  font-weight: 760;
+}
+
+.account-response-summary-grid strong {
+  display: block;
+  color: #243b37;
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.account-response-attempts {
+  display: grid;
+  gap: 10px;
+}
+
+.account-response-attempt {
+  border: 1px solid rgba(49, 92, 104, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.78);
+  overflow: hidden;
+}
+
+.account-response-attempt summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.account-response-attempt summary span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.account-response-attempt summary strong,
+.account-response-attempt summary b {
+  color: #243b37;
+  overflow-wrap: anywhere;
+}
+
+.account-response-attempt summary small {
+  color: #74675d;
+  font-weight: 760;
+}
+
+.account-response-attempt .account-response-list {
+  padding: 0 14px 14px;
+}
+
+.assessment-card.assessment-feedback-correct {
+  animation: assessment-correct-pop 820ms ease both;
+}
+
+.assessment-card.assessment-feedback-incorrect {
+  animation: assessment-incorrect-shake 620ms ease both;
+}
+
+.assessment-choice.is-feedback-selected.is-correct span {
+  animation: assessment-badge-pop 700ms ease both;
+}
+
+.assessment-choice.is-feedback-selected.is-incorrect span {
+  animation: assessment-badge-wobble 520ms ease both;
+}
+
+.assessment-choice.is-correct {
+  box-shadow: 0 0 0 1px rgba(39, 107, 97, 0.24) inset, 0 16px 34px rgba(39, 107, 97, 0.12);
+}
+
+.assessment-choice.is-incorrect {
+  box-shadow: 0 0 0 1px rgba(182, 90, 55, 0.2) inset, 0 14px 30px rgba(182, 90, 55, 0.1);
+}
+
+.md-code,
+.markdown-rendered .md-code,
+.assessment-resource-body .md-code,
+.leaderboard-doc-preview .md-code,
+.area-doc-body.markdown-rendered .md-code {
+  position: relative !important;
+  display: block !important;
+  max-width: 100% !important;
+  margin: 10px 0 16px !important;
+  padding: 38px 0 16px !important;
+  overflow: auto !important;
+  border: 1px solid #3c3c3c !important;
+  border-radius: 8px !important;
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 44px rgba(0, 0, 0, 0.18) !important;
+}
+
+.md-code::before,
+.markdown-rendered .md-code::before,
+.assessment-resource-body .md-code::before,
+.leaderboard-doc-preview .md-code::before,
+.area-doc-body.markdown-rendered .md-code::before,
+body.area-active .area-doc-body.markdown-rendered .md-code::before {
+  content: "PYTHON" !important;
+  position: absolute !important;
+  inset: 0 0 auto 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 28px !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  border-bottom: 1px solid #333842 !important;
+  background: #252526 !important;
+  color: #9cdcfe !important;
+  font-family: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+}
+
+.md-code::after,
+.markdown-rendered .md-code::after,
+.assessment-resource-body .md-code::after,
+.leaderboard-doc-preview .md-code::after,
+.area-doc-body.markdown-rendered .md-code::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 10px !important;
+  right: 14px !important;
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 999px !important;
+  background: #89d185 !important;
+  box-shadow: -14px 0 #f2cc60, -28px 0 #f48771 !important;
+}
+
+.md-code code,
+.markdown-rendered .md-code code,
+.assessment-resource-body .md-code code,
+.leaderboard-doc-preview .md-code code,
+.area-doc-body.markdown-rendered .md-code code,
+body.area-active .area-doc-body.markdown-rendered .md-code code {
+  display: block !important;
+  min-width: max-content !important;
+  padding: 0 18px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #d4d4d4 !important;
+  font-family: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace !important;
+  font-size: 0.92rem !important;
+  font-weight: 500 !important;
+  line-height: 1.7 !important;
+  white-space: pre !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+body.dark-mode .account-assessment-tab {
+  border-color: rgba(245, 225, 204, 0.16);
+  background: rgba(255, 248, 237, 0.07);
+  color: rgba(255, 248, 237, 0.78);
+}
+
+body.dark-mode .account-assessment-tab:hover,
+body.dark-mode .account-assessment-tab.is-active {
+  border-color: rgba(137, 234, 208, 0.42);
+  background: rgba(137, 234, 208, 0.16);
+  color: #fff8ed;
+}
+
+body.dark-mode .account-response-dashboard,
+body.dark-mode .account-response-summary-grid span,
+body.dark-mode .account-response-attempt {
+  border-color: rgba(245, 225, 204, 0.14);
+  background: rgba(255, 248, 237, 0.06);
+}
+
+body.dark-mode .account-response-summary-grid strong,
+body.dark-mode .account-response-attempt summary strong,
+body.dark-mode .account-response-attempt summary b {
+  color: #fff8ed;
+}
+
+@keyframes assessment-correct-pop {
+  0% { transform: translateY(0) scale(1); box-shadow: none; }
+  38% { transform: translateY(-4px) scale(1.01); box-shadow: 0 24px 70px rgba(39, 107, 97, 0.22); }
+  100% { transform: translateY(0) scale(1); box-shadow: none; }
+}
+
+@keyframes assessment-incorrect-shake {
+  0%, 100% { transform: translateX(0); }
+  18% { transform: translateX(-5px); }
+  36% { transform: translateX(5px); }
+  54% { transform: translateX(-3px); }
+  72% { transform: translateX(3px); }
+}
+
+@keyframes assessment-badge-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+@keyframes assessment-badge-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  55% { transform: rotate(7deg); }
+}
+
+@media (max-width: 760px) {
+  .account-response-summary-grid,
+  .account-response-attempt summary {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Final light-mode palette pass: warm cream paper with teal accents. */
 body:not(.dark-mode) {
   --ink: #261f1a;
