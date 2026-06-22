@@ -3,6 +3,7 @@ from fastapi import APIRouter, Body, HTTPException, Depends, Query, status
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func
+from starlette.concurrency import run_in_threadpool
 import models
 from database import get_db
 from openai import OpenAI
@@ -302,6 +303,9 @@ async def generate_questions(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Documentation not found"
         )
+    documentation_title = random_documentation.documentation_title
+    source_code = random_documentation.source_code
+    db.rollback()
 
     PROMPT = f"""You are an expert software engineer and technical educator.
 
@@ -358,10 +362,10 @@ Schema:
 }}
 
 Function Name:
-{random_documentation.documentation_title}
+{documentation_title}
 
 Source Code:
-{random_documentation.source_code}
+{source_code}
 """
 
     payload = request_payload_from_provider_fields(
@@ -372,7 +376,7 @@ Source Code:
         base_url,
     )
     try:
-        output = generate_assessment_json(PROMPT, payload)
+        output = await run_in_threadpool(generate_assessment_json, PROMPT, payload)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     except Exception as exc:

@@ -15,3 +15,5 @@ services:
         generateValue: true
       - key: FRONTEND_ORIGINS
         sync: false
+      - key: WEB_CONCURRENCY
+        value: 2
