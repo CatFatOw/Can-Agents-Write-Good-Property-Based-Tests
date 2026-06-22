@@ -5734,6 +5734,10 @@ body.landing-active .landing-examples {
   background: var(--clay);
 }
 
+.database-status[data-state="checking"] .status-dot {
+  background: var(--gold);
+}
+
 .global-database-status {
   position: fixed;
   right: 14px;
@@ -5875,6 +5879,10 @@ body.account-active::before {
   border: 1px solid rgba(182, 90, 55, 0.18);
   border-radius: 8px;
   background: rgba(182, 90, 55, 0.07);
+}
+
+.account-admin-actions.is-hidden {
+  display: none;
 }
 
 .account-admin-actions .account-message {

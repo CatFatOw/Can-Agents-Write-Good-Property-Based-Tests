@@ -26,9 +26,17 @@ if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
 elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
-# Create engine to connect to the database
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+# Create engine to connect to the database. Hosted Postgres can occasionally
+# wake slowly, so keep connection attempts bounded instead of letting UI status
+# checks hang for a long time.
+is_sqlite = DATABASE_URL.startswith("sqlite")
+connect_args = {"check_same_thread": False} if is_sqlite else {"connect_timeout": 5}
+engine = create_engine(
+    DATABASE_URL,
+    connect_args=connect_args,
+    pool_pre_ping=not is_sqlite,
+    pool_recycle=300,
+)
 
 # Talk to the database 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

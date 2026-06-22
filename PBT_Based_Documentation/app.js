@@ -67,6 +67,7 @@ const researchChangePhraseButton = document.querySelector("#research-change-phra
 const researchPhraseMessage = document.querySelector("#research-phrase-message");
 const databaseStatus = document.querySelector("#database-status");
 const databaseStatusText = document.querySelector("#database-status-text");
+let databaseStatusRetryTimer = 0;
 const accountMenuButton = document.querySelector("#account-menu-button");
 const accountMenuLabel = document.querySelector("#account-menu-label");
 const accountMenu = document.querySelector("#account-menu");
@@ -1380,10 +1381,16 @@ function updateAccountMenuLabel() {
 
 async function refreshDatabaseStatus() {
   if (!databaseStatus || !databaseStatusText) return;
+  window.clearTimeout(databaseStatusRetryTimer);
   databaseStatus.dataset.state = "checking";
-  databaseStatusText.textContent = "Checking database...";
+  databaseStatusText.textContent = API_BASE_URL ? "Checking cloud database..." : "Checking local database...";
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 2800);
   try {
-    const response = await fetch(apiUrl("/api/status"));
+    const response = await fetch(apiUrl("/api/status"), {
+      cache: "no-store",
+      signal: controller.signal
+    });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.database?.connected) {
       throw new Error(data.database?.error || "Database unavailable");
@@ -1394,8 +1401,16 @@ async function refreshDatabaseStatus() {
     const fallback = database.using_local_fallback ? " fallback" : "";
     databaseStatusText.textContent = `${environment}${database.backend || "database"}${fallback}: ${database.name || "default"}`;
   } catch (error) {
+    if (error?.name === "AbortError") {
+      databaseStatus.dataset.state = "checking";
+      databaseStatusText.textContent = API_BASE_URL ? "Cloud database warming..." : "Local database still checking...";
+      databaseStatusRetryTimer = window.setTimeout(refreshDatabaseStatus, 5000);
+      return;
+    }
     databaseStatus.dataset.state = "error";
     databaseStatusText.textContent = error.message || "Database unavailable";
+  } finally {
+    window.clearTimeout(timeoutId);
   }
 }
 
