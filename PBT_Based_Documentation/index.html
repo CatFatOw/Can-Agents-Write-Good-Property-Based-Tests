@@ -650,6 +650,7 @@
         <nav class="account-topbar" aria-label="Account">
           <button type="button" class="landing-nav-link account-back-button">← Back to app</button>
           <button type="button" class="landing-nav-link area-open-button">Open Arena</button>
+          <button type="button" class="landing-nav-link" id="account-logout-button">Log out</button>
           <button type="button" class="theme-toggle" aria-pressed="false" title="Toggle dark mode">Dark</button>
         </nav>
 
@@ -657,6 +658,10 @@
           <p class="eyebrow">Your workspace</p>
           <h1 id="account-title">Account</h1>
           <p class="account-subtitle">Manage your profile, password, and everything you have generated.</p>
+          <div class="account-admin-actions is-hidden" id="account-admin-actions">
+            <button type="button" class="danger-button" id="account-reset-attempts-all">Reset attempts for all users</button>
+            <p class="account-message" id="account-admin-message" role="status"></p>
+          </div>
         </header>
 
         <div class="account-grid">
@@ -792,6 +797,7 @@
       <span>If inspect lookup fails, paste the source code manually.</span>
     </aside>
 
+    <script src="config.js"></script>
     <script src="app.js?v=cream-teal-pass"></script>
   </body>
 </html>

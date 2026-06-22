@@ -1,0 +1,8 @@
+__pycache__/
+.pytest_cache/
+.hypothesis/
+*.pyc
+.DS_Store
+frontend-dist/
+*.db
+app/User_Assessment_Table.csv

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ibd-fastapi
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: ./scripts/render-start.sh
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_KEY
+        generateValue: true
+      - key: FRONTEND_ORIGINS
+        sync: false

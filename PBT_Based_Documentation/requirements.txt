@@ -1,0 +1,17 @@
+alembic
+anthropic
+choix
+fastapi
+hypothesis
+numpy
+openai
+pandas
+passlib[bcrypt]
+psycopg[binary]
+pydantic
+pytest
+python-jose[cryptography]
+python-multipart
+requests
+sqlalchemy
+uvicorn[standard]
