@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="styles.css?v=cream-teal-pass">
   </head>
   <body class="stage-review">
+    <div class="database-status global-database-status" id="database-status" data-state="checking">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="database-status-text">Checking database...</span>
+    </div>
+
     <section class="landing-page" id="landing-page" aria-labelledby="landing-title">
       <nav class="landing-nav" aria-label="Main">
         <a class="landing-brand" href="#landing-page" aria-label="Invariant-Based Documentation Generator">IBD Generator</a>
@@ -332,10 +337,6 @@
       <div class="app-status-bar" id="app-status-bar">
         <button type="button" class="secondary-button home-button" id="home-button">Home</button>
         <button type="button" class="secondary-button area-open-button">Arena</button>
-        <div class="database-status" id="database-status" data-state="checking">
-          <span class="status-dot" aria-hidden="true"></span>
-          <span id="database-status-text">Checking database...</span>
-        </div>
         <div class="account-menu-shell">
           <button type="button" class="account-menu-button" id="account-menu-button" aria-expanded="false">
             <span id="account-menu-label">Guest</span>
@@ -389,11 +390,11 @@
             Final Markdown
           </button>
           <button type="button" class="step-tab" data-step="coverage">
-            <span aria-hidden="true">06</span>
+            <span aria-hidden="true">05</span>
             Coverage
           </button>
           <button type="button" class="step-tab" data-step="td">
-            <span aria-hidden="true">07</span>
+            <span aria-hidden="true">06</span>
             Upload TD
           </button>
         </div>
@@ -478,7 +479,7 @@
             </label>
 
             <label class="toggle-field mutation-toggle" for="show-mutation-testing">
-              <input id="show-mutation-testing" name="show_mutation_testing" type="checkbox" checked>
+              <input id="show-mutation-testing" name="show_mutation_testing" type="checkbox">
               <span>Show mutation testing</span>
             </label>
 
@@ -671,6 +672,7 @@
             <dl class="account-meta">
               <div><dt>Member since</dt><dd id="account-created">—</dd></div>
               <div><dt>User ID</dt><dd id="account-id">—</dd></div>
+              <div><dt>Account type</dt><dd><span class="account-role-badge" id="account-role">Normal user</span></dd></div>
               <div><dt>Documents</dt><dd id="account-doc-count">0</dd></div>
             </dl>
             <div class="account-stat-row" id="account-stats"></div>

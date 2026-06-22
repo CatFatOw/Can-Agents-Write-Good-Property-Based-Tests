@@ -41,6 +41,17 @@ if frontend_origins:
 async def health_check():
     return {"status": "ok"}
 
+
+@app.get("/health/db")
+async def database_health_check():
+    url = database.DATABASE_URL
+    backend = "sqlite" if url.startswith("sqlite") else "postgres"
+    return {
+        "status": "ok",
+        "backend": backend,
+        "using_local_fallback": backend == "sqlite",
+    }
+
 # Include the database-backed routers you already started.
 app.include_router(users.router)
 app.include_router(auth.router)

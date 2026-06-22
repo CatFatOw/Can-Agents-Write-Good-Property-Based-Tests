@@ -101,6 +101,8 @@ async def select_legacy_model_provider(selection: ModelProviderSelection):
 async def get_runtime_status():
     """Report the active database connection for the logged-in app status bar."""
     url = database.engine.url
+    backend = url.get_backend_name()
+    is_local = backend == "sqlite" or (url.host in {"localhost", "127.0.0.1"})
     try:
         # A lightweight ping makes the UI reflect the real DB state, not just the
         # configured URL. This catches Postgres being down while sqlite fallback works.
@@ -109,7 +111,9 @@ async def get_runtime_status():
         return {
             "database": {
                 "connected": True,
-                "backend": url.get_backend_name(),
+                "backend": backend,
+                "environment": "local" if is_local else "cloud",
+                "using_local_fallback": backend == "sqlite",
                 "name": url.database or "default",
             }
         }
@@ -117,7 +121,9 @@ async def get_runtime_status():
         return {
             "database": {
                 "connected": False,
-                "backend": url.get_backend_name(),
+                "backend": backend,
+                "environment": "local" if is_local else "cloud",
+                "using_local_fallback": backend == "sqlite",
                 "name": url.database or "default",
                 "error": str(exc),
             }

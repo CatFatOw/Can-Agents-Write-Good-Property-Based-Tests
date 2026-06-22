@@ -5734,6 +5734,15 @@ body.landing-active .landing-examples {
   background: var(--clay);
 }
 
+.global-database-status {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 1500;
+  box-shadow: 0 14px 34px rgba(38, 31, 26, 0.16);
+  backdrop-filter: blur(14px);
+}
+
 .account-menu-shell {
   position: relative;
 }
@@ -5919,6 +5928,25 @@ body.account-active::before {
   margin: 0;
   font-weight: 760;
   text-align: right;
+}
+
+.account-role-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid rgba(49, 92, 104, 0.2);
+  border-radius: 999px;
+  background: rgba(49, 92, 104, 0.1);
+  color: #24434b;
+  font-size: 0.82rem;
+  font-weight: 840;
+}
+
+.account-role-badge[data-role="admin"] {
+  border-color: rgba(182, 90, 55, 0.28);
+  background: rgba(182, 90, 55, 0.12);
+  color: #783a29;
 }
 
 .account-stat-row {

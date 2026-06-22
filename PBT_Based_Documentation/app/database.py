@@ -13,6 +13,10 @@ Create base parent class
 get_db function for future api_routes to make new sessions with the db"""
 
 # # "postgresql://postgres:password@localhost/data_base_name"
+# Example local Postgres URL for faster demo/debugging:
+# DATABASE_URL = "postgresql://USERNAME:PASSWORD@HOST:PORT/DATABASE_NAME"
+# Example Neon/hosted URL:
+# DATABASE_URL = "postgresql://USERNAME:PASSWORD@HOST/DATABASE_NAME?sslmode=require"
 APP_DIR = Path(__file__).resolve().parent
 
 # Set DATABASE_URL for Postgres. The sqlite fallback keeps local imports/tests

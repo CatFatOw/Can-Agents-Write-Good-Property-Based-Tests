@@ -36,6 +36,13 @@ router = APIRouter(
 api_router = APIRouter(prefix="/api", tags=["legacy documentation api"])
 
 
+def can_manage_documentation(doc: models.Documentation, curr_user: models.User, db: Session) -> bool:
+    """Allow owners and admin users to manage a documentation row."""
+    if doc.owner_id == curr_user.id:
+        return True
+    return db.query(models.AdminUser).filter(models.AdminUser.email == curr_user.email).first() is not None
+
+
 def legacy_error(exc: Exception) -> JSONResponse:
     """Keep old server.py-style validation errors as JSON 400s."""
     status_code = status.HTTP_400_BAD_REQUEST if isinstance(exc, ValueError) else status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -232,7 +239,7 @@ async def update_invariants(
     if not doc:
         raise HTTPException(status_code=404, detail="Documentation not found")
 
-    if doc.owner_id != curr_user.id:
+    if not can_manage_documentation(doc, curr_user, db):
         raise HTTPException(status_code=403, detail="Not authorized")
 
     # Store lists/dicts as JSON text while still allowing hand-written strings.
@@ -290,6 +297,8 @@ async def update_IBD(id:int, ibd_doc:Documentation, db:Session=Depends(get_db), 
     post = post_query.first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"POST ID: {id} CANNOT BE FOUND")
+    if not can_manage_documentation(post, curr_user, db):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     post_query.update(ibd_doc.model_dump(), synchronize_session=False)
     db.commit()
     return post_query.first()
@@ -303,12 +312,11 @@ async def update_TD(
     curr_user: models.User = Depends(oath2.get_current_user)
 ):
     """Update only the traditional/reference Markdown for a saved document."""
-    post = db.query(models.Documentation).filter(
-        models.Documentation.id == id,
-        models.Documentation.owner_id == curr_user.id,
-    ).first()
+    post = db.query(models.Documentation).filter(models.Documentation.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"POST ID: {id} CANNOT BE FOUND")
+    if not can_manage_documentation(post, curr_user, db):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     post.TD_md = str(payload.get("TD_md") or payload.get("td_md") or "")
     db.commit()
     db.refresh(post)
@@ -323,14 +331,12 @@ async def delete_docs(
     curr_user:models.User=Depends(oath2.get_current_user)
 ):
     """Delete one saved documentation row owned by the current user."""
-    post_query = db.query(models.Documentation).filter(
-        models.Documentation.id == id,
-        models.Documentation.owner_id == curr_user.id,
-    )
+    post_query = db.query(models.Documentation).filter(models.Documentation.id == id)
     post = post_query.first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"ID: {id} NOT FOUND")
+    if not can_manage_documentation(post, curr_user, db):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     post_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-

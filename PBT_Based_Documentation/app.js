@@ -84,6 +84,7 @@ const accountResetAttemptsAll = document.querySelector("#account-reset-attempts-
 const accountEmail = document.querySelector("#account-email");
 const accountCreated = document.querySelector("#account-created");
 const accountId = document.querySelector("#account-id");
+const accountRole = document.querySelector("#account-role");
 const accountDocCount = document.querySelector("#account-doc-count");
 const accountStats = document.querySelector("#account-stats");
 const accountDocsList = document.querySelector("#account-docs-list");
@@ -765,10 +766,10 @@ async function renderLandingLeaderboard() {
   landingLeaderboardList.innerHTML = '<li class="placeholder">Loading leaderboard...</li>';
   try {
     const ranked = (await fetchComparisonLeaderboard())
-      .filter((entry) => String(entry.IBD_generated_md || entry.ibd_doc || "").trim() && String(entry.TD_md || entry.td_doc || "").trim());
+      .filter((entry) => String(entry.IBD_generated_md || entry.ibd_doc || "").trim());
     if (!ranked.length) {
-      landingLeaderboardSection?.classList.add("is-hidden");
-      landingLeaderboardList.innerHTML = '<li class="placeholder">No documentation pairs with both baseline and invariant-based Markdown are ready for the leaderboard yet.</li>';
+      landingLeaderboardSection?.classList.remove("is-hidden");
+      landingLeaderboardList.innerHTML = '<li class="placeholder">No generated invariant-based documentation has been saved to this database yet.</li>';
       return;
     }
     landingLeaderboardSection?.classList.remove("is-hidden");
@@ -783,7 +784,7 @@ async function renderLandingLeaderboard() {
               <span class="area-rank">#${entry.rank}</span>
               <div>
                 <strong>${escapeHtml(entry.documentation_title || "Documentation sample")}</strong>
-                <small>${voteCount ? `${voteCount} blind comparisons` : "Ready for Arena votes"}</small>
+                <small>${voteCount ? `${voteCount} blind comparisons` : (String(entry.TD_md || entry.td_doc || "").trim() ? "Ready for Arena votes" : "Saved; add baseline Markdown for Arena")}</small>
               </div>
               <span class="area-rating">ELO: ${Number(entry.ibd_doc_elo_rating || 0)}</span>
             </div>
@@ -1351,11 +1352,11 @@ async function submitAreaVote() {
     areaVoteSubmitted = true;
     incrementAreaRankCount();
     renderAreaPost();
+    await fetchComparisonLeaderboard().catch(() => []);
     renderLandingLeaderboard();
   } catch (error) {
-    areaVoteSubmitted = true;
-    renderAreaPost();
-    if (areaVoteMessage) areaVoteMessage.textContent = `${error.message || "Vote was not recorded."} Statistics are shown for review only.`;
+    areaVoteSubmitted = false;
+    if (areaVoteMessage) areaVoteMessage.textContent = error.message || "Vote was not recorded.";
   } finally {
     if (areaVoteButton) areaVoteButton.disabled = false;
   }
@@ -1389,7 +1390,9 @@ async function refreshDatabaseStatus() {
     }
     const database = data.database;
     databaseStatus.dataset.state = "connected";
-    databaseStatusText.textContent = `${database.backend || "database"} connected: ${database.name || "default"}`;
+    const environment = database.environment ? `${database.environment} ` : "";
+    const fallback = database.using_local_fallback ? " fallback" : "";
+    databaseStatusText.textContent = `${environment}${database.backend || "database"}${fallback}: ${database.name || "default"}`;
   } catch (error) {
     databaseStatus.dataset.state = "error";
     databaseStatusText.textContent = error.message || "Database unavailable";
@@ -2021,6 +2024,10 @@ function renderAccountStats() {
 }
 
 function updateAccountDocsScopeUi() {
+  if (accountRole) {
+    accountRole.textContent = accountIsAdmin ? "Admin account" : "Normal user";
+    accountRole.dataset.role = accountIsAdmin ? "admin" : "user";
+  }
   if (accountDocsTitle) accountDocsTitle.textContent = accountIsAdmin ? "All generated documents" : "Your documents";
   if (accountDocsScope) {
     accountDocsScope.textContent = accountIsAdmin
@@ -5298,7 +5305,14 @@ savedDocList?.addEventListener("click", (event) => {
 
 logoutButton?.addEventListener("click", logoutCurrentUser);
 accountLogoutButton?.addEventListener("click", logoutCurrentUser);
-accountResetAttemptsAll?.addEventListener("click", () => resetAllAssessmentAttempts(accountResetAttemptsAll));
+accountResetAttemptsAll?.addEventListener("click", () => {
+  if (!accountIsAdmin) {
+    if (accountAdminMessage) accountAdminMessage.textContent = "Only admin users can reset attempts.";
+    accountAdminActions?.classList.add("is-hidden");
+    return;
+  }
+  resetAllAssessmentAttempts(accountResetAttemptsAll);
+});
 
 accountPageButton?.addEventListener("click", showAccountPage);
 accountBackButton?.addEventListener("click", showAppPage);
@@ -5319,16 +5333,19 @@ accountDocsSearch?.addEventListener("input", renderAccountDocs);
 accountDocsList?.addEventListener("click", (event) => {
   const questionsButton = event.target.closest(".account-doc-questions");
   if (questionsButton) {
+    if (!accountIsAdmin) return;
     showAccountQuestionBuilder(questionsButton.dataset.docId);
     return;
   }
   const responsesButton = event.target.closest(".account-doc-responses");
   if (responsesButton) {
+    if (!accountIsAdmin) return;
     showAccountResponses(responsesButton.dataset.docId);
     return;
   }
   const retakeButton = event.target.closest(".account-doc-retake");
   if (retakeButton) {
+    if (!accountIsAdmin) return;
     showAccountRetakeAccess(retakeButton.dataset.docId);
     return;
   }
@@ -5361,25 +5378,30 @@ accountDetailBody?.addEventListener("click", (event) => {
   }
   const resetAllQuestionsButton = event.target.closest("#account-question-reset-all");
   if (resetAllQuestionsButton) {
+    if (!accountIsAdmin) return;
     resetAllAccountQuestions(resetAllQuestionsButton);
     return;
   }
   if (event.target.closest("#account-retake-refresh-users")) {
+    if (!accountIsAdmin) return;
     loadRetakeKnownUsers();
     return;
   }
   const retakeAllButton = event.target.closest("#account-retake-all");
   if (retakeAllButton) {
+    if (!accountIsAdmin) return;
     grantRetakeAccess(retakeAllButton, "all");
     return;
   }
   const retakeGrantButton = event.target.closest("#account-retake-grant");
   if (retakeGrantButton) {
+    if (!accountIsAdmin) return;
     grantRetakeAccess(retakeGrantButton);
     return;
   }
   const questionSaveButton = event.target.closest(".account-question-save");
   if (questionSaveButton) {
+    if (!accountIsAdmin) return;
     saveAccountQuestion(questionSaveButton.dataset.questionId, questionSaveButton);
     return;
   }

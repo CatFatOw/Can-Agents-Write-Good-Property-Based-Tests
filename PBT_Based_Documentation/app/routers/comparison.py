@@ -201,10 +201,10 @@ async def vote_preference(
     # Bradley-Terry
     if len(collections) >= 2:
         bradley_terry_results = calculate_bradley_terry(collections)
-
-        compared_doc.bt_td_rating = bradley_terry_results["bt_td_rating"]
-        compared_doc.bt_ibd_rating = bradley_terry_results["bt_ibd_rating"]
-        compared_doc.bt_ibd_win_prob = bradley_terry_results["bt_ibd_win_prob"]
+        if bradley_terry_results:
+            compared_doc.bt_td_rating = bradley_terry_results["bt_td_rating"]
+            compared_doc.bt_ibd_rating = bradley_terry_results["bt_ibd_rating"]
+            compared_doc.bt_ibd_win_prob = bradley_terry_results["bt_ibd_win_prob"]
 
     db.commit()
     db.refresh(new_comparison)
@@ -223,6 +223,8 @@ async def vote_preference(
     "bt_ibd_rating": compared_doc.bt_ibd_rating,
     "bt_td_rating": compared_doc.bt_td_rating,
     "bt_ibd_win_prob": compared_doc.bt_ibd_win_prob,
+    "bt_ibd_win_prob_ci_lower": compared_doc.bt_ibd_win_prob_ci_lower,
+    "bt_ibd_win_prob_ci_upper": compared_doc.bt_ibd_win_prob_ci_upper,
 
     # Vote counts
     "comparison_count": compared_doc.comparison_count,
@@ -256,8 +258,6 @@ async def get_leaderboard_ibd(db: Session = Depends(get_db)):
         db.query(models.Documentation)
         .filter(models.Documentation.IBD_generated_md.isnot(None))
         .filter(func.length(func.trim(models.Documentation.IBD_generated_md)) > 0)
-        .filter(models.Documentation.TD_md.isnot(None))
-        .filter(func.length(func.trim(models.Documentation.TD_md)) > 0)
         .order_by(
             models.Documentation.comparison_count.desc(),
             models.Documentation.ibd_doc_elo_rating.desc(),
