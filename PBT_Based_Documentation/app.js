@@ -351,6 +351,12 @@ async function showAreaPage() {
   accountMenu?.classList.add("is-hidden");
   accountMenuButton?.setAttribute("aria-expanded", "false");
   updateAccountMenuLabel();
+  if (getAccessToken()) {
+    await refreshAccountAdminState();
+  } else {
+    accountIsAdmin = false;
+    updateAccountDocsScopeUi();
+  }
   updateAreaSessionUI();
   await loadAreaComparison();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -492,8 +498,14 @@ function updateAreaSessionUI() {
   }
   if (areaLimitMessage) {
     areaLimitMessage.textContent = isResearchModeActive()
-      ? (limit && count >= limit ? "Research limit reached. Enter the phrase to exit, increase the limit, or reset the session." : "Research mode limit is enforced.")
+      ? (limit && count >= limit
+        ? (accountIsAdmin ? "Research limit reached. Enter the phrase to exit, increase the limit, or reset the session." : "Research limit reached. Ask an admin to reset the Arena session.")
+        : "Research mode limit is enforced.")
       : "Normal mode tracks completed comparisons in this browser.";
+  }
+  if (areaResetButton) {
+    areaResetButton.classList.toggle("is-hidden", !accountIsAdmin);
+    areaResetButton.disabled = !accountIsAdmin;
   }
   if (areaVoteButton) {
     areaVoteButton.disabled = Boolean(areaVoteSubmitted || (limit && count >= limit) || !selectedAreaWinner);
@@ -568,7 +580,9 @@ async function loadAreaComparison() {
   if (!getAccessToken() && !hasRemainingFallback) {
     areaVoteSubmitted = true;
     selectedAreaWinner = null;
-    if (areaVoteMessage) areaVoteMessage.textContent = "You have completed every bundled comparison in this browser. Ask an admin to reset comparison progress, or use Reset session for this browser.";
+    if (areaVoteMessage) areaVoteMessage.textContent = accountIsAdmin
+      ? "You have completed every bundled comparison in this browser. Use Admin reset session to restart."
+      : "You have completed every bundled comparison in this browser. Ask an admin to reset comparison progress.";
     updateAreaSessionUI();
     return;
   }
@@ -5532,7 +5546,15 @@ areaBackButton?.addEventListener("click", () => {
 
 areaNextButton?.addEventListener("click", showNextAreaPost);
 areaNextBottomButton?.addEventListener("click", showNextAreaPost);
-areaResetButton?.addEventListener("click", () => {
+areaResetButton?.addEventListener("click", async () => {
+  if (getAccessToken()) {
+    await refreshAccountAdminState();
+  }
+  if (!accountIsAdmin) {
+    if (areaVoteMessage) areaVoteMessage.textContent = "Only admin accounts can reset the Arena session.";
+    updateAreaSessionUI();
+    return;
+  }
   resetLocalAreaSession();
   loadAreaComparison();
 });
