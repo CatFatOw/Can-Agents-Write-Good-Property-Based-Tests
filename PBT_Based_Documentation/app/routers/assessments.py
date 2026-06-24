@@ -556,6 +556,30 @@ def latest_attempt_for_user(documentation_id:int, db:Session, curr_user:models.U
     )
 
 
+def attempt_is_complete(attempt:models.AssessmentAttempt, db:Session) -> bool:
+    if attempt is None:
+        return False
+    answered_count = (
+        db.query(func.count(models.AssessmentAnswer.id))
+        .filter(models.AssessmentAnswer.attempt_id == attempt.id)
+        .scalar()
+    )
+    return int(answered_count or 0) >= int(attempt.total_questions or 0)
+
+
+def latest_completed_attempt_for_user(documentation_id:int, db:Session, curr_user:models.User):
+    attempts = (
+        db.query(models.AssessmentAttempt)
+        .filter(
+            models.AssessmentAttempt.documentation_id == documentation_id,
+            models.AssessmentAttempt.user_id == curr_user.id,
+        )
+        .order_by(models.AssessmentAttempt.created_at.desc(), models.AssessmentAttempt.id.desc())
+        .all()
+    )
+    return next((attempt for attempt in attempts if attempt_is_complete(attempt, db)), None)
+
+
 def latest_retake_grant_for_user(documentation_id:int, db:Session, curr_user:models.User):
     return (
         db.query(models.AssessmentRetakeGrant)
@@ -571,11 +595,11 @@ def latest_retake_grant_for_user(documentation_id:int, db:Session, curr_user:mod
 
 
 def user_can_start_documentation(documentation_id:int, db:Session, curr_user:models.User) -> bool:
-    latest_attempt = latest_attempt_for_user(documentation_id, db, curr_user)
-    if latest_attempt is None:
+    latest_completed_attempt = latest_completed_attempt_for_user(documentation_id, db, curr_user)
+    if latest_completed_attempt is None:
         return True
     latest_grant = latest_retake_grant_for_user(documentation_id, db, curr_user)
-    return bool(latest_grant and latest_grant.created_at > latest_attempt.created_at)
+    return bool(latest_grant and latest_grant.created_at > latest_completed_attempt.created_at)
 
 
 @router.get("/documentation-options", response_model=list[AssessmentDocumentationOption])
