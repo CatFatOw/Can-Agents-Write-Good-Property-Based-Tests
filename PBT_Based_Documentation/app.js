@@ -34,6 +34,7 @@ const areaPanels = Array.from(document.querySelectorAll("[data-area-panel]"));
 const areaComprehensionView = document.querySelector("#area-comprehension-view");
 const assessmentNextButton = document.querySelector("#assessment-next-button");
 const assessmentDocSelect = document.querySelector("#assessment-doc-select");
+const assessmentDocTypeSelect = document.querySelector("#assessment-doc-type-select");
 const assessmentDocRemaining = document.querySelector("#assessment-doc-remaining");
 const assessmentDocTitle = document.querySelector("#assessment-doc-title");
 const assessmentResourceTabs = Array.from(document.querySelectorAll(".assessment-resource-tab"));
@@ -1304,9 +1305,12 @@ async function loadAssessment(documentationId = activeAssessmentDocumentationId)
   if (assessmentSubmitButton) assessmentSubmitButton.disabled = true;
   if (assessmentNextButton) assessmentNextButton.disabled = true;
   try {
-    const endpoint = documentationId
+    const docType = assessmentDocTypeSelect?.value || "random";
+    const endpointPath = documentationId
       ? `/assessments/documentation/${encodeURIComponent(documentationId)}/start`
       : "/assessments/random";
+    const params = new URLSearchParams({ doc_type: docType });
+    const endpoint = `${endpointPath}?${params.toString()}`;
     const response = await fetch(apiUrl(endpoint), {
       headers: authHeaders({ Accept: "application/json" })
     });
@@ -5957,6 +5961,9 @@ areaVoteButton?.addEventListener("click", submitAreaVote);
 assessmentNextButton?.addEventListener("click", () => moveAssessmentQuestion(1));
 assessmentDocSelect?.addEventListener("change", () => {
   activeAssessmentDocumentationId = assessmentDocSelect.value || "";
+  loadAssessment(activeAssessmentDocumentationId);
+});
+assessmentDocTypeSelect?.addEventListener("change", () => {
   loadAssessment(activeAssessmentDocumentationId);
 });
 assessmentResourceTabs.forEach((button) => {

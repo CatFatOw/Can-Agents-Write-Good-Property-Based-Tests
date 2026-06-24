@@ -7552,11 +7552,20 @@ body.area-active .area-session-bar .field {
     color-mix(in srgb, currentColor 5%, transparent);
 }
 
-.assessment-doc-picker {
+.assessment-picker-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(130px, 0.28fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.assessment-doc-picker,
+.assessment-doc-type-picker {
   margin: 0;
 }
 
-.assessment-doc-picker select {
+.assessment-doc-picker select,
+.assessment-doc-type-picker select {
   width: 100%;
   min-height: 42px;
 }
@@ -7566,6 +7575,12 @@ body.area-active .area-session-bar .field {
   margin-top: 6px;
   color: color-mix(in srgb, currentColor 64%, transparent);
   font-weight: 760;
+}
+
+@media (max-width: 640px) {
+  .assessment-picker-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .assessment-progress {

@@ -252,13 +252,23 @@
               </aside>
 
               <section class="assessment-card" aria-live="polite">
-                <label class="field assessment-doc-picker" for="assessment-doc-select">
-                  <span>Documentation API</span>
-                  <select id="assessment-doc-select">
-                    <option value="">Random documentation</option>
-                  </select>
-                  <small id="assessment-doc-remaining">Loading documentation queue...</small>
-                </label>
+                <div class="assessment-picker-row">
+                  <label class="field assessment-doc-picker" for="assessment-doc-select">
+                    <span>Documentation API</span>
+                    <select id="assessment-doc-select">
+                      <option value="">Random documentation</option>
+                    </select>
+                    <small id="assessment-doc-remaining">Loading documentation queue...</small>
+                  </label>
+                  <label class="field assessment-doc-type-picker" for="assessment-doc-type-select">
+                    <span>Docs</span>
+                    <select id="assessment-doc-type-select">
+                      <option value="random">Random</option>
+                      <option value="ibd">IBD</option>
+                      <option value="td">TD</option>
+                    </select>
+                  </label>
+                </div>
                 <div class="assessment-progress">
                   <span id="assessment-progress-text">Question 0 of 0</span>
                   <div class="assessment-progress-track"><span id="assessment-progress-bar"></span></div>
