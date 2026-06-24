@@ -2623,6 +2623,12 @@ function renderAccountDocs() {
     const ibdPct = comparisonCount ? Math.round((ibdWins / comparisonCount) * 100) : 0;
     const canManage = canManageAccountDoc(doc);
     const hasTD = hasTraditionalDocumentation(doc);
+    const questionCount = Number(doc.question_count || 0);
+    const responseCount = Number(doc.response_count || 0);
+    const questionsLabel = questionCount ? `Questions (${questionCount})` : "No questions generated";
+    const responsesLabel = responseCount
+      ? (accountIsAdmin ? `View responses (${responseCount})` : `My responses (${responseCount})`)
+      : "No responses yet";
     return `
       <article class="account-doc-card">
         <div class="account-doc-info">
@@ -2634,14 +2640,16 @@ function renderAccountDocs() {
             <span>Validity ${formatPercentMaybe(doc.validity)}</span>
             <span>Mutation ${formatPercentMaybe(doc.mutation_score)}</span>
             <span>${invariants.length} invariants</span>
+            <span class="${questionCount ? "account-doc-pill-ready" : "account-doc-pill-muted"}">${questionCount ? `${questionCount} questions` : "No questions"}</span>
+            <span class="${responseCount ? "account-doc-pill-ready" : "account-doc-pill-muted"}">${responseCount ? `${responseCount} responses` : "No responses"}</span>
             <span>${comparisonCount} arena votes</span>
             <span class="${hasTD ? "account-doc-pill-ready" : "account-doc-pill-muted"}">${hasTD ? "Traditional doc" : "No TD yet"}</span>
             ${comparisonCount ? `<span>${ibdPct}% invariant-based preference</span>` : ""}
           </div>
         </div>
         <div class="account-doc-actions">
-          ${accountIsAdmin ? `<button type="button" class="landing-primary-button account-doc-questions" data-doc-id="${doc.id}">Questions</button>` : ""}
-          <button type="button" class="secondary-button account-doc-responses" data-doc-id="${doc.id}">${accountIsAdmin ? "Responses" : "My responses"}</button>
+          ${accountIsAdmin ? `<button type="button" class="${questionCount ? "landing-primary-button" : "secondary-button"} account-doc-questions" data-doc-id="${doc.id}">${questionsLabel}</button>` : ""}
+          <button type="button" class="secondary-button account-doc-responses" data-doc-id="${doc.id}" ${responseCount ? "" : "disabled"}>${responsesLabel}</button>
           ${accountIsAdmin ? `<button type="button" class="secondary-button account-doc-retake" data-doc-id="${doc.id}">Retake access</button>` : ""}
           ${accountIsAdmin ? `<button type="button" class="danger-button account-doc-reset-questions" data-doc-id="${doc.id}">Reset questions</button>` : ""}
           <button type="button" class="secondary-button account-doc-view" data-doc-kind="ibd" data-doc-id="${doc.id}">View IBD</button>

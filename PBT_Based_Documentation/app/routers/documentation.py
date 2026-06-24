@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import func
 import models 
 import schemas
 from schemas import (
@@ -118,6 +119,43 @@ def persist_generated_documentation_in_new_session(payload: dict, markdown: str)
         db.close()
 
 
+def documentation_response_rows(db: Session, docs: list[models.Documentation], curr_user: models.User | None = None):
+    """Attach assessment question/response counts to documentation rows."""
+    doc_ids = [doc.id for doc in docs]
+    if not doc_ids:
+        return []
+
+    question_counts = dict(
+        db.query(
+            models.AssessmentQuestion.documentation_id,
+            func.count(models.AssessmentQuestion.id),
+        )
+        .filter(models.AssessmentQuestion.documentation_id.in_(doc_ids))
+        .group_by(models.AssessmentQuestion.documentation_id)
+        .all()
+    )
+
+    response_query = (
+        db.query(
+            models.AssessmentQuestion.documentation_id,
+            func.count(models.AssessmentAnswer.id),
+        )
+        .join(models.AssessmentAnswer, models.AssessmentAnswer.question_id == models.AssessmentQuestion.id)
+        .filter(models.AssessmentQuestion.documentation_id.in_(doc_ids))
+    )
+    if curr_user is not None and db.query(models.AdminUser).filter(models.AdminUser.email == curr_user.email).first() is None:
+        response_query = response_query.filter(models.AssessmentAnswer.user_id == curr_user.id)
+    response_counts = dict(response_query.group_by(models.AssessmentQuestion.documentation_id).all())
+
+    rows = []
+    for doc in docs:
+        row = DocumentationResponse.model_validate(doc).model_dump()
+        row["question_count"] = int(question_counts.get(doc.id, 0) or 0)
+        row["response_count"] = int(response_counts.get(doc.id, 0) or 0)
+        rows.append(row)
+    return rows
+
+
 @api_router.post("/source")
 async def lookup_source(payload: dict):
     """Drop-in FastAPI replacement for server.py's /api/source endpoint."""
@@ -186,7 +224,7 @@ async def get_all_documentation(
     curr_user:Session = Depends(admin.get_current_admin)
 ):
     """Function gets every single documentation generated"""
-    return db.query(models.Documentation).all()
+    return documentation_response_rows(db, db.query(models.Documentation).all(), curr_user)
 
 # USER ENDPOINT LOGIC START-----
 @router.get("/me", response_model=list[DocumentationResponse])
@@ -196,9 +234,9 @@ async def get_current_user_documentation(
 ):
     """Function gets all documentation owned by the current user"""
     if db.query(models.AdminUser).filter(models.AdminUser.email == curr_user.email).first():
-        return db.query(models.Documentation).all()
+        return documentation_response_rows(db, db.query(models.Documentation).all(), curr_user)
     all_docs = db.query(models.Documentation).filter(models.Documentation.owner_id == curr_user.id).all()
-    return all_docs
+    return documentation_response_rows(db, all_docs, curr_user)
 
 @router.get("/me/ibd", response_model=UserIBDResponse)
 async def get_current_user_ibd(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):

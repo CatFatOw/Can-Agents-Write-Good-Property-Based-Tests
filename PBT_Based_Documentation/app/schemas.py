@@ -93,6 +93,8 @@ class DocumentationResponse(BaseModel):
     comparison_count: int = 0
     ibd_wins: int = 0
     td_wins: int = 0
+    question_count: int = 0
+    response_count: int = 0
 
     owner_id: int
     created_at: datetime

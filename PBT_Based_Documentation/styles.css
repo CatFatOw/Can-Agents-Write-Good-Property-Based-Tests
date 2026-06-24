@@ -6360,7 +6360,8 @@ body.dark-mode .account-delete-confirm {
 }
 
 .account-doc-kind-tab:disabled,
-.account-doc-view:disabled {
+.account-doc-view:disabled,
+.account-doc-responses:disabled {
   cursor: not-allowed;
   opacity: 0.48;
 }
