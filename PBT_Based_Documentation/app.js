@@ -360,6 +360,7 @@ async function showAreaPage() {
   } else {
     accountIsAdmin = false;
     updateAccountDocsScopeUi();
+    updateAssessmentDocTypeControl();
   }
   updateAreaSessionUI();
   await loadAreaComparison();
@@ -1305,7 +1306,7 @@ async function loadAssessment(documentationId = activeAssessmentDocumentationId)
   if (assessmentSubmitButton) assessmentSubmitButton.disabled = true;
   if (assessmentNextButton) assessmentNextButton.disabled = true;
   try {
-    const docType = assessmentDocTypeSelect?.value || "random";
+    const docType = accountIsAdmin ? (assessmentDocTypeSelect?.value || "random") : "random";
     const endpointPath = documentationId
       ? `/assessments/documentation/${encodeURIComponent(documentationId)}/start`
       : "/assessments/random";
@@ -2422,6 +2423,7 @@ function logoutCurrentUser() {
   accountCurrentUserId = null;
   accountIsAdmin = false;
   updateAccountDocsScopeUi();
+  updateAssessmentDocTypeControl();
   updateAccountMenuLabel();
   renderSavedDocs();
   setStatus("draft", "Signed out");
@@ -2432,6 +2434,7 @@ async function refreshAccountAdminState() {
   accountIsAdmin = false;
   if (!getAccessToken()) {
     updateAccountDocsScopeUi();
+    updateAssessmentDocTypeControl();
     return false;
   }
   try {
@@ -2443,7 +2446,16 @@ async function refreshAccountAdminState() {
     accountIsAdmin = false;
   }
   updateAccountDocsScopeUi();
+  updateAssessmentDocTypeControl();
   return accountIsAdmin;
+}
+
+function updateAssessmentDocTypeControl() {
+  const wrapper = assessmentDocTypeSelect?.closest(".assessment-doc-type-picker");
+  if (!assessmentDocTypeSelect || !wrapper) return;
+  wrapper.classList.toggle("is-hidden", !accountIsAdmin);
+  assessmentDocTypeSelect.disabled = !accountIsAdmin;
+  if (!accountIsAdmin) assessmentDocTypeSelect.value = "random";
 }
 
 function canManageAccountDoc(doc) {

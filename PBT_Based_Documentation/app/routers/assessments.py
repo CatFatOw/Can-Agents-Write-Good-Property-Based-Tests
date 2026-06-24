@@ -120,6 +120,11 @@ def documentation_version_markdown(documentation: models.Documentation, doc_type
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{selected} Markdown is not available for this documentation row")
 
 
+def effective_assessment_doc_type(doc_type: str, db: Session, curr_user: models.User) -> str:
+    is_admin = db.query(models.AdminUser).filter(models.AdminUser.email == curr_user.email).first() is not None
+    return (doc_type or "random") if is_admin else "random"
+
+
 
 # CODEX VIBE CODED OPEN LOGIC ABOVE
 
@@ -672,6 +677,7 @@ async def start_documentation_assessment(
     documentation = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
     if not documentation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
+    doc_type = effective_assessment_doc_type(doc_type, db, curr_user)
     if not user_can_start_documentation(documentation_id, db, curr_user):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This documentation was already completed. Ask an admin to allow a retake.")
     return build_assessment_for_documentation(documentation, db, curr_user, doc_type)
@@ -690,6 +696,7 @@ async def get_random_assessment(
         .group_by(models.Documentation.id)
     )
     candidates = query.all()
+    doc_type = effective_assessment_doc_type(doc_type, db, curr_user)
     selected_doc_type = (doc_type or "random").strip().upper()
     available = [
         doc for doc in candidates
