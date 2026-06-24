@@ -1419,6 +1419,7 @@ async function submitAssessmentAnswer() {
       assessmentNextButton.focus({ preventScroll: true });
     }
     fetchAssessmentStats();
+    refreshAccountDataSoon(0);
   } catch (error) {
     if (assessmentMessage) assessmentMessage.textContent = error.message || "Could not submit answer.";
   } finally {
@@ -3270,6 +3271,15 @@ async function loadAccountQuestions() {
     if (!answerResponse.ok) throw new Error(answerData.detail || answerData.error || "Could not load answers.");
     activeAccountQuestions = Array.isArray(questionData) ? questionData : [];
     activeAccountAnswers = Array.isArray(answerData) ? answerData : [];
+    const index = accountDocuments.findIndex((doc) => String(doc.id) === String(activeAccountDoc.id));
+    if (index >= 0) {
+      accountDocuments[index] = {
+        ...accountDocuments[index],
+        question_count: activeAccountQuestions.length,
+        response_count: activeAccountAnswers.length
+      };
+      renderAccountDocs();
+    }
     renderAccountQuestions();
     renderAccountResponseDashboard();
   } catch (error) {
@@ -3304,6 +3314,15 @@ async function loadAccountUserResponses() {
       }
     });
     activeAccountQuestions = Array.from(questionMap.values());
+    const index = accountDocuments.findIndex((doc) => String(doc.id) === String(activeAccountDoc.id));
+    if (index >= 0) {
+      accountDocuments[index] = {
+        ...accountDocuments[index],
+        question_count: activeAccountQuestions.length || accountDocuments[index].question_count || 0,
+        response_count: activeAccountAnswers.length
+      };
+      renderAccountDocs();
+    }
     renderAccountResponseDashboard();
   } catch (error) {
     activeAccountQuestions = [];
@@ -3360,7 +3379,7 @@ async function saveManualAssessmentQuestion(button) {
     resetManualQuestionForm();
     if (message) message.textContent = `Saved human question${data.id ? ` #${data.id}` : ""}.`;
     await loadAccountQuestions();
-    refreshAccountDataSoon();
+    await fetchAccountDocs({ retry: false });
   } catch (error) {
     if (message) message.textContent = error.message || "Could not save question.";
   } finally {
@@ -3411,7 +3430,8 @@ async function generateAssessmentForActiveDoc(button) {
       const questionId = data.id ? ` Last question id: ${data.id}.` : "";
       message.textContent = `Generated ${nQuestions} comprehension questions from ${docType.toUpperCase()} docs.${questionId}`;
     }
-    loadAccountQuestions();
+    await loadAccountQuestions();
+    await fetchAccountDocs({ retry: false });
   } catch (error) {
     if (message) message.textContent = error.message || "Could not generate questions.";
   } finally {
