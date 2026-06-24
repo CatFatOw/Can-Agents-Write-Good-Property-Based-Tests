@@ -561,6 +561,10 @@ function normalizeAreaPost(data) {
   };
 }
 
+function hasRenderableAreaDocs(post) {
+  return Boolean(String(post?.tdDoc || "").trim() && String(post?.ibdDoc || "").trim());
+}
+
 async function hydrateAreaPostDocs(post) {
   if (!post || post.docsLoaded || (!post.originalPath && !post.invariantPath)) return post;
   const [originalResponse, invariantResponse] = await Promise.all([
@@ -602,6 +606,9 @@ async function loadAreaComparison() {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || "No comparison documents are available yet.");
     currentAreaPost = normalizeAreaPost(data);
+    if (!hasRenderableAreaDocs(currentAreaPost)) {
+      throw new Error("The selected comparison is missing either TD or IBD Markdown.");
+    }
   } catch (error) {
     const fallbackIndex = areaFallbackPosts.findIndex((post, index) => !completed.has(String(post.id || post.title || index)));
     activeAreaIndex = fallbackIndex >= 0 ? fallbackIndex : 0;
@@ -613,6 +620,11 @@ async function loadAreaComparison() {
     await hydrateAreaPostDocs(currentAreaPost).catch((fallbackError) => {
       if (areaVoteMessage) areaVoteMessage.textContent = fallbackError.message;
     });
+    if (!hasRenderableAreaDocs(currentAreaPost)) {
+      currentAreaPost = null;
+      if (areaVoteMessage) areaVoteMessage.textContent = "No comparison with both TD and IBD Markdown is ready yet.";
+      return;
+    }
     if (areaVoteMessage) {
       areaVoteMessage.textContent = `${error.message || "Could not load a saved comparison."} Showing bundled examples.`;
     }
@@ -1029,6 +1041,13 @@ function renderAccountRankingSummary(doc) {
 function renderAreaPost() {
   const post = currentAreaPost || areaFallbackPosts[activeAreaIndex] || areaFallbackPosts[0];
   if (!post) return;
+  if (!hasRenderableAreaDocs(post)) {
+    if (areaTdDoc) areaTdDoc.innerHTML = '<p class="placeholder">TD Markdown is not ready for this comparison.</p>';
+    if (areaIbdDoc) areaIbdDoc.innerHTML = '<p class="placeholder">IBD Markdown is not ready for this comparison.</p>';
+    if (areaVoteButton) areaVoteButton.disabled = true;
+    if (areaVoteMessage) areaVoteMessage.textContent = "This comparison is missing one documentation version.";
+    return;
+  }
 
   const candidateADocument = getAreaCandidateDocument(post, "A");
   const candidateBDocument = getAreaCandidateDocument(post, "B");
@@ -2182,10 +2201,10 @@ function showGeneratedDoc(docId = activeGeneratedDocId || generatedDocs[0]?.id |
   renderGeneratedDocsLibrary();
   generatedDocsTitle.textContent = doc.title;
   generatedDocsRendered.innerHTML = `
-    <section class="saved-invariants">
+    ${doc.kind === "td" ? "" : `<section class="saved-invariants">
       <p class="eyebrow">Invariants used</p>
       <ul>${doc.invariants.map((invariant) => `<li>${escapeHtml(invariant)}</li>`).join("")}</ul>
-    </section>
+    </section>`}
     ${renderMarkdown(doc.markdown)}
   `;
   syncMarkdownActions();
@@ -2207,21 +2226,35 @@ function parseStoredInvariants(value) {
 function addSavedDocToSession(doc) {
   const createdAt = doc.created_at ? new Date(doc.created_at) : new Date();
   const apiName = doc.documentation_title || "Saved documentation";
-  const markdown = doc.IBD_generated_md || "";
-  const savedDoc = {
-    id: `saved-${doc.id}`,
+  const timestamp = createdAt.toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  const savedDocs = [{
+    id: `saved-${doc.id}-ibd`,
     apiName,
-    title: apiName,
-    markdown,
+    title: `${apiName} IBD`,
+    markdown: doc.IBD_generated_md || "",
     invariants: parseStoredInvariants(doc.invariants),
     createdAt,
-    filename: `${slugify(apiName)}-${createdAt.toISOString().slice(0, 19).replace(/[:T]/g, "-")}.md`
-  };
-  generatedDocs = [savedDoc, ...generatedDocs.filter((item) => item.id !== savedDoc.id)].slice(0, 12);
-  activeGeneratedDocId = savedDoc.id;
+    filename: `${slugify(apiName)}-ibd-${timestamp}.md`,
+    kind: "ibd"
+  }];
+  if (hasTraditionalDocumentation(doc)) {
+    savedDocs.push({
+      id: `saved-${doc.id}-td`,
+      apiName,
+      title: `${apiName} TD`,
+      markdown: accountDocMarkdown(doc, "td"),
+      invariants: [],
+      createdAt,
+      filename: `${slugify(apiName)}-td-${timestamp}.md`,
+      kind: "td"
+    });
+  }
+  const savedIds = new Set(savedDocs.map((item) => item.id));
+  generatedDocs = [...savedDocs, ...generatedDocs.filter((item) => !savedIds.has(item.id))].slice(0, 12);
+  activeGeneratedDocId = savedDocs[0].id;
   renderGeneratedDocsLibrary();
   resetGeneratedDocsInactivityTimer();
-  showGeneratedDoc(savedDoc.id);
+  showGeneratedDoc(savedDocs[0].id);
 }
 
 function renderSavedDocs() {
@@ -2237,6 +2270,7 @@ function renderSavedDocs() {
     const haystack = [
       doc.documentation_title,
       doc.IBD_generated_md,
+      doc.TD_md,
       doc.invariants
     ].join(" ").toLowerCase();
     return !query || haystack.includes(query);
@@ -2256,6 +2290,7 @@ function renderSavedDocs() {
       <button type="button" class="saved-doc-card" data-saved-doc-id="${doc.id}">
         <strong>${escapeHtml(doc.documentation_title || "Saved documentation")}</strong>
         <small>${escapeHtml(dateLabel)}</small>
+        ${hasTraditionalDocumentation(doc) ? '<span class="saved-doc-badge">TD available</span>' : ""}
       </button>
     `;
   }).join("");
@@ -2449,6 +2484,60 @@ function accountDocLibrary(doc) {
   return (match ? match[0] : title).toLowerCase();
 }
 
+function hasTraditionalDocumentation(doc) {
+  return Boolean(String(doc?.TD_md || doc?.td_doc || doc?.td_markdown || "").trim());
+}
+
+function accountDocMarkdown(doc, type = "ibd") {
+  if (type === "td") return String(doc?.TD_md || doc?.td_doc || doc?.td_markdown || "");
+  return String(doc?.IBD_generated_md || doc?.ibd_doc || doc?.ibd_markdown || "");
+}
+
+function renderAccountMarkdownViewer(doc, canManage, activeKind = "ibd") {
+  const ibdMarkdown = accountDocMarkdown(doc, "ibd");
+  const tdMarkdown = accountDocMarkdown(doc, "td");
+  const hasTD = Boolean(tdMarkdown.trim());
+  const selectedKind = activeKind === "td" && hasTD ? "td" : "ibd";
+  const selectedMarkdown = selectedKind === "td" ? tdMarkdown : ibdMarkdown;
+  return `
+    <section class="account-detail-section">
+      <div class="account-detail-md-head">
+        <div>
+          <p class="eyebrow">Documentation Markdown</p>
+          <h3>Invariant-based and traditional documentation</h3>
+        </div>
+        <div class="account-detail-md-actions">
+          <button type="button" class="secondary-button account-md-download" data-doc-kind="ibd">Download IBD .md</button>
+          ${hasTD ? '<button type="button" class="secondary-button account-md-download" data-doc-kind="td">Download TD .md</button>' : ""}
+          ${canManage ? '<button type="button" class="secondary-button" id="account-md-edit">Edit IBD</button>' : ""}
+          ${canManage ? '<button type="button" class="secondary-button" id="account-td-edit">Add/Edit TD</button>' : ""}
+          ${canManage ? '<button type="button" class="danger-button" id="account-md-delete">Delete</button>' : ""}
+        </div>
+      </div>
+      <p class="account-message" id="account-md-message"></p>
+      <div class="account-doc-kind-tabs" role="tablist" aria-label="Documentation versions">
+        <button type="button" class="account-doc-kind-tab ${selectedKind === "ibd" ? "is-active" : ""}" data-doc-kind="ibd" role="tab" aria-selected="${selectedKind === "ibd" ? "true" : "false"}">IBD Markdown</button>
+        <button type="button" class="account-doc-kind-tab ${selectedKind === "td" ? "is-active" : ""}" data-doc-kind="td" role="tab" aria-selected="${selectedKind === "td" ? "true" : "false"}" ${hasTD ? "" : "disabled"}>Traditional Markdown</button>
+      </div>
+      <div class="markdown-rendered account-detail-markdown" id="account-detail-markdown">${selectedMarkdown ? renderMarkdown(selectedMarkdown) : `<p class="placeholder">No ${selectedKind.toUpperCase()} Markdown stored.</p>`}</div>
+      <div class="account-detail-md-editor is-hidden" id="account-detail-md-editor" data-doc-kind="ibd">
+        <textarea id="account-md-textarea" rows="16" spellcheck="false"></textarea>
+        <div class="account-detail-md-editor-actions">
+          <button type="button" class="landing-primary-button" id="account-md-save">Save changes</button>
+          <button type="button" class="secondary-button" id="account-md-cancel">Cancel</button>
+        </div>
+      </div>
+      <div class="account-detail-md-editor is-hidden" id="account-detail-td-editor">
+        <textarea id="account-td-textarea" rows="16" spellcheck="false" placeholder="Paste traditional/reference documentation Markdown here."></textarea>
+        <div class="account-detail-md-editor-actions">
+          <button type="button" class="landing-primary-button" id="account-td-save">Save TD Markdown</button>
+          <button type="button" class="secondary-button" id="account-td-cancel">Cancel</button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function sortedAccountDocuments() {
   const docs = [...accountDocuments];
   const query = (accountDocsSearch?.value || "").trim().toLowerCase();
@@ -2517,6 +2606,7 @@ function renderAccountDocs() {
     const ibdWins = Number(doc.ibd_wins || 0);
     const ibdPct = comparisonCount ? Math.round((ibdWins / comparisonCount) * 100) : 0;
     const canManage = canManageAccountDoc(doc);
+    const hasTD = hasTraditionalDocumentation(doc);
     return `
       <article class="account-doc-card">
         <div class="account-doc-info">
@@ -2529,6 +2619,7 @@ function renderAccountDocs() {
             <span>Mutation ${formatPercentMaybe(doc.mutation_score)}</span>
             <span>${invariants.length} invariants</span>
             <span>${comparisonCount} arena votes</span>
+            <span class="${hasTD ? "account-doc-pill-ready" : "account-doc-pill-muted"}">${hasTD ? "Traditional doc" : "No TD yet"}</span>
             ${comparisonCount ? `<span>${ibdPct}% invariant-based preference</span>` : ""}
           </div>
         </div>
@@ -2537,7 +2628,15 @@ function renderAccountDocs() {
           <button type="button" class="secondary-button account-doc-responses" data-doc-id="${doc.id}">${accountIsAdmin ? "Responses" : "My responses"}</button>
           ${accountIsAdmin ? `<button type="button" class="secondary-button account-doc-retake" data-doc-id="${doc.id}">Retake access</button>` : ""}
           ${accountIsAdmin ? `<button type="button" class="danger-button account-doc-reset-questions" data-doc-id="${doc.id}">Reset questions</button>` : ""}
-          <button type="button" class="secondary-button account-doc-view" data-doc-id="${doc.id}">View more</button>
+          <button type="button" class="secondary-button account-doc-view" data-doc-kind="ibd" data-doc-id="${doc.id}">View IBD</button>
+          <button
+            type="button"
+            class="secondary-button account-doc-view"
+            data-doc-kind="td"
+            data-doc-action="${hasTD ? "view" : "add-td"}"
+            data-doc-id="${doc.id}"
+            ${hasTD || canManage ? "" : "disabled"}
+          >${hasTD ? "View TD" : "Missing TD"}</button>
           ${canManage ? `<button type="button" class="danger-button account-doc-delete" data-doc-id="${doc.id}">Delete</button>` : ""}
         </div>
       </article>
@@ -2568,7 +2667,7 @@ async function fetchAccountDocs({ retry = true } = {}) {
   }
 }
 
-function showAccountDocDetail(docId) {
+function showAccountDocDetail(docId, initialKind = "ibd") {
   const doc = accountDocuments.find((item) => String(item.id) === String(docId));
   if (!doc || !accountDetailModal) return;
   activeAccountDoc = doc;
@@ -2617,25 +2716,7 @@ function showAccountDocDetail(docId) {
       </section>
     ` : ""}
     ${renderAccountRankingSummary(doc)}
-    <section class="account-detail-section">
-      <div class="account-detail-md-head">
-        <p class="eyebrow">Generated Markdown</p>
-        <div class="account-detail-md-actions">
-          <button type="button" class="secondary-button" id="account-md-download">Download .md</button>
-          ${canManage ? '<button type="button" class="secondary-button" id="account-md-edit">Edit</button>' : ""}
-          ${canManage ? '<button type="button" class="danger-button" id="account-md-delete">Delete</button>' : ""}
-        </div>
-      </div>
-      <p class="account-message" id="account-md-message"></p>
-      <div class="markdown-rendered account-detail-markdown" id="account-detail-markdown">${doc.IBD_generated_md ? renderMarkdown(doc.IBD_generated_md) : '<p class="placeholder">No Markdown stored.</p>'}</div>
-      <div class="account-detail-md-editor is-hidden" id="account-detail-md-editor">
-        <textarea id="account-md-textarea" rows="16" spellcheck="false"></textarea>
-        <div class="account-detail-md-editor-actions">
-          <button type="button" class="landing-primary-button" id="account-md-save">Save changes</button>
-          <button type="button" class="secondary-button" id="account-md-cancel">Cancel</button>
-        </div>
-      </div>
-    </section>
+    ${renderAccountMarkdownViewer(doc, canManage, initialKind)}
   `;
   accountDetailModal.classList.remove("is-hidden");
   document.body.classList.add("account-detail-open");
@@ -2712,9 +2793,17 @@ function showAccountQuestionBuilder(docId) {
             <span>Choices</span>
             <input id="account-assessment-choices" type="number" min="2" max="6" value="4">
           </label>
+          <label class="field compact-field" for="account-assessment-doc-type">
+            <span>Docs</span>
+            <select id="account-assessment-doc-type">
+              <option value="random">Random</option>
+              <option value="ibd">IBD</option>
+              <option value="td" ${hasTraditionalDocumentation(doc) ? "" : "disabled"}>TD</option>
+            </select>
+          </label>
           <button type="button" class="landing-primary-button" id="account-assessment-generate">AI generate full set</button>
         </div>
-        <p class="account-message" id="account-assessment-message">AI generation creates the requested number of draft questions and adds them to this documentation row.</p>
+        <p class="account-message" id="account-assessment-message">AI generation creates draft questions from the selected documentation version and adds them to this row.</p>
       </section>
 
       <section class="account-question-list-section">
@@ -3260,11 +3349,14 @@ async function generateAssessmentForActiveDoc(button) {
   const message = accountDetailBody?.querySelector("#account-assessment-message");
   const countInput = accountDetailBody?.querySelector("#account-assessment-count");
   const choicesInput = accountDetailBody?.querySelector("#account-assessment-choices");
+  const docTypeInput = accountDetailBody?.querySelector("#account-assessment-doc-type");
   const nQuestions = Math.max(1, Math.min(30, Number(countInput?.value || 10)));
   const choices = Math.max(2, Math.min(6, Number(choicesInput?.value || 4)));
+  const docType = docTypeInput?.value || "random";
   const params = new URLSearchParams({
     n_questions: String(nQuestions),
-    choice: String(choices)
+    choice: String(choices),
+    doc_type: docType
   });
   if (metricsModelInput?.value.trim()) params.set("model", metricsModelInput.value.trim());
   if (currentModelProvider()) params.set("model_provider", currentModelProvider());
@@ -3276,7 +3368,7 @@ async function generateAssessmentForActiveDoc(button) {
     base_url: modelBaseUrlInput?.value.trim() || (currentModelProvider() === "cmu_gateway" ? DEFAULT_CMU_GATEWAY_BASE_URL : ""),
     metrics_model: metricsModelInput?.value.trim() || ""
   };
-  if (message) message.textContent = "Generating assessment questions...";
+  if (message) message.textContent = `Generating assessment questions from ${docType.toUpperCase()} docs...`;
   if (button) {
     button.disabled = true;
     button.textContent = "Generating...";
@@ -3293,7 +3385,7 @@ async function generateAssessmentForActiveDoc(button) {
     }
     if (message) {
       const questionId = data.id ? ` Last question id: ${data.id}.` : "";
-      message.textContent = `Generated ${nQuestions} comprehension questions for this documentation.${questionId}`;
+      message.textContent = `Generated ${nQuestions} comprehension questions from ${docType.toUpperCase()} docs.${questionId}`;
     }
     loadAccountQuestions();
   } catch (error) {
@@ -3504,9 +3596,32 @@ function closeAccountDocDetail() {
   refreshAccountDataSoon();
 }
 
+function openTDUploaderForAccountDoc(docId) {
+  const doc = accountDocuments.find((item) => String(item.id) === String(docId));
+  if (!doc) return;
+  activeSavedDocumentation = doc;
+  activeAccountDoc = doc;
+  currentMarkdown = accountDocMarkdown(doc, "ibd");
+  currentSource = doc.source_code || "";
+  if (apiNameInput) apiNameInput.value = doc.documentation_title || "api.function";
+  if (documentationInput) documentationInput.value = doc.source_code || "";
+  if (tdSourceInput) tdSourceInput.value = accountDocMarkdown(doc, "td");
+  if (tdPreview) {
+    const tdMarkdown = accountDocMarkdown(doc, "td");
+    tdPreview.innerHTML = tdMarkdown
+      ? renderMarkdown(tdMarkdown)
+      : '<p class="placeholder">Paste traditional/reference documentation for this API.</p>';
+  }
+  closeAccountDocDetail();
+  showAppPage();
+  showTDStage();
+  if (tdMessage) tdMessage.textContent = `Adding TD Markdown for ${doc.documentation_title || "this API"}.`;
+}
+
 function setAccountMarkdownEditing(editing) {
   const rendered = accountDetailBody?.querySelector("#account-detail-markdown");
   const editor = accountDetailBody?.querySelector("#account-detail-md-editor");
+  const tdEditor = accountDetailBody?.querySelector("#account-detail-td-editor");
   const textarea = accountDetailBody?.querySelector("#account-md-textarea");
   const editButton = accountDetailBody?.querySelector("#account-md-edit");
   const message = accountDetailBody?.querySelector("#account-md-message");
@@ -3519,6 +3634,7 @@ function setAccountMarkdownEditing(editing) {
     if (textarea && activeAccountDoc) textarea.value = activeAccountDoc.IBD_generated_md || "";
     rendered.classList.add("is-hidden");
     editor.classList.remove("is-hidden");
+    tdEditor?.classList.add("is-hidden");
     editButton?.classList.add("is-hidden");
     textarea?.focus();
   } else {
@@ -3528,10 +3644,54 @@ function setAccountMarkdownEditing(editing) {
   }
 }
 
-function downloadActiveAccountMarkdown() {
+function setAccountTraditionalEditing(editing) {
+  const rendered = accountDetailBody?.querySelector("#account-detail-markdown");
+  const ibdEditor = accountDetailBody?.querySelector("#account-detail-md-editor");
+  const editor = accountDetailBody?.querySelector("#account-detail-td-editor");
+  const textarea = accountDetailBody?.querySelector("#account-td-textarea");
+  const editButton = accountDetailBody?.querySelector("#account-td-edit");
+  const message = accountDetailBody?.querySelector("#account-md-message");
+  if (!rendered || !editor) return;
+  if (message) {
+    message.textContent = "";
+    message.classList.remove("is-success");
+  }
+  if (editing) {
+    if (textarea && activeAccountDoc) textarea.value = accountDocMarkdown(activeAccountDoc, "td");
+    rendered.classList.add("is-hidden");
+    ibdEditor?.classList.add("is-hidden");
+    editor.classList.remove("is-hidden");
+    editButton?.classList.add("is-hidden");
+    textarea?.focus();
+  } else {
+    rendered.classList.remove("is-hidden");
+    editor.classList.add("is-hidden");
+    editButton?.classList.remove("is-hidden");
+  }
+}
+
+function setAccountMarkdownKind(kind) {
   if (!activeAccountDoc) return;
-  const filename = `${slugify(activeAccountDoc.documentation_title || "documentation")}.md`;
-  downloadMarkdown(activeAccountDoc.IBD_generated_md || "", filename);
+  const selectedKind = kind === "td" && hasTraditionalDocumentation(activeAccountDoc) ? "td" : "ibd";
+  const rendered = accountDetailBody?.querySelector("#account-detail-markdown");
+  if (rendered) {
+    const markdown = accountDocMarkdown(activeAccountDoc, selectedKind);
+    rendered.innerHTML = markdown ? renderMarkdown(markdown) : `<p class="placeholder">No ${selectedKind.toUpperCase()} Markdown stored.</p>`;
+  }
+  accountDetailBody?.querySelectorAll(".account-doc-kind-tab").forEach((button) => {
+    const active = button.dataset.docKind === selectedKind;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  setAccountMarkdownEditing(false);
+  setAccountTraditionalEditing(false);
+}
+
+function downloadActiveAccountMarkdown(kind = "ibd") {
+  if (!activeAccountDoc) return;
+  const selectedKind = kind === "td" ? "td" : "ibd";
+  const filename = `${slugify(activeAccountDoc.documentation_title || "documentation")}-${selectedKind}.md`;
+  downloadMarkdown(accountDocMarkdown(activeAccountDoc, selectedKind), filename);
 }
 
 async function saveAccountMarkdown(button) {
@@ -3578,6 +3738,43 @@ async function saveAccountMarkdown(button) {
     }
   } catch (error) {
     if (message) message.textContent = error.message || "Could not save changes.";
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function saveAccountTraditionalMarkdown(button) {
+  if (!activeAccountDoc) return;
+  const textarea = accountDetailBody?.querySelector("#account-td-textarea");
+  const message = accountDetailBody?.querySelector("#account-md-message");
+  const newMarkdown = textarea ? textarea.value : "";
+  button.disabled = true;
+  if (message) {
+    message.classList.remove("is-success");
+    message.textContent = "Saving TD Markdown...";
+  }
+  try {
+    const response = await fetch(apiUrl(`/documentation/${activeAccountDoc.id}/td`), {
+      method: "PUT",
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
+      body: JSON.stringify({ TD_md: newMarkdown })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || data.error || "Could not save TD Markdown.");
+    activeAccountDoc.TD_md = newMarkdown;
+    const index = accountDocuments.findIndex((item) => String(item.id) === String(activeAccountDoc.id));
+    if (index >= 0) accountDocuments[index] = { ...accountDocuments[index], TD_md: newMarkdown };
+    savedDocumentation = [data, ...savedDocumentation.filter((doc) => doc.id !== data.id)];
+    renderAccountDocs();
+    renderSavedDocs();
+    showAccountDocDetail(activeAccountDoc.id, newMarkdown.trim() ? "td" : "ibd");
+    const nextMessage = accountDetailBody?.querySelector("#account-md-message");
+    if (nextMessage) {
+      nextMessage.textContent = "TD Markdown saved.";
+      nextMessage.classList.add("is-success");
+    }
+  } catch (error) {
+    if (message) message.textContent = error.message || "Could not save TD Markdown.";
   } finally {
     button.disabled = false;
   }
@@ -3814,7 +4011,10 @@ async function saveTraditionalMarkdown() {
     if (!response.ok) throw new Error(data.detail || data.error || "Could not save TD Markdown.");
     activeSavedDocumentation = data;
     savedDocumentation = [data, ...savedDocumentation.filter((doc) => doc.id !== data.id)];
+    const accountIndex = accountDocuments.findIndex((doc) => String(doc.id) === String(data.id));
+    if (accountIndex >= 0) accountDocuments[accountIndex] = { ...accountDocuments[accountIndex], TD_md: markdown };
     renderSavedDocs();
+    renderAccountDocs();
     if (tdPreview) tdPreview.innerHTML = renderMarkdown(markdown);
     if (tdMessage) tdMessage.textContent = "TD Markdown saved. This document can now enter Arena comparisons.";
     await renderLandingLeaderboard();
@@ -5872,7 +6072,11 @@ accountDocsList?.addEventListener("click", (event) => {
   }
   const button = event.target.closest(".account-doc-view");
   if (!button) return;
-  showAccountDocDetail(button.dataset.docId);
+  if (button.dataset.docAction === "add-td") {
+    openTDUploaderForAccountDoc(button.dataset.docId);
+    return;
+  }
+  showAccountDocDetail(button.dataset.docId, button.dataset.docKind || "ibd");
 });
 
 accountDetailClose?.addEventListener("click", closeAccountDocDetail);
@@ -5938,8 +6142,9 @@ accountDetailBody?.addEventListener("click", (event) => {
     deleteAccountQuestion(questionDeleteButton.dataset.questionId, questionDeleteButton);
     return;
   }
-  if (event.target.closest("#account-md-download")) {
-    downloadActiveAccountMarkdown();
+  const markdownDownloadButton = event.target.closest(".account-md-download");
+  if (markdownDownloadButton) {
+    downloadActiveAccountMarkdown(markdownDownloadButton.dataset.docKind || "ibd");
     return;
   }
   const assessmentGenerateButton = event.target.closest("#account-assessment-generate");
@@ -5956,6 +6161,15 @@ accountDetailBody?.addEventListener("click", (event) => {
     setAccountMarkdownEditing(true);
     return;
   }
+  if (event.target.closest("#account-td-edit")) {
+    setAccountTraditionalEditing(true);
+    return;
+  }
+  const docKindTab = event.target.closest(".account-doc-kind-tab");
+  if (docKindTab) {
+    setAccountMarkdownKind(docKindTab.dataset.docKind);
+    return;
+  }
   if (event.target.closest("#account-md-delete")) {
     deleteAccountDocument(activeAccountDoc?.id).catch((error) => {
       const message = accountDetailBody?.querySelector("#account-md-message");
@@ -5967,9 +6181,18 @@ accountDetailBody?.addEventListener("click", (event) => {
     setAccountMarkdownEditing(false);
     return;
   }
+  if (event.target.closest("#account-td-cancel")) {
+    setAccountTraditionalEditing(false);
+    return;
+  }
   const saveButton = event.target.closest("#account-md-save");
   if (saveButton) {
     saveAccountMarkdown(saveButton);
+    return;
+  }
+  const tdSaveButton = event.target.closest("#account-td-save");
+  if (tdSaveButton) {
+    saveAccountTraditionalMarkdown(tdSaveButton);
   }
 });
 

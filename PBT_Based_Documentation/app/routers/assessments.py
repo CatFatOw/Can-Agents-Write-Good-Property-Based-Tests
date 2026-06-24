@@ -98,6 +98,28 @@ def request_payload_from_provider_fields(
     return payload
 
 
+def documentation_version_markdown(documentation: models.Documentation, doc_type: str = "random") -> tuple[str, str]:
+    """Pick which documentation version an assessment should use."""
+    selected = (doc_type or "random").strip().upper()
+    if selected not in {"RANDOM", "IBD", "TD"}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="doc_type must be random, IBD, or TD")
+
+    available = []
+    if (documentation.IBD_generated_md or "").strip():
+        available.append(("IBD", documentation.IBD_generated_md))
+    if (documentation.TD_md or "").strip():
+        available.append(("TD", documentation.TD_md))
+    if not available:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This documentation row has no Markdown to assess")
+
+    if selected == "RANDOM":
+        return random.choice(available)
+    for label, markdown in available:
+        if label == selected:
+            return label, markdown
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{selected} Markdown is not available for this documentation row")
+
+
 
 # CODEX VIBE CODED OPEN LOGIC ABOVE
 
@@ -331,6 +353,7 @@ async def generate_questions(
     model: str | None = None,
     n_questions:int = 10,
     choice:int=4,
+    doc_type: str = Query("random"),
     model_provider: str | None = Query(None),
     api_key: str | None = Query(None),
     base_url: str | None = Query(None),
@@ -350,6 +373,7 @@ async def generate_questions(
         )
     documentation_title = random_documentation.documentation_title
     source_code = random_documentation.source_code
+    selected_doc_type, selected_documentation = documentation_version_markdown(random_documentation, doc_type)
     db.rollback()
 
     PROMPT = f"""You are an expert software engineer and technical educator.
@@ -408,6 +432,12 @@ Schema:
 
 Function Name:
 {documentation_title}
+
+Documentation Version:
+{selected_doc_type}
+
+Documentation:
+{selected_documentation}
 
 Source Code:
 {source_code}
@@ -573,23 +603,17 @@ async def list_assessment_documentation_options(db:Session = Depends(get_db), cu
     ]
 
 
-def build_assessment_for_documentation(documentation:models.Documentation, db:Session, curr_user:models.User):
+def build_assessment_for_documentation(documentation:models.Documentation, db:Session, curr_user:models.User, doc_type: str = "random"):
     assessment = db.query(models.AssessmentQuestion).filter(
         models.AssessmentQuestion.documentation_id == documentation.id
     ).order_by(models.AssessmentQuestion.id.asc()).all()
     if not assessment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No questions found for this documentation")
 
-    choices = ["TD", "IBD"]
-    if random.choice(choices) == "TD":
-        markdown = documentation.TD_md
-        doc_type = "TD"
-    else:
-        markdown = documentation.IBD_generated_md
-        doc_type = "IBD"
+    selected_doc_type, markdown = documentation_version_markdown(documentation, doc_type)
 
     new_attempt = models.AssessmentAttempt(documentation_id = documentation.id, user_id = curr_user.id,
-                                           documentation_type = doc_type,
+                                           documentation_type = selected_doc_type,
                                            total_questions = len(assessment),
                                            total_correct = 0)
     db.add(new_attempt)
@@ -600,7 +624,7 @@ def build_assessment_for_documentation(documentation:models.Documentation, db:Se
         "attempt_id": new_attempt.id,
         "documentation_id": documentation.id,
         "documentation_title": documentation.documentation_title,
-        "documentation_type": doc_type,
+        "documentation_type": selected_doc_type,
         "documentation": markdown,
         "questions": [
             {
@@ -614,18 +638,27 @@ def build_assessment_for_documentation(documentation:models.Documentation, db:Se
 
 
 @router.get("/documentation/{documentation_id}/start", response_model=AssessmentResponse)
-async def start_documentation_assessment(documentation_id:int, db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+async def start_documentation_assessment(
+    documentation_id:int,
+    doc_type: str = Query("random"),
+    db:Session = Depends(get_db),
+    curr_user:Session = Depends(oath2.get_current_user),
+):
     """Start an assessment for one selected documentation row."""
     documentation = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
     if not documentation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"NOT FOUND")
     if not user_can_start_documentation(documentation_id, db, curr_user):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This documentation was already completed. Ask an admin to allow a retake.")
-    return build_assessment_for_documentation(documentation, db, curr_user)
+    return build_assessment_for_documentation(documentation, db, curr_user, doc_type)
 
 
 @router.get("/random", response_model=AssessmentResponse)
-async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+async def get_random_assessment(
+    doc_type: str = Query("random"),
+    db:Session = Depends(get_db),
+    curr_user:Session = Depends(oath2.get_current_user),
+):
     """function gets random assessment and also ranodmly chooses to do TD or IBD """
     query = (
         db.query(models.Documentation)
@@ -633,12 +666,21 @@ async def get_random_assessment(db:Session = Depends(get_db), curr_user:Session 
         .group_by(models.Documentation.id)
     )
     candidates = query.all()
-    available = [doc for doc in candidates if user_can_start_documentation(doc.id, db, curr_user)]
+    selected_doc_type = (doc_type or "random").strip().upper()
+    available = [
+        doc for doc in candidates
+        if user_can_start_documentation(doc.id, db, curr_user)
+        and (
+            selected_doc_type == "RANDOM"
+            or (selected_doc_type == "IBD" and (doc.IBD_generated_md or "").strip())
+            or (selected_doc_type == "TD" and (doc.TD_md or "").strip())
+        )
+    ]
     documentation = random.choice(available) if available else None
     if not documentation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No remaining documentation assessments are available")
 
-    return build_assessment_for_documentation(documentation, db, curr_user)
+    return build_assessment_for_documentation(documentation, db, curr_user, doc_type)
 
 
 # Route allows user to submit their answer

@@ -53,9 +53,9 @@ def comparison_candidate_query(db: Session):
     return (
         db.query(models.Documentation)
         .filter(models.Documentation.TD_md.isnot(None))
-        .filter(models.Documentation.TD_md != "")
+        .filter(func.length(func.trim(models.Documentation.TD_md)) > 0)
         .filter(models.Documentation.IBD_generated_md.isnot(None))
-        .filter(models.Documentation.IBD_generated_md != "")
+        .filter(func.length(func.trim(models.Documentation.IBD_generated_md)) > 0)
     )
 
 

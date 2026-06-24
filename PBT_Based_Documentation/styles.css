@@ -6173,6 +6173,16 @@ body.dark-mode .account-delete-confirm {
   font-weight: 740;
 }
 
+.account-doc-pills .account-doc-pill-ready {
+  background: rgba(89, 111, 95, 0.14);
+  color: var(--sage);
+}
+
+.account-doc-pills .account-doc-pill-muted {
+  background: rgba(111, 100, 88, 0.1);
+  color: var(--muted);
+}
+
 .account-doc-view {
   flex-shrink: 0;
 }
@@ -6323,6 +6333,46 @@ body.dark-mode .account-delete-confirm {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.account-doc-kind-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.account-doc-kind-tab {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.72);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.account-doc-kind-tab.is-active {
+  border-color: rgba(49, 92, 104, 0.35);
+  background: rgba(49, 92, 104, 0.12);
+  color: var(--blue);
+}
+
+.account-doc-kind-tab:disabled,
+.account-doc-view:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.saved-doc-badge {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(89, 111, 95, 0.14);
+  color: var(--sage);
+  font-size: 0.7rem;
+  font-weight: 800;
 }
 
 .account-admin-assessment .account-detail-md-actions {
@@ -6707,6 +6757,18 @@ body.dark-mode .account-doc-card,
 body.dark-mode .account-detail-shell {
   border-color: rgba(255, 238, 210, 0.14);
   background: rgba(27, 27, 38, 0.92);
+}
+
+body.dark-mode .account-doc-kind-tab {
+  border-color: rgba(255, 238, 210, 0.14);
+  background: rgba(255, 248, 237, 0.06);
+  color: rgba(255, 248, 237, 0.72);
+}
+
+body.dark-mode .account-doc-kind-tab.is-active {
+  border-color: rgba(178, 220, 223, 0.3);
+  background: rgba(178, 220, 223, 0.14);
+  color: #d6f0f1;
 }
 
 body.dark-mode .account-stat,
