@@ -621,11 +621,26 @@ async def list_assessment_documentation_options(db:Session = Depends(get_db), cu
         .order_by(models.Documentation.documentation_title.asc(), models.Documentation.id.asc())
         .all()
     )
+    doc_ids = [row.id for row in rows]
+    response_counts = {}
+    if doc_ids:
+        response_query = (
+            db.query(
+                models.AssessmentQuestion.documentation_id,
+                func.count(models.AssessmentAnswer.id),
+            )
+            .join(models.AssessmentAnswer, models.AssessmentAnswer.question_id == models.AssessmentQuestion.id)
+            .filter(models.AssessmentQuestion.documentation_id.in_(doc_ids))
+        )
+        if db.query(models.AdminUser).filter(models.AdminUser.email == curr_user.email).first() is None:
+            response_query = response_query.filter(models.AssessmentAnswer.user_id == curr_user.id)
+        response_counts = dict(response_query.group_by(models.AssessmentQuestion.documentation_id).all())
     return [
         {
             "documentation_id": row.id,
             "documentation_title": row.documentation_title,
             "question_count": row.question_count,
+            "response_count": int(response_counts.get(row.id, 0) or 0),
             "attempted": not user_can_start_documentation(row.id, db, curr_user),
         }
         for row in rows

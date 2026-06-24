@@ -265,6 +265,7 @@ class AssessmentDocumentationOption(BaseModel):
     documentation_id: int
     documentation_title: str
     question_count: int
+    response_count: int = 0
     attempted: bool = False
 
 

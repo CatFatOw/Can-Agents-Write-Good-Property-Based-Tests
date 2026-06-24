@@ -2682,6 +2682,7 @@ async function fetchAccountDocs({ retry = true } = {}) {
     const data = await response.json().catch(() => []);
     if (!response.ok) throw new Error(data.detail || data.error || "Could not load documents.");
     accountDocuments = Array.isArray(data) ? data : [];
+    await mergeAssessmentCountsIntoAccountDocs();
     await fetchComparisonLeaderboard().catch(() => []);
     if (accountDocCount) accountDocCount.textContent = String(accountDocuments.length);
     renderAccountStats();
@@ -2689,6 +2690,29 @@ async function fetchAccountDocs({ retry = true } = {}) {
   } catch (error) {
     if (accountDocsList) accountDocsList.innerHTML = `<p class="placeholder">${escapeHtml(error.message || "Could not load documents.")}${retry ? " Retrying..." : ""}</p>`;
     if (retry) window.setTimeout(() => fetchAccountDocs({ retry: false }), 5000);
+  }
+}
+
+async function mergeAssessmentCountsIntoAccountDocs() {
+  if (!getAccessToken() || !accountDocuments.length) return;
+  try {
+    const response = await fetch(apiUrl("/assessments/documentation-options"), {
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    const data = await response.json().catch(() => []);
+    if (!response.ok || !Array.isArray(data)) return;
+    const countsById = new Map(data.map((item) => [String(item.documentation_id), item]));
+    accountDocuments = accountDocuments.map((doc) => {
+      const counts = countsById.get(String(doc.id));
+      if (!counts) return { ...doc, question_count: Number(doc.question_count || 0), response_count: Number(doc.response_count || 0) };
+      return {
+        ...doc,
+        question_count: Number(counts.question_count || doc.question_count || 0),
+        response_count: Number(counts.response_count || doc.response_count || 0)
+      };
+    });
+  } catch {
+    // Keep the base document response; counts are display-only.
   }
 }
 
