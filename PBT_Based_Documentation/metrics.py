@@ -28,6 +28,20 @@ MUTATION_IMPORT_SKIP = {
 }
 
 
+def run_captured(cmd, **kwargs):
+    """subprocess.run that always decodes output as UTF-8.
+
+    mutmut/pytest emit non-ASCII (the emoji summary, fancy diffs). Relying on the
+    parent process's locale to decode that output crashes with a
+    UnicodeDecodeError on non-UTF-8 locales, so pin UTF-8 with replacement.
+    """
+    kwargs.setdefault("capture_output", True)
+    kwargs.setdefault("text", True)
+    kwargs.setdefault("encoding", "utf-8")
+    kwargs.setdefault("errors", "replace")
+    return subprocess.run(cmd, **kwargs)
+
+
 def positive_int_env(name, default):
     try:
         return max(1, int(os.environ.get(name, default)))
@@ -493,7 +507,7 @@ def install_mutation_packages(temp_dir, mutation_packages, source_code="", test_
     if not packages:
         return ""
 
-    install_result = subprocess.run(
+    install_result = run_captured(
         [
             sys.executable,
             "-m",
@@ -505,8 +519,6 @@ def install_mutation_packages(temp_dir, mutation_packages, source_code="", test_
             *packages,
         ],
         cwd=temp_dir,
-        capture_output=True,
-        text=True,
         timeout=180,
     )
     if install_result.returncode != 0:
@@ -527,6 +539,11 @@ def mutation_subprocess_env(temp_dir):
     if env.get("PYTHONPATH"):
         python_path.append(env["PYTHONPATH"])
     env["PYTHONPATH"] = os.pathsep.join(python_path)
+    # mutmut prints an emoji summary (🎉 🫥 ...). Force UTF-8 I/O so a non-UTF-8
+    # locale (e.g. a Windows GBK console) cannot crash the run with a
+    # UnicodeEncodeError before the summary is captured and parsed.
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
     return env
 
 
@@ -538,15 +555,13 @@ def run_mutmut(temp_dir, mutation_env):
     current backend accidentally let FileNotFoundError escape in one path.
     """
     try:
-        result = subprocess.run(
-            ["mutmut", "run"],
+        result = run_captured(
+            [sys.executable, "-m", "mutmut", "run"],
             cwd=temp_dir,
-            capture_output=True,
-            text=True,
             env=mutation_env,
         )
     except FileNotFoundError:
-        return "", "", "mutmut is not installed or not on PATH in the server environment."
+        return "", "", "mutmut is not installed in the server environment. Add `mutmut<3` to requirements."
 
     combined_output = "\n".join(
         part for part in [result.stdout, result.stderr] if part
@@ -558,12 +573,23 @@ def run_mutmut(temp_dir, mutation_env):
 
 
 def parse_mutation_summary(output):
-    emoji_matches = re.findall(
+    """Read mutmut's live progress counter; the final line carries the totals.
+
+    The counter format differs between mutmut versions, so match the richest
+    layout first and fall back to the shorter one. Earlier code also had a
+    word-counting fallback, but it counted words in mutmut's legend text
+    ("Killed mutants", "were killed", ...) and produced wildly wrong totals, so a
+    failed parse now returns {} and the caller reports an honest error instead.
+    """
+    output = output or ""
+
+    # Some mutmut versions add 🫥 (no tests covered the line) and 🧙 (skipped check).
+    seven = re.findall(
         r"🎉\s+(\d+)\s+🫥\s+(\d+)\s+⏰\s+(\d+)\s+🤔\s+(\d+)\s+🙁\s+(\d+)\s+🔇\s+(\d+)\s+🧙\s+(\d+)",
-        output or "",
+        output,
     )
-    if emoji_matches:
-        killed, no_tests, timeout, suspicious, survived, skipped, wizard = map(int, emoji_matches[-1])
+    if seven:
+        killed, no_tests, timeout, suspicious, survived, skipped, wizard = map(int, seven[-1])
         return {
             "killed": killed,
             "no_tests": no_tests,
@@ -574,16 +600,25 @@ def parse_mutation_summary(output):
             "wizard": wizard,
         }
 
-    summary = {
-        "killed": len(re.findall(r"\bkilled\b", output or "", re.I)),
-        "survived": len(re.findall(r"\bsurvived\b", output or "", re.I)),
-        "no_tests": len(re.findall(r"\b(no tests?|not covered)\b", output or "", re.I)),
-        "timeout": len(re.findall(r"\btimeout\b", output or "", re.I)),
-        "suspicious": len(re.findall(r"\bsuspicious\b", output or "", re.I)),
-        "skipped": len(re.findall(r"\bskipped\b", output or "", re.I)),
-        "wizard": len(re.findall(r"\bwizard\b", output or "", re.I)),
-    }
-    return summary if any(summary.values()) else {}
+    # mutmut 2.5.x: "🎉 N  ⏰ N  🤔 N  🙁 N  🔇 N" (killed, timeout, suspicious,
+    # survived, skipped).
+    five = re.findall(
+        r"🎉\s+(\d+)\s+⏰\s+(\d+)\s+🤔\s+(\d+)\s+🙁\s+(\d+)\s+🔇\s+(\d+)",
+        output,
+    )
+    if five:
+        killed, timeout, suspicious, survived, skipped = map(int, five[-1])
+        return {
+            "killed": killed,
+            "no_tests": 0,
+            "timeout": timeout,
+            "suspicious": suspicious,
+            "survived": survived,
+            "skipped": skipped,
+            "wizard": 0,
+        }
+
+    return {}
 
 
 def mutation_score_from_summary(summary):
@@ -642,6 +677,7 @@ def run_batched_mutation_tests(source_code, results, api_name, mutation_packages
             textwrap.dedent("""
             [mutmut]
             paths_to_mutate=source.py
+            tests_dir=.
             mutate_only_covered_lines=true
             pytest_add_cli_args_test_selection=.
             """).strip(),
@@ -665,11 +701,9 @@ def run_batched_mutation_tests(source_code, results, api_name, mutation_packages
 
         passing_test_names = []
         for result, test_path in test_paths:
-            clean_test_output = subprocess.run(
+            clean_test_output = run_captured(
                 [sys.executable, "-m", "pytest", "-q", str(test_path.name)],
                 cwd=temp_dir,
-                capture_output=True,
-                text=True,
                 env=mutation_env,
             )
             if clean_test_output.returncode == 0:
@@ -704,46 +738,30 @@ def run_batched_mutation_tests(source_code, results, api_name, mutation_packages
         return results
 
 
-def parse_mutmut_result_line(line):
-    text = line.strip()
-    if not text:
-        return None
-    mutant_id, _, status = text.partition(":")
-    if not status:
-        parts = text.split()
-        mutant_id = parts[0] if parts else text
-        status = " ".join(parts[1:])
-    status = status.strip() or "unknown"
-    return {
-        "id": mutant_id.strip(),
-        "status": status,
-        "raw": text,
-    }
-
-
 def collect_survived_mutants(working_dir):
+    """Collect surviving mutants and their diffs.
+
+    Uses mutmut's machine-friendly ``result-ids`` command (space/newline
+    separated ids) rather than scraping the human-readable ``results`` output,
+    whose sectioned "Survived 🙁 (2)\\n1-2" layout has no stable per-line
+    "id: status" form to parse.
+    """
     mutation_env = mutation_subprocess_env(working_dir)
-    survived_mutants = subprocess.run(
-        ["mutmut", "results"],
+    ids_result = run_captured(
+        [sys.executable, "-m", "mutmut", "result-ids", "survived"],
         cwd=working_dir,
-        capture_output=True,
-        text=True,
         env=mutation_env,
     )
     mutants = []
-    for line in survived_mutants.stdout.splitlines():
-        parsed = parse_mutmut_result_line(line)
-        if not parsed or "survived" not in parsed["status"].lower():
-            continue
-        analysis = subprocess.run(
-            ["mutmut", "show", parsed["id"]],
+    for mutant_id in ids_result.stdout.split():
+        analysis = run_captured(
+            [sys.executable, "-m", "mutmut", "show", mutant_id],
             cwd=working_dir,
-            capture_output=True,
-            text=True,
             env=mutation_env,
         )
         mutants.append({
-            **parsed,
+            "id": mutant_id,
+            "status": "survived",
             "diff": analysis.stdout.strip(),
             "stderr": analysis.stderr.strip(),
         })
@@ -960,6 +978,7 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
             textwrap.dedent("""
             [mutmut]
             paths_to_mutate=source.py
+            tests_dir=.
             mutate_only_covered_lines=true
             pytest_add_cli_args_test_selection=.
             """).strip(), encoding="utf-8",
@@ -990,11 +1009,9 @@ def mutation_analysis_for_test(source_code, test_code, api_name="api.function", 
         # and the packages installed above
         mutation_env = mutation_subprocess_env(temp_dir)
 
-        clean_test_output = subprocess.run(
+        clean_test_output = run_captured(
             [sys.executable, "-m", "pytest", "-q", str(test_path.name)],
             cwd=temp_dir,
-            capture_output=True,
-            text=True,
             env=mutation_env,
         )
         if clean_test_output.returncode != 0:
