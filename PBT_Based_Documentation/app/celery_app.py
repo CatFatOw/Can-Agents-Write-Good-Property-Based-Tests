@@ -31,5 +31,9 @@ celery_app.conf.update(
 # Import tasks here. Support both `PYTHONPATH=app celery -A celery_app...`
 # and package-style `celery -A app.celery_app...` worker launches.
 
-from app.tasks import export_tasks
-from app.tasks import metric_task
+try:
+    from tasks import export_tasks
+    from tasks import metric_task
+except ImportError:
+    from app.tasks import export_tasks
+    from app.tasks import metric_task

@@ -1,11 +1,12 @@
 try:
-    from app.celery_app import celery_app
-    from app import models
-    from app.database import SessionLocal
-except ImportError:
     from celery_app import celery_app
     import models
     from database import SessionLocal
+except ImportError:
+    from app.celery_app import celery_app
+    from app import models
+    from app.database import SessionLocal
+    
 import pandas as pd 
 
 @celery_app.task(name="ibd.export_assessment_question_table_csv")

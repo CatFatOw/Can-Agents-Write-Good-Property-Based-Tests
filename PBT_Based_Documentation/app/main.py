@@ -17,7 +17,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import database
-from routers import auth, comparison, documentation, metrics, model_api, users, assessments
+from app.routers import auth, comparison, documentation, metrics, model_api, users, assessments
 
 # Define the app
 app = FastAPI()
