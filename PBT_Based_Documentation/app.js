@@ -4290,6 +4290,7 @@ async function downloadAdminCsv(path, button) {
     button.disabled = true;
     button.textContent = "Exporting...";
   }
+  showQueueStatus("Starting CSV export...", "checking");
   try {
     const response = await fetch(apiUrl(path), {
       headers: authHeaders({ Accept: "text/csv" })
@@ -4305,6 +4306,7 @@ async function downloadAdminCsv(path, button) {
       const data = await response.json();
       if (!data.task_id) throw new Error("Export did not return a CSV or task id.");
       if (button) button.textContent = "Queued...";
+      if (accountAdminMessage) accountAdminMessage.textContent = "Export queued in Redis. Waiting for Celery worker...";
       const result = await pollCeleryTask(data.task_id, {
         statusPath: (taskId) => `/assessments/export/${encodeURIComponent(taskId)}`,
         queuedLabel: "Redis queued export",
@@ -4314,6 +4316,7 @@ async function downloadAdminCsv(path, button) {
       filename = result?.filename || "export.csv";
       blob = new Blob([result?.content || ""], { type: result?.media_type || "text/csv;charset=utf-8" });
     } else {
+      showQueueStatus("Downloading CSV directly", "connected");
       blob = await response.blob();
       const disposition = response.headers.get("content-disposition") || "";
       filename = disposition.match(/filename="?([^"]+)"?/i)?.[1] || "export.csv";
@@ -4327,8 +4330,10 @@ async function downloadAdminCsv(path, button) {
     link.remove();
     URL.revokeObjectURL(url);
     if (accountAdminMessage) accountAdminMessage.textContent = `${filename} downloaded.`;
+    window.setTimeout(refreshDatabaseStatus, 1800);
   } catch (error) {
     if (accountAdminMessage) accountAdminMessage.textContent = error.message || "Could not export CSV.";
+    showQueueStatus("CSV export failed", "error");
   } finally {
     if (button) {
       button.disabled = false;
