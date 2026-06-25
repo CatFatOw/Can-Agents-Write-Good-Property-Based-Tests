@@ -1687,6 +1687,12 @@ function cacheDatabaseStatusText(text) {
   }
 }
 
+function showQueueStatus(label, state = "checking") {
+  if (!databaseStatus || !databaseStatusText) return;
+  databaseStatus.dataset.state = state;
+  databaseStatusText.textContent = label;
+}
+
 async function refreshDatabaseStatus() {
   if (!databaseStatus || !databaseStatusText) return;
   window.clearTimeout(databaseStatusRetryTimer);
@@ -1712,10 +1718,7 @@ async function refreshDatabaseStatus() {
     const environment = database.environment ? `${database.environment} ` : "";
     const fallback = database.using_local_fallback ? " fallback" : "";
     const databaseLabel = `${environment}${database.backend || "database"}${fallback}: ${database.name || "default"}`;
-    const queueLabel = queue.connected === false
-      ? "Redis queue unavailable"
-      : `${queue.tls ? "TLS " : ""}Redis queue ok`;
-    const label = `${databaseLabel} · ${queueLabel}`;
+    const label = queue.connected === false ? `${databaseLabel} · Redis queue unavailable` : databaseLabel;
     databaseStatusText.textContent = label;
     cacheDatabaseStatusText(label);
     if (queue.connected === false) {
@@ -4244,6 +4247,42 @@ function downloadMarkdown(text, filename) {
   URL.revokeObjectURL(url);
 }
 
+async function pollCeleryTask(taskId, {
+  statusPath,
+  queuedLabel = "Redis queued task",
+  runningLabel = "Celery worker running",
+  doneLabel = "Celery task complete",
+  maxAttempts = 240,
+  delayMs = 2000
+} = {}) {
+  if (!taskId || !statusPath) throw new Error("Missing Celery task status details.");
+  showQueueStatus(`${queuedLabel}: ${taskId}`, "checking");
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const response = await fetch(apiUrl(statusPath(taskId)), {
+      cache: "no-store",
+      headers: authHeaders({ Accept: "application/json" })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.detail || data.error || `Task poll failed with HTTP ${response.status}.`);
+    }
+    if (data.ready) {
+      if (data.result?.error) {
+        showQueueStatus("Celery task failed", "error");
+        throw new Error(data.result.error);
+      }
+      showQueueStatus(doneLabel, "connected");
+      window.setTimeout(refreshDatabaseStatus, 1800);
+      return data.result;
+    }
+    const state = data.status ? String(data.status).toLowerCase() : "pending";
+    showQueueStatus(`${runningLabel}: ${state}`, "checking");
+    await wait(delayMs);
+  }
+  showQueueStatus("Celery task still running", "partial");
+  throw new Error("Celery task is still running. Check the task result again shortly.");
+}
+
 async function downloadAdminCsv(path, button) {
   if (!accountIsAdmin) return;
   const originalText = button?.textContent || "Export CSV";
@@ -4259,9 +4298,26 @@ async function downloadAdminCsv(path, button) {
       const detail = await response.text().catch(() => "");
       throw new Error(detail || `Export failed with HTTP ${response.status}.`);
     }
-    const blob = await response.blob();
-    const disposition = response.headers.get("content-disposition") || "";
-    const filename = disposition.match(/filename="?([^"]+)"?/i)?.[1] || "export.csv";
+    const contentType = response.headers.get("content-type") || "";
+    let blob;
+    let filename;
+    if (contentType.includes("application/json")) {
+      const data = await response.json();
+      if (!data.task_id) throw new Error("Export did not return a CSV or task id.");
+      if (button) button.textContent = "Queued...";
+      const result = await pollCeleryTask(data.task_id, {
+        statusPath: (taskId) => `/assessments/export/${encodeURIComponent(taskId)}`,
+        queuedLabel: "Redis queued export",
+        runningLabel: "Celery export running",
+        doneLabel: "Export ready"
+      });
+      filename = result?.filename || "export.csv";
+      blob = new Blob([result?.content || ""], { type: result?.media_type || "text/csv;charset=utf-8" });
+    } else {
+      blob = await response.blob();
+      const disposition = response.headers.get("content-disposition") || "";
+      filename = disposition.match(/filename="?([^"]+)"?/i)?.[1] || "export.csv";
+    }
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -4304,6 +4360,18 @@ async function postJson(path, payload, options = {}) {
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.error || "Request failed.");
+  }
+  if (data.task_id) {
+    const result = await pollCeleryTask(data.task_id, {
+      statusPath: (taskId) => `/metrics/${encodeURIComponent(taskId)}`,
+      queuedLabel: "Redis queued metric job",
+      runningLabel: "Celery metric job running",
+      doneLabel: "Metric job complete"
+    });
+    if (useCache) {
+      requestCache.set(cacheKey, result);
+    }
+    return result;
   }
   if (useCache) {
     requestCache.set(cacheKey, data);
