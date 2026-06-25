@@ -271,12 +271,16 @@ let currentAssessmentDoc = null;
 let currentAssessmentQuestionIndex = 0;
 let selectedAssessmentChoice = "";
 let answeredAssessmentQuestions = new Set();
+let assessmentSelectedChoices = new Map();
+let assessmentAnswerResults = new Map();
 let assessmentAnsweredCountValue = 0;
 let assessmentCorrectCountValue = 0;
 let activeAssessmentResource = "documentation";
 let assessmentSummaryVisible = false;
 let assessmentDocumentationOptions = [];
 let activeAssessmentDocumentationId = "";
+let activeAssessmentDocType = "random";
+const assessmentSessionCache = new Map();
 let activeAccountAssessmentTab = "questions";
 let activeAccountResponseUserFilter = "all";
 let accountRefreshTimer = 0;
@@ -1131,6 +1135,66 @@ function currentAssessmentQuestion() {
   return currentAssessment?.questions?.[currentAssessmentQuestionIndex] || null;
 }
 
+function normalizeAssessmentDocType(value) {
+  const type = String(value || "").toLowerCase();
+  if (type === "ibd" || type === "td") return type;
+  return "random";
+}
+
+function selectedAssessmentDocType() {
+  return accountIsAdmin ? normalizeAssessmentDocType(assessmentDocTypeSelect?.value || "random") : "random";
+}
+
+function assessmentSessionKey(documentationId, docType) {
+  const docId = documentationId || currentAssessment?.documentation_id || activeAssessmentDocumentationId || "random";
+  return `${docId}:${normalizeAssessmentDocType(docType)}`;
+}
+
+function saveCurrentAssessmentSession() {
+  if (!currentAssessment) return;
+  const docType = normalizeAssessmentDocType(currentAssessment.documentation_type || activeAssessmentDocType || selectedAssessmentDocType());
+  assessmentSessionCache.set(assessmentSessionKey(currentAssessment.documentation_id, docType), {
+    currentAssessment,
+    currentAssessmentDoc,
+    currentAssessmentQuestionIndex,
+    selectedAssessmentChoice,
+    answeredAssessmentQuestions: Array.from(answeredAssessmentQuestions),
+    assessmentSelectedChoices: Array.from(assessmentSelectedChoices.entries()),
+    assessmentAnswerResults: Array.from(assessmentAnswerResults.entries()),
+    assessmentAnsweredCountValue,
+    assessmentCorrectCountValue,
+    activeAssessmentResource,
+    assessmentSummaryVisible,
+    activeAssessmentDocType: docType,
+    activeAssessmentDocumentationId: String(currentAssessment.documentation_id || activeAssessmentDocumentationId || "")
+  });
+}
+
+function restoreAssessmentSession(session) {
+  currentAssessment = session.currentAssessment;
+  currentAssessmentDoc = session.currentAssessmentDoc;
+  currentAssessmentQuestionIndex = session.currentAssessmentQuestionIndex || 0;
+  selectedAssessmentChoice = session.selectedAssessmentChoice || "";
+  answeredAssessmentQuestions = new Set(session.answeredAssessmentQuestions || []);
+  assessmentSelectedChoices = new Map(session.assessmentSelectedChoices || []);
+  assessmentAnswerResults = new Map(session.assessmentAnswerResults || []);
+  assessmentAnsweredCountValue = Number(session.assessmentAnsweredCountValue || 0);
+  assessmentCorrectCountValue = Number(session.assessmentCorrectCountValue || 0);
+  activeAssessmentResource = session.activeAssessmentResource || "documentation";
+  assessmentSummaryVisible = Boolean(session.assessmentSummaryVisible);
+  activeAssessmentDocType = normalizeAssessmentDocType(session.activeAssessmentDocType || currentAssessment?.documentation_type || "random");
+  activeAssessmentDocumentationId = session.activeAssessmentDocumentationId || "";
+  if (assessmentDocSelect) assessmentDocSelect.value = activeAssessmentDocumentationId;
+  renderAssessmentResource();
+  if (assessmentSummaryVisible) {
+    renderAssessmentSummary();
+  } else {
+    renderAssessmentQuestion();
+  }
+  updateAssessmentStatsUI();
+  fetchAssessmentStats();
+}
+
 function renderAssessmentResource() {
   if (!assessmentResourceBody || !currentAssessment) return;
   assessmentResourceTabs.forEach((button) => {
@@ -1177,8 +1241,8 @@ async function fetchAssessmentStats() {
 
 function renderAssessmentQuestion() {
   const question = currentAssessmentQuestion();
-  selectedAssessmentChoice = "";
   assessmentSummaryVisible = false;
+  selectedAssessmentChoice = question ? (assessmentSelectedChoices.get(String(question.id)) || "") : "";
   if (assessmentNextButton) {
     assessmentNextButton.textContent = "Next question";
     assessmentNextButton.disabled = !question || !answeredAssessmentQuestions.has(question.id);
@@ -1197,20 +1261,37 @@ function renderAssessmentQuestion() {
   if (assessmentQuestionText) assessmentQuestionText.textContent = question.question;
   if (assessmentChoiceList) {
     assessmentChoiceList.innerHTML = Object.entries(question.choices || {}).map(([key, value]) => `
-      <button type="button" class="assessment-choice" data-assessment-choice="${escapeHtml(key)}">
+      <button type="button" class="assessment-choice ${selectedAssessmentChoice === key ? "is-selected" : ""}" data-assessment-choice="${escapeHtml(key)}">
         <span>${escapeHtml(key)}</span>
         <strong>${escapeHtml(value)}</strong>
       </button>
     `).join("");
   }
+  const storedResult = assessmentAnswerResults.get(String(question.id));
+  if (storedResult) {
+    assessmentChoiceList?.querySelectorAll(".assessment-choice").forEach((button) => {
+      const selected = button.dataset.assessmentChoice === storedResult.selected_choice;
+      const correct = button.dataset.assessmentChoice === storedResult.correct_response;
+      button.classList.toggle("is-correct", correct);
+      button.classList.toggle("is-incorrect", selected && !correct);
+      button.classList.toggle("is-feedback-selected", selected);
+      button.disabled = true;
+    });
+    renderAssessmentFeedback(question, storedResult, { scroll: false });
+  }
   if (assessmentMessage) assessmentMessage.textContent = answeredAssessmentQuestions.has(question.id)
     ? "You already answered this one. Move to the next question when ready."
     : "Choose the best answer using only the documentation and source reference.";
   if (assessmentSubmitButton) assessmentSubmitButton.disabled = answeredAssessmentQuestions.has(question.id);
+  if (assessmentNextButton && answeredAssessmentQuestions.has(question.id)) {
+    assessmentNextButton.textContent = answeredAssessmentQuestions.size >= total ? "View summary" : "Next question";
+    assessmentNextButton.disabled = false;
+    assessmentNextButton.classList.add("assessment-next-ready");
+  }
 }
 
-function renderAssessmentFeedback(question, result) {
-  const selectedKey = selectedAssessmentChoice;
+function renderAssessmentFeedback(question, result, options = {}) {
+  const selectedKey = result.selected_choice || selectedAssessmentChoice;
   const correctKey = result.correct_response || question.correct_response || "";
   const selectedText = question.choices?.[selectedKey] || "";
   const correctText = question.choices?.[correctKey] || "";
@@ -1237,7 +1318,7 @@ function renderAssessmentFeedback(question, result) {
     ${explanation ? `<p class="assessment-feedback-explanation">${escapeHtml(explanation)}</p>` : ""}
   `;
   assessmentChoiceList?.appendChild(feedback);
-  feedback.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  if (options.scroll !== false) feedback.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
 function renderAssessmentSummary() {
@@ -1263,6 +1344,7 @@ function renderAssessmentSummary() {
     assessmentNextButton.textContent = "Start new assessment";
     assessmentNextButton.disabled = false;
   }
+  saveCurrentAssessmentSession();
 }
 
 function renderAssessmentDocumentationOptions() {
@@ -1301,12 +1383,23 @@ async function loadAssessmentDocumentationOptions() {
   }
 }
 
-async function loadAssessment(documentationId = activeAssessmentDocumentationId) {
+async function loadAssessment(documentationId = activeAssessmentDocumentationId, options = {}) {
+  saveCurrentAssessmentSession();
+  const docType = selectedAssessmentDocType();
+  const requestedDocumentationId = documentationId || "";
+  const cachedSession = assessmentSessionCache.get(assessmentSessionKey(requestedDocumentationId, docType));
+  if (options.forceNew) {
+    assessmentSessionCache.delete(assessmentSessionKey(requestedDocumentationId, docType));
+  }
+  if (!options.forceNew && cachedSession) {
+    restoreAssessmentSession(cachedSession);
+    if (assessmentMessage) assessmentMessage.textContent = "Restored your saved quiz progress for this documentation version.";
+    return;
+  }
   if (assessmentMessage) assessmentMessage.textContent = "Loading comprehension practice...";
   if (assessmentSubmitButton) assessmentSubmitButton.disabled = true;
   if (assessmentNextButton) assessmentNextButton.disabled = true;
   try {
-    const docType = accountIsAdmin ? (assessmentDocTypeSelect?.value || "random") : "random";
     const endpointPath = documentationId
       ? `/assessments/documentation/${encodeURIComponent(documentationId)}/start`
       : "/assessments/random";
@@ -1320,8 +1413,11 @@ async function loadAssessment(documentationId = activeAssessmentDocumentationId)
       throw new Error(response.status === 401 ? "Log in to load comprehension practice." : data.detail || "Could not load an assessment.");
     }
     currentAssessment = data;
+    activeAssessmentDocType = docType;
     currentAssessmentQuestionIndex = 0;
     answeredAssessmentQuestions = new Set();
+    assessmentSelectedChoices = new Map();
+    assessmentAnswerResults = new Map();
     assessmentAnsweredCountValue = 0;
     assessmentCorrectCountValue = 0;
     assessmentSummaryVisible = false;
@@ -1351,10 +1447,12 @@ function selectAssessmentChoice(choice) {
     return;
   }
   selectedAssessmentChoice = choice;
+  if (question) assessmentSelectedChoices.set(String(question.id), choice);
   assessmentChoiceList?.querySelectorAll(".assessment-choice").forEach((button) => {
     button.classList.toggle("is-selected", button.dataset.assessmentChoice === choice);
   });
   if (assessmentMessage) assessmentMessage.textContent = "Answer selected. Check it when you are ready.";
+  saveCurrentAssessmentSession();
 }
 
 async function submitAssessmentAnswer() {
@@ -1385,6 +1483,14 @@ async function submitAssessmentAnswer() {
       throw new Error(response.status === 409 ? "You already answered this question." : data.detail || "Could not submit answer.");
     }
     answeredAssessmentQuestions.add(question.id);
+    assessmentSelectedChoices.set(String(question.id), selectedAssessmentChoice);
+    const storedResult = {
+      ...data,
+      selected_choice: selectedAssessmentChoice,
+      correct_response: data.correct_response || question.correct_response || "",
+      explanation: data.explanation || question.explanation || ""
+    };
+    assessmentAnswerResults.set(String(question.id), storedResult);
     assessmentAnsweredCountValue += 1;
     if (data.is_correct) assessmentCorrectCountValue += 1;
     updateAssessmentStatsUI();
@@ -1411,7 +1517,7 @@ async function submitAssessmentAnswer() {
     if (assessmentMessage) assessmentMessage.textContent = data.is_correct
       ? "Correct. Press Next question when you are ready."
       : `Not quite. Correct answer: ${data.correct_response}. ${data.explanation || ""} Press Next question when you are ready.`;
-    renderAssessmentFeedback(question, data);
+    renderAssessmentFeedback(question, storedResult);
     if (assessmentNextButton) {
       assessmentNextButton.textContent = answeredAssessmentQuestions.size >= total ? "View summary" : "Next question";
       assessmentNextButton.disabled = false;
@@ -1420,6 +1526,7 @@ async function submitAssessmentAnswer() {
     }
     fetchAssessmentStats();
     refreshAccountDataSoon(0);
+    saveCurrentAssessmentSession();
   } catch (error) {
     if (assessmentMessage) assessmentMessage.textContent = error.message || "Could not submit answer.";
   } finally {
@@ -1430,7 +1537,7 @@ async function submitAssessmentAnswer() {
 function moveAssessmentQuestion(direction) {
   if (!currentAssessment?.questions?.length) return;
   if (assessmentSummaryVisible) {
-    loadAssessment();
+    loadAssessment(activeAssessmentDocumentationId, { forceNew: true });
     return;
   }
   const question = currentAssessmentQuestion();
@@ -1445,6 +1552,7 @@ function moveAssessmentQuestion(direction) {
   }
   currentAssessmentQuestionIndex = (currentAssessmentQuestionIndex + direction + total) % total;
   renderAssessmentQuestion();
+  saveCurrentAssessmentSession();
 }
 
 function selectAreaWinner(winner) {
@@ -1586,7 +1694,7 @@ async function refreshDatabaseStatus() {
   const cached = cachedDatabaseStatusText();
   databaseStatusText.textContent = cached
     ? `${cached} · checking...`
-    : (API_BASE_URL ? "Checking cloud database..." : "Checking local database...");
+    : (API_BASE_URL ? "Checking cloud backend..." : "Checking local backend...");
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), API_BASE_URL ? 12000 : 5000);
   try {
@@ -1599,25 +1707,35 @@ async function refreshDatabaseStatus() {
       throw new Error(data.database?.error || "Database unavailable");
     }
     const database = data.database;
-    databaseStatus.dataset.state = "connected";
+    const queue = data.queue || {};
+    databaseStatus.dataset.state = queue.connected === false ? "partial" : "connected";
     const environment = database.environment ? `${database.environment} ` : "";
     const fallback = database.using_local_fallback ? " fallback" : "";
-    const label = `${environment}${database.backend || "database"}${fallback}: ${database.name || "default"}`;
+    const databaseLabel = `${environment}${database.backend || "database"}${fallback}: ${database.name || "default"}`;
+    const queueLabel = queue.connected === false
+      ? "Redis queue unavailable"
+      : `${queue.tls ? "TLS " : ""}Redis queue ok`;
+    const label = `${databaseLabel} · ${queueLabel}`;
     databaseStatusText.textContent = label;
     cacheDatabaseStatusText(label);
-    databaseStatusRetryDelay = 5000;
+    if (queue.connected === false) {
+      databaseStatusRetryTimer = window.setTimeout(refreshDatabaseStatus, databaseStatusRetryDelay);
+      databaseStatusRetryDelay = Math.min(databaseStatusRetryDelay + 3000, 15000);
+    } else {
+      databaseStatusRetryDelay = 5000;
+    }
   } catch (error) {
     if (error?.name === "AbortError") {
       databaseStatus.dataset.state = "checking";
       databaseStatusText.textContent = API_BASE_URL
-        ? "Cloud database still waking up..."
-        : "Local database still checking...";
+        ? "Cloud backend still waking up..."
+        : "Local backend still checking...";
       databaseStatusRetryTimer = window.setTimeout(refreshDatabaseStatus, databaseStatusRetryDelay);
       databaseStatusRetryDelay = Math.min(databaseStatusRetryDelay + 3000, 15000);
       return;
     }
     databaseStatus.dataset.state = "checking";
-    databaseStatusText.textContent = `${error.message || "Database unavailable"} · retrying`;
+    databaseStatusText.textContent = `${error.message || "Backend unavailable"} · retrying`;
     databaseStatusRetryTimer = window.setTimeout(refreshDatabaseStatus, databaseStatusRetryDelay);
     databaseStatusRetryDelay = Math.min(databaseStatusRetryDelay + 3000, 15000);
   } finally {
@@ -6024,16 +6142,21 @@ areaChoices.forEach((choice) => {
 areaVoteButton?.addEventListener("click", submitAreaVote);
 assessmentNextButton?.addEventListener("click", () => moveAssessmentQuestion(1));
 assessmentDocSelect?.addEventListener("change", () => {
+  saveCurrentAssessmentSession();
   activeAssessmentDocumentationId = assessmentDocSelect.value || "";
   loadAssessment(activeAssessmentDocumentationId);
 });
 assessmentDocTypeSelect?.addEventListener("change", () => {
+  saveCurrentAssessmentSession();
+  const documentationId = activeAssessmentDocumentationId || currentAssessment?.documentation_id || "";
+  if (documentationId) activeAssessmentDocumentationId = String(documentationId);
   loadAssessment(activeAssessmentDocumentationId);
 });
 assessmentResourceTabs.forEach((button) => {
   button.addEventListener("click", () => {
     activeAssessmentResource = button.dataset.assessmentResource || "documentation";
     renderAssessmentResource();
+    saveCurrentAssessmentSession();
   });
 });
 assessmentChoiceList?.addEventListener("click", (event) => {
