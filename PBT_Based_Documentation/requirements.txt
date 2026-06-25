@@ -4,6 +4,7 @@ celery[redis]
 choix
 fastapi
 hypothesis
+mutmut
 numpy
 openai
 pandas

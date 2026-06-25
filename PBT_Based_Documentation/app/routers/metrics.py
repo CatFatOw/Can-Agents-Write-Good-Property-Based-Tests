@@ -11,12 +11,13 @@ Note, rewrite this alot of functionaility via redis + celery
 from celery_app import celery_app
 import sys
 from tasks.metric_task import calculate_metrics_celery, calculate_mutation_analysis_celery, rerun_generated_test_celery, calculate_documentation_coverage_celery
+from task_runner import dispatch_json
 from fastapi import APIRouter, HTTPException, status, Depends, Response
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
-import models 
-import database 
+import models
+import database
 from database import get_db
 # To be used when calculating metrics
 from tempfile import TemporaryDirectory
@@ -68,42 +69,39 @@ async def get_job_id(job_id):
     return celery_result_payload(job_id)
 
 
-# Use celery
+# Queue to Celery when Redis is up; otherwise run inline so the metrics
+# pipeline still works (the frontend handles both the task_id and direct shapes).
 @api_router.post("/metrics")
 async def calculate_metrics(payload: dict):
     """Drop-in replacement for server.py's /api/metrics endpoint."""
-    task = calculate_metrics_celery.delay(payload)
-    return {
-        "task_id":task.id, 
-        "status":"queued",
-    }
+    try:
+        return await dispatch_json(calculate_metrics_celery, legacy_backend.generate_metrics, payload)
+    except Exception as exc:
+        return legacy_error(exc)
 
-# Use celery
+
 @api_router.post("/mutation-analysis")
 async def calculate_mutation_analysis(payload: dict):
     """Analyze mutation survivors for one generated Hypothesis test."""
-    task = calculate_mutation_analysis_celery.delay(payload)
-    return {
-        "task_id":task.id,
-        "status":"queued"
-    }
+    try:
+        return await dispatch_json(calculate_mutation_analysis_celery, legacy_backend.generate_mutation_analysis, payload)
+    except Exception as exc:
+        return legacy_error(exc)
 
-# Using celery
+
 @api_router.post("/rerun-test")
 async def rerun_generated_test(payload: dict):
     """Re-run one generated test and return the metric object."""
-    task = rerun_generated_test_celery.delay(payload)
-    return {
-        "task_id":task.id,
-        "status":"queued"
-    }
+    try:
+        return await dispatch_json(rerun_generated_test_celery, legacy_backend.rerun_test, payload)
+    except Exception as exc:
+        return legacy_error(exc)
 
-# Using celery
+
 @api_router.post("/coverage")
 async def calculate_documentation_coverage(payload: dict):
     """Map generated documentation claims back to source-code evidence."""
-    task = calculate_documentation_coverage_celery.delay(payload)
-    return {
-        "task_id":task.id,
-        "status":"queued",
-    }
+    try:
+        return await dispatch_json(calculate_documentation_coverage_celery, legacy_backend.generate_coverage, payload)
+    except Exception as exc:
+        return legacy_error(exc)

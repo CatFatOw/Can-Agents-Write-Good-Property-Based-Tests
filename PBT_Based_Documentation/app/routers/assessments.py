@@ -30,8 +30,9 @@ from schemas import (
 from fastapi.responses import FileResponse
 import pandas as pd
 
-# Import the celery tasks 
+# Import the celery tasks
 from tasks.export_tasks import export_assessment_question_table_csv_celery, export_all_assessment_responses_csv_celery
+from task_runner import broker_available, run_task_inline
 from celery.result import AsyncResult
 from celery_app import celery_app
 
@@ -849,26 +850,41 @@ async def get_job(job_id):
 
 # Allow the user to download the data as a CSV file
 
+def csv_response(result: dict) -> Response:
+    """Return a worker CSV payload as a direct download.
+
+    Used by the inline fallback when Redis/Celery is unavailable. The frontend
+    streams a real CSV response straight to a file (it only polls a task id when
+    the response is JSON with a task_id), so both paths download the same file.
+    """
+    filename = result.get("filename") or "export.csv"
+    return Response(
+        content=result.get("content") or "",
+        media_type=result.get("media_type") or "text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 # Download EVERYTHING
 
 
 @router.get("/export")
 async def export_assessment_question_table_csv(curr_user: Session = Depends(oath2.get_current_user)):
-    """Function exports function exports assessment data as a CSV via celery/redis"""
-    task = export_assessment_question_table_csv_celery.delay(curr_user.id)
-    return {
-        "task_id":task.id, 
-        "status":"queued"
-    }
+    """Export the current user's assessment data as a CSV via Celery/Redis, or inline if the queue is down."""
+    if broker_available():
+        task = export_assessment_question_table_csv_celery.delay(curr_user.id)
+        return {"task_id": task.id, "status": "queued"}
+    result = await run_task_inline(export_assessment_question_table_csv_celery, curr_user.id)
+    return csv_response(result)
 
 
 
 @router.get("/export-all")
 async def export_all_assessment_responses_csv(curr_admin: Session = Depends(admin.get_current_admin)):
     """Export all quiz questions, attempts, answers, and user identifiers for admin analysis."""
-    task = export_all_assessment_responses_csv_celery.delay()
-    return {
-        "task_id":task.id, 
-        "status":"queued"
-    }
+    if broker_available():
+        task = export_all_assessment_responses_csv_celery.delay()
+        return {"task_id": task.id, "status": "queued"}
+    result = await run_task_inline(export_all_assessment_responses_csv_celery)
+    return csv_response(result)
     

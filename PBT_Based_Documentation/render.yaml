@@ -1,4 +1,13 @@
 services:
+  # Managed Redis used as the Celery broker + result backend. ipAllowList is
+  # empty so only the web/worker services on the private network can reach it.
+  # noeviction keeps queued jobs and results from being dropped under memory
+  # pressure. Reachable over the private network without TLS (see REDIS_TLS).
+  - type: keyvalue
+    name: ibd-redis
+    plan: starter
+    ipAllowList: []
+    maxmemoryPolicy: noeviction
   - type: web
     name: ibd-fastapi
     runtime: python
@@ -11,10 +20,15 @@ services:
         value: 3.12.4
       - key: DATABASE_URL
         sync: false
+      # Render's managed Key Value (Redis) is reachable over the private network
+      # without TLS, so point REDIS_URL at it via fromService and leave TLS off.
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: keyvalue
+          name: ibd-redis
+          property: connectionString
       - key: REDIS_TLS
-        value: "true"
+        value: "false"
       - key: JWT_KEY
         generateValue: true
       - key: FRONTEND_ORIGINS
@@ -33,6 +47,9 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: keyvalue
+          name: ibd-redis
+          property: connectionString
       - key: REDIS_TLS
-        value: "true"
+        value: "false"
