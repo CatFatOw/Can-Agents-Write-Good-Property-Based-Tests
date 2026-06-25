@@ -5736,6 +5736,10 @@ body.landing-active .landing-examples {
   background: var(--clay);
 }
 
+.database-status[data-state="partial"] .status-dot {
+  background: var(--gold);
+}
+
 .database-status[data-state="checking"] .status-dot {
   background: var(--gold);
 }
@@ -5899,7 +5903,7 @@ body.account-active::before {
 .account-admin-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px 14px;
   align-items: center;
   margin-top: 16px;
   padding: 12px;
@@ -5914,6 +5918,14 @@ body.account-active::before {
 
 .account-admin-actions .account-message {
   margin: 0;
+}
+
+.account-admin-actions .admin-export-button {
+  margin-left: 8px;
+}
+
+.account-admin-actions .admin-reset-button + .admin-export-button {
+  margin-left: 18px;
 }
 
 .account-grid {
@@ -7116,13 +7128,14 @@ body.auth-active .auth-panel h1 {
 .account-detail-md-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px 12px;
   justify-content: flex-end;
 }
 
 .account-doc-delete,
 #account-md-delete {
   flex-shrink: 0;
+  margin-left: 12px;
 }
 
 .account-docs-controls .compact-field:has(input) {
