@@ -55,9 +55,28 @@ MODEL = os.environ.get("OPENAI_MODEL", "gpt-5.5")
 METRICS_MODEL = os.environ.get("OPENAI_METRICS_MODEL", "gpt-5.4-mini")
 OPENAI_SEED = 42
 
-GPT_CACHE: dict[tuple[str, str, int], str] = {}
-METRICS_CACHE: dict[tuple[Any, ...], dict[str, Any]] = {}
-SOURCE_CACHE: dict[str, dict[str, str]] = {}
+class _BoundedCache(dict):
+    """A dict that evicts the oldest entry once it exceeds ``maxsize``.
+
+    These caches live for the lifetime of the process, so without a cap they grow
+    with every unique request and slowly leak memory (METRICS_CACHE in particular
+    holds large mutation-analysis payloads). Dicts preserve insertion order, so
+    evicting ``next(iter(self))`` drops the oldest entry.
+    """
+
+    def __init__(self, maxsize: int):
+        super().__init__()
+        self._maxsize = max(1, maxsize)
+
+    def __setitem__(self, key, value):
+        if key not in self and len(self) >= self._maxsize:
+            del self[next(iter(self))]
+        super().__setitem__(key, value)
+
+
+GPT_CACHE: dict[tuple[str, str, int], str] = _BoundedCache(256)
+METRICS_CACHE: dict[tuple[Any, ...], dict[str, Any]] = _BoundedCache(32)
+SOURCE_CACHE: dict[str, dict[str, str]] = _BoundedCache(256)
 
 
 def strip_fences(text: str) -> str:

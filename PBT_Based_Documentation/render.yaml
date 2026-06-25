@@ -33,8 +33,12 @@ services:
         generateValue: true
       - key: FRONTEND_ORIGINS
         sync: false
+      # Each uvicorn worker loads numpy/pandas/openai/anthropic, so 2 workers can
+      # exceed the starter instance's memory. Heavy work is offloaded to the
+      # Celery worker, so a single web worker is enough; raise this only after
+      # upgrading the instance size.
       - key: WEB_CONCURRENCY
-        value: 2
+        value: 1
   - type: worker
     name: ibd-celery-worker
     runtime: python
