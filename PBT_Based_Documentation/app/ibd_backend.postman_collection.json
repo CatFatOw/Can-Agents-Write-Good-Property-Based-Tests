@@ -932,7 +932,103 @@
                 "metrics"
               ]
             },
-            "description": "Calculates validity/soundness and mutation metrics (server.py-compatible /api/metrics endpoint)."
+            "description": "Calculates validity/soundness and mutation metrics (server.py-compatible /api/metrics endpoint). Queues the work through Redis/Celery and returns { task_id, status }; poll the matching task-result request for the final result."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Calculate Metrics returned a queued Celery task\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response includes task_id for polling\", function () {",
+                  "    pm.expect(response.task_id, \"task_id\").to.be.a(\"string\").and.not.empty;",
+                  "    pm.expect(response.status).to.eql(\"queued\");",
+                  "});",
+                  "",
+                  "if (response.task_id) {",
+                  "    pm.collectionVariables.set(\"metricsTaskId\", response.task_id);",
+                  "    console.log(\"Calculate Metrics task_id:\", response.task_id);",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>Calculate Metrics queued</h2>",
+                  "  <p>This endpoint starts a Celery job and returns a task ID.</p>",
+                  "  <p><strong>task_id:</strong> <code>{{taskId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p>Next: run the matching <code>Get Task Result</code> request.</p>",
+                  "</section>`, { taskId: response.task_id || \"missing\", status: response.status || \"unknown\" });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Calculate Metrics - Get Task Result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Task result endpoint returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response reflects the queued task\", function () {",
+                  "    pm.expect(response.job_id).to.eql(pm.collectionVariables.get(\"metricsTaskId\"));",
+                  "    pm.expect(response.status).to.be.a(\"string\");",
+                  "    pm.expect(response.ready).to.be.a(\"boolean\");",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set(\"metricsJobStatus\", response.status);",
+                  "pm.collectionVariables.set(\"metricsReady\", String(response.ready));",
+                  "if (response.ready && response.result !== null && response.result !== undefined) {",
+                  "    pm.collectionVariables.set(\"metricsResult\", JSON.stringify(response.result));",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>/metrics/{{jobId}}</h2>",
+                  "  <p>This endpoint polls Celery and returns the task state plus result when ready.</p>",
+                  "  <p><strong>job_id:</strong> <code>{{jobId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p><strong>ready:</strong> {{ready}}</p>",
+                  "  <pre style=\"white-space: pre-wrap; border: 1px solid #ddd; padding: 8px;\">{{result}}</pre>",
+                  "</section>`, {",
+                  "    jobId: response.job_id || \"missing\",",
+                  "    status: response.status || \"unknown\",",
+                  "    ready: String(response.ready),",
+                  "    result: response.result === null || response.result === undefined ? \"No result yet. Poll again.\" : JSON.stringify(response.result, null, 2)",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/metrics/{{metricsTaskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "metrics",
+                "{{metricsTaskId}}"
+              ]
+            },
+            "description": "Polls /metrics/{job_id} for the Celery task started by /api/metrics."
           },
           "response": []
         },
@@ -964,7 +1060,103 @@
                 "mutation-analysis"
               ]
             },
-            "description": "Analyzes mutation survivors for one generated Hypothesis test."
+            "description": "Analyzes mutation survivors for one generated Hypothesis test. Queues the work through Redis/Celery and returns { task_id, status }; poll the matching task-result request for the final result."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Mutation Analysis returned a queued Celery task\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response includes task_id for polling\", function () {",
+                  "    pm.expect(response.task_id, \"task_id\").to.be.a(\"string\").and.not.empty;",
+                  "    pm.expect(response.status).to.eql(\"queued\");",
+                  "});",
+                  "",
+                  "if (response.task_id) {",
+                  "    pm.collectionVariables.set(\"mutationAnalysisTaskId\", response.task_id);",
+                  "    console.log(\"Mutation Analysis task_id:\", response.task_id);",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>Mutation Analysis queued</h2>",
+                  "  <p>This endpoint starts a Celery job and returns a task ID.</p>",
+                  "  <p><strong>task_id:</strong> <code>{{taskId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p>Next: run the matching <code>Get Task Result</code> request.</p>",
+                  "</section>`, { taskId: response.task_id || \"missing\", status: response.status || \"unknown\" });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mutation Analysis - Get Task Result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Task result endpoint returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response reflects the queued task\", function () {",
+                  "    pm.expect(response.job_id).to.eql(pm.collectionVariables.get(\"mutationAnalysisTaskId\"));",
+                  "    pm.expect(response.status).to.be.a(\"string\");",
+                  "    pm.expect(response.ready).to.be.a(\"boolean\");",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set(\"mutationAnalysisJobStatus\", response.status);",
+                  "pm.collectionVariables.set(\"mutationAnalysisReady\", String(response.ready));",
+                  "if (response.ready && response.result !== null && response.result !== undefined) {",
+                  "    pm.collectionVariables.set(\"mutationAnalysisResult\", JSON.stringify(response.result));",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>/metrics/{{jobId}}</h2>",
+                  "  <p>This endpoint polls Celery and returns the task state plus result when ready.</p>",
+                  "  <p><strong>job_id:</strong> <code>{{jobId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p><strong>ready:</strong> {{ready}}</p>",
+                  "  <pre style=\"white-space: pre-wrap; border: 1px solid #ddd; padding: 8px;\">{{result}}</pre>",
+                  "</section>`, {",
+                  "    jobId: response.job_id || \"missing\",",
+                  "    status: response.status || \"unknown\",",
+                  "    ready: String(response.ready),",
+                  "    result: response.result === null || response.result === undefined ? \"No result yet. Poll again.\" : JSON.stringify(response.result, null, 2)",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/metrics/{{mutationAnalysisTaskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "metrics",
+                "{{mutationAnalysisTaskId}}"
+              ]
+            },
+            "description": "Polls /metrics/{job_id} for the Celery task started by /api/mutation-analysis."
           },
           "response": []
         },
@@ -996,7 +1188,103 @@
                 "rerun-test"
               ]
             },
-            "description": "Re-runs one generated test and returns the metric object."
+            "description": "Re-runs one generated test and returns the metric object. Queues the work through Redis/Celery and returns { task_id, status }; poll the matching task-result request for the final result."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Rerun Test returned a queued Celery task\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response includes task_id for polling\", function () {",
+                  "    pm.expect(response.task_id, \"task_id\").to.be.a(\"string\").and.not.empty;",
+                  "    pm.expect(response.status).to.eql(\"queued\");",
+                  "});",
+                  "",
+                  "if (response.task_id) {",
+                  "    pm.collectionVariables.set(\"rerunTestTaskId\", response.task_id);",
+                  "    console.log(\"Rerun Test task_id:\", response.task_id);",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>Rerun Test queued</h2>",
+                  "  <p>This endpoint starts a Celery job and returns a task ID.</p>",
+                  "  <p><strong>task_id:</strong> <code>{{taskId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p>Next: run the matching <code>Get Task Result</code> request.</p>",
+                  "</section>`, { taskId: response.task_id || \"missing\", status: response.status || \"unknown\" });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rerun Test - Get Task Result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Task result endpoint returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response reflects the queued task\", function () {",
+                  "    pm.expect(response.job_id).to.eql(pm.collectionVariables.get(\"rerunTestTaskId\"));",
+                  "    pm.expect(response.status).to.be.a(\"string\");",
+                  "    pm.expect(response.ready).to.be.a(\"boolean\");",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set(\"rerunTestJobStatus\", response.status);",
+                  "pm.collectionVariables.set(\"rerunTestReady\", String(response.ready));",
+                  "if (response.ready && response.result !== null && response.result !== undefined) {",
+                  "    pm.collectionVariables.set(\"rerunTestResult\", JSON.stringify(response.result));",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>/metrics/{{jobId}}</h2>",
+                  "  <p>This endpoint polls Celery and returns the task state plus result when ready.</p>",
+                  "  <p><strong>job_id:</strong> <code>{{jobId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p><strong>ready:</strong> {{ready}}</p>",
+                  "  <pre style=\"white-space: pre-wrap; border: 1px solid #ddd; padding: 8px;\">{{result}}</pre>",
+                  "</section>`, {",
+                  "    jobId: response.job_id || \"missing\",",
+                  "    status: response.status || \"unknown\",",
+                  "    ready: String(response.ready),",
+                  "    result: response.result === null || response.result === undefined ? \"No result yet. Poll again.\" : JSON.stringify(response.result, null, 2)",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/metrics/{{rerunTestTaskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "metrics",
+                "{{rerunTestTaskId}}"
+              ]
+            },
+            "description": "Polls /metrics/{job_id} for the Celery task started by /api/rerun-test."
           },
           "response": []
         },
@@ -1028,7 +1316,103 @@
                 "coverage"
               ]
             },
-            "description": "Maps generated documentation claims back to source-code evidence."
+            "description": "Maps generated documentation claims back to source-code evidence. Queues the work through Redis/Celery and returns { task_id, status }; poll the matching task-result request for the final result."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Coverage returned a queued Celery task\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response includes task_id for polling\", function () {",
+                  "    pm.expect(response.task_id, \"task_id\").to.be.a(\"string\").and.not.empty;",
+                  "    pm.expect(response.status).to.eql(\"queued\");",
+                  "});",
+                  "",
+                  "if (response.task_id) {",
+                  "    pm.collectionVariables.set(\"coverageTaskId\", response.task_id);",
+                  "    console.log(\"Coverage task_id:\", response.task_id);",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>Coverage queued</h2>",
+                  "  <p>This endpoint starts a Celery job and returns a task ID.</p>",
+                  "  <p><strong>task_id:</strong> <code>{{taskId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p>Next: run the matching <code>Get Task Result</code> request.</p>",
+                  "</section>`, { taskId: response.task_id || \"missing\", status: response.status || \"unknown\" });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Coverage - Get Task Result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Task result endpoint returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response reflects the queued task\", function () {",
+                  "    pm.expect(response.job_id).to.eql(pm.collectionVariables.get(\"coverageTaskId\"));",
+                  "    pm.expect(response.status).to.be.a(\"string\");",
+                  "    pm.expect(response.ready).to.be.a(\"boolean\");",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set(\"coverageJobStatus\", response.status);",
+                  "pm.collectionVariables.set(\"coverageReady\", String(response.ready));",
+                  "if (response.ready && response.result !== null && response.result !== undefined) {",
+                  "    pm.collectionVariables.set(\"coverageResult\", JSON.stringify(response.result));",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>/metrics/{{jobId}}</h2>",
+                  "  <p>This endpoint polls Celery and returns the task state plus result when ready.</p>",
+                  "  <p><strong>job_id:</strong> <code>{{jobId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p><strong>ready:</strong> {{ready}}</p>",
+                  "  <pre style=\"white-space: pre-wrap; border: 1px solid #ddd; padding: 8px;\">{{result}}</pre>",
+                  "</section>`, {",
+                  "    jobId: response.job_id || \"missing\",",
+                  "    status: response.status || \"unknown\",",
+                  "    ready: String(response.ready),",
+                  "    result: response.result === null || response.result === undefined ? \"No result yet. Poll again.\" : JSON.stringify(response.result, null, 2)",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/metrics/{{coverageTaskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "metrics",
+                "{{coverageTaskId}}"
+              ]
+            },
+            "description": "Polls /metrics/{job_id} for the Celery task started by /api/coverage."
           },
           "response": []
         }
@@ -1601,15 +1985,116 @@
           "response": []
         },
         {
-          "name": "Export Assessments CSV",
+          "name": "Export Assessment Questions - Queue Task",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Assessments CSV export returned\", function () {",
+                  "pm.test(\"Export route returned a queued task\", function () {",
                   "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response includes task_id for polling\", function () {",
+                  "    pm.expect(response.task_id, \"task_id\").to.be.a(\"string\").and.not.empty;",
+                  "    pm.expect(response.status).to.eql(\"queued\");",
+                  "});",
+                  "",
+                  "if (response.task_id) {",
+                  "    pm.collectionVariables.set(\"assessmentExportTaskId\", response.task_id);",
+                  "    console.log(\"Assessment questions export task_id:\", response.task_id);",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>/assessments/export queued</h2>",
+                  "  <p>This endpoint starts the Celery export and returns a task ID.</p>",
+                  "  <p><strong>task_id:</strong> <code>{{taskId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p>Next: run <code>Export Assessment Questions - Get Task Result</code>.</p>",
+                  "</section>`, { taskId: response.task_id || \"missing\", status: response.status || \"unknown\" });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assessments/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "export"
+              ]
+            },
+            "description": "Queues the current user assessment question/answer CSV export through Redis/Celery. The response body should contain { task_id, status }. The task_id is saved as {{assessmentExportTaskId}} for the polling request."
+          },
+          "response": []
+        },
+        {
+          "name": "Export Assessment Questions - Get Task Result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Task result endpoint returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response reflects the queued task\", function () {",
+                  "    pm.expect(response.job_id).to.eql(pm.collectionVariables.get(\"assessmentExportTaskId\"));",
+                  "    pm.expect(response.status).to.be.a(\"string\");",
+                  "    pm.expect(response.ready).to.be.a(\"boolean\");",
+                  "});",
+                  "",
+                  "if (response.ready && response.result) {",
+                  "    pm.test(\"Ready export result includes CSV payload\", function () {",
+                  "        pm.expect(response.result.filename, \"filename\").to.be.a(\"string\").and.include(\".csv\");",
+                  "        pm.expect(response.result.media_type).to.eql(\"text/csv\");",
+                  "        pm.expect(response.result.content, \"content\").to.be.a(\"string\");",
+                  "    });",
+                  "}",
+                  "",
+                  "pm.collectionVariables.set(\"assessmentExportJobStatus\", response.status);",
+                  "pm.collectionVariables.set(\"assessmentExportReady\", String(response.ready));",
+                  "if (response.ready && response.result !== null && response.result !== undefined) {",
+                  "    pm.collectionVariables.set(\"assessmentExportResult\", JSON.stringify(response.result));",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>/assessments/export/{{jobId}}</h2>",
+                  "  <p>This endpoint polls Celery and returns the task state plus result when ready.</p>",
+                  "  <p><strong>job_id:</strong> <code>{{jobId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p><strong>ready:</strong> {{ready}}</p>",
+                  "  <pre style=\"white-space: pre-wrap; border: 1px solid #ddd; padding: 8px;\">{{result}}</pre>",
+                  "</section>`, {",
+                  "    jobId: response.job_id || \"missing\",",
+                  "    status: response.status || \"unknown\",",
+                  "    ready: String(response.ready),",
+                  "    result: response.result === null || response.result === undefined ? \"No result yet. Poll again.\" : JSON.stringify(response.result, null, 2)",
                   "});"
                 ]
               }
@@ -1630,20 +2115,170 @@
             "header": [
               {
                 "key": "Accept",
-                "value": "text/csv"
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/assessments/export",
+              "raw": "{{baseUrl}}/assessments/export/{{assessmentExportTaskId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "assessments",
-                "export"
+                "export",
+                "{{assessmentExportTaskId}}"
               ]
             },
-            "description": "Exports assessment data as CSV for the logged-in user. Run Auth/Login first so {{accessToken}} is set."
+            "description": "Polls /assessments/export/{job_id} using {{assessmentExportTaskId}} from the queue request. The response includes job_id, status, ready, and result once Celery has finished."
+          },
+          "response": []
+        },
+        {
+          "name": "Export All Assessment Responses - Queue Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Export-all route returned a queued task\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response includes task_id for polling\", function () {",
+                  "    pm.expect(response.task_id, \"task_id\").to.be.a(\"string\").and.not.empty;",
+                  "    pm.expect(response.status).to.eql(\"queued\");",
+                  "});",
+                  "",
+                  "if (response.task_id) {",
+                  "    pm.collectionVariables.set(\"assessmentExportAllTaskId\", response.task_id);",
+                  "    console.log(\"All assessment responses export task_id:\", response.task_id);",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>/assessments/export-all queued</h2>",
+                  "  <p>This endpoint starts the Celery export and returns a task ID.</p>",
+                  "  <p><strong>task_id:</strong> <code>{{taskId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p>Next: run <code>Export All Assessment Responses - Get Task Result</code>.</p>",
+                  "</section>`, { taskId: response.task_id || \"missing\", status: response.status || \"unknown\" });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assessments/export-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "export-all"
+              ]
+            },
+            "description": "Queues the all-assessment-responses CSV export through Redis/Celery. The response body should contain { task_id, status }. The task_id is saved as {{assessmentExportAllTaskId}} for the polling request."
+          },
+          "response": []
+        },
+        {
+          "name": "Export All Assessment Responses - Get Task Result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Task result endpoint returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Response reflects the queued task\", function () {",
+                  "    pm.expect(response.job_id).to.eql(pm.collectionVariables.get(\"assessmentExportAllTaskId\"));",
+                  "    pm.expect(response.status).to.be.a(\"string\");",
+                  "    pm.expect(response.ready).to.be.a(\"boolean\");",
+                  "});",
+                  "",
+                  "if (response.ready && response.result) {",
+                  "    pm.test(\"Ready export result includes CSV payload\", function () {",
+                  "        pm.expect(response.result.filename, \"filename\").to.be.a(\"string\").and.include(\".csv\");",
+                  "        pm.expect(response.result.media_type).to.eql(\"text/csv\");",
+                  "        pm.expect(response.result.content, \"content\").to.be.a(\"string\");",
+                  "    });",
+                  "}",
+                  "",
+                  "pm.collectionVariables.set(\"assessmentExportAllJobStatus\", response.status);",
+                  "pm.collectionVariables.set(\"assessmentExportAllReady\", String(response.ready));",
+                  "if (response.ready && response.result !== null && response.result !== undefined) {",
+                  "    pm.collectionVariables.set(\"assessmentExportAllResult\", JSON.stringify(response.result));",
+                  "}",
+                  "",
+                  "pm.visualizer.set(`<section style=\"font-family: system-ui, sans-serif; line-height: 1.4;\">",
+                  "  <h2>/assessments/export/{{jobId}}</h2>",
+                  "  <p>This endpoint polls Celery and returns the task state plus result when ready.</p>",
+                  "  <p><strong>job_id:</strong> <code>{{jobId}}</code></p>",
+                  "  <p><strong>status:</strong> {{status}}</p>",
+                  "  <p><strong>ready:</strong> {{ready}}</p>",
+                  "  <pre style=\"white-space: pre-wrap; border: 1px solid #ddd; padding: 8px;\">{{result}}</pre>",
+                  "</section>`, {",
+                  "    jobId: response.job_id || \"missing\",",
+                  "    status: response.status || \"unknown\",",
+                  "    ready: String(response.ready),",
+                  "    result: response.result === null || response.result === undefined ? \"No result yet. Poll again.\" : JSON.stringify(response.result, null, 2)",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assessments/export/{{assessmentExportAllTaskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assessments",
+                "export",
+                "{{assessmentExportAllTaskId}}"
+              ]
+            },
+            "description": "Polls /assessments/export/{job_id} using {{assessmentExportAllTaskId}} from the export-all queue request. The response includes job_id, status, ready, and result once Celery has finished."
           },
           "response": []
         },
@@ -2272,6 +2907,102 @@
       "key": "assessmentExplanation",
       "value": "The source code returns the expected value for this input.",
       "type": "string"
+    },
+    {
+      "key": "assessmentExportTaskId",
+      "value": ""
+    },
+    {
+      "key": "assessmentExportJobStatus",
+      "value": ""
+    },
+    {
+      "key": "assessmentExportReady",
+      "value": ""
+    },
+    {
+      "key": "assessmentExportAllTaskId",
+      "value": ""
+    },
+    {
+      "key": "assessmentExportAllJobStatus",
+      "value": ""
+    },
+    {
+      "key": "assessmentExportAllReady",
+      "value": ""
+    },
+    {
+      "key": "assessmentExportResult",
+      "value": ""
+    },
+    {
+      "key": "assessmentExportAllResult",
+      "value": ""
+    },
+    {
+      "key": "metricsTaskId",
+      "value": ""
+    },
+    {
+      "key": "metricsJobStatus",
+      "value": ""
+    },
+    {
+      "key": "metricsReady",
+      "value": ""
+    },
+    {
+      "key": "metricsResult",
+      "value": ""
+    },
+    {
+      "key": "mutationAnalysisTaskId",
+      "value": ""
+    },
+    {
+      "key": "mutationAnalysisJobStatus",
+      "value": ""
+    },
+    {
+      "key": "mutationAnalysisReady",
+      "value": ""
+    },
+    {
+      "key": "mutationAnalysisResult",
+      "value": ""
+    },
+    {
+      "key": "rerunTestTaskId",
+      "value": ""
+    },
+    {
+      "key": "rerunTestJobStatus",
+      "value": ""
+    },
+    {
+      "key": "rerunTestReady",
+      "value": ""
+    },
+    {
+      "key": "rerunTestResult",
+      "value": ""
+    },
+    {
+      "key": "coverageTaskId",
+      "value": ""
+    },
+    {
+      "key": "coverageJobStatus",
+      "value": ""
+    },
+    {
+      "key": "coverageReady",
+      "value": ""
+    },
+    {
+      "key": "coverageResult",
+      "value": ""
     }
   ]
 }

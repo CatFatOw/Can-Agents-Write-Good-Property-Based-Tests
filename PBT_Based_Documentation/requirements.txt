@@ -1,5 +1,6 @@
 alembic
 anthropic
+celery[redis]
 choix
 fastapi
 hypothesis
@@ -14,5 +15,6 @@ pytest
 python-jose[cryptography]
 python-multipart
 requests
+redis
 sqlalchemy
 uvicorn[standard]

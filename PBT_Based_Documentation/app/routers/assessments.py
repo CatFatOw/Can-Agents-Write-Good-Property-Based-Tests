@@ -29,6 +29,12 @@ from schemas import (
 )
 from fastapi.responses import FileResponse
 import pandas as pd
+
+# Import the celery tasks 
+from tasks.export_tasks import export_assessment_question_table_csv_celery, export_all_assessment_responses_csv_celery
+from celery.result import AsyncResult
+from celery_app import celery_app
+
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 ASSESSMENT_MODEL = os.environ.get("OPENAI_ASSESSMENT_METRICS_MODEL", "gpt-5.5")
 
@@ -456,6 +462,7 @@ Source Code:
         base_url,
     )
     try:
+        # Added threadpooling
         output = await run_in_threadpool(generate_assessment_json, PROMPT, payload)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
@@ -823,116 +830,42 @@ async def get_stats(db:Session = Depends(get_db), curr_user:Session = Depends(oa
     "percentage_correct": percentage_correct
 }
 
+
+# Celery job ID decode for the later celery/redis based functions 
+@router.get("/export/{job_id}")
+async def get_job(job_id):
+    """Function decodes a unique job-id from celery and gets the value"""
+    result = AsyncResult(job_id, app=celery_app)
+    return {
+        "job_id":job_id,
+        "status":result.status, 
+        "ready":result.ready(),
+        "result":result.result if result.ready() else None 
+    }
+
+
 # Allow the user to download the data as a CSV file
 
 # Download EVERYTHING
 
 
 @router.get("/export")
-async def export_assessment_question_table_csv(
-    db: Session = Depends(get_db),
-    curr_user = Depends(oath2.get_current_user)
-):
-    """Function exports assessment data as a CSV."""
+async def export_assessment_question_table_csv(curr_user: Session = Depends(oath2.get_current_user)):
+    """Function exports function exports assessment data as a CSV via celery/redis"""
+    task = export_assessment_question_table_csv_celery.delay(curr_user.id)
+    return {
+        "task_id":task.id, 
+        "status":"queued"
+    }
 
-    data = (
-        db.query(
-            models.AssessmentQuestion.id.label("question_id"),
-            models.AssessmentQuestion.documentation_id,
-            models.AssessmentQuestion.question,
-            models.AssessmentQuestion.choices,
-            models.AssessmentQuestion.correct_response,
-            models.AssessmentQuestion.explanation,
-
-            models.AssessmentAttempt.id.label("attempt_id"),
-            models.AssessmentAttempt.user_id,
-            models.AssessmentAttempt.documentation_type,
-            models.AssessmentAttempt.total_questions,
-            models.AssessmentAttempt.total_correct,
-            models.AssessmentAttempt.created_at,
-
-            models.AssessmentAnswer.id.label("answer_id"),
-            models.AssessmentAnswer.user_response,
-            models.AssessmentAnswer.is_correct,
-        )
-        .join(
-            models.AssessmentAnswer,
-            models.AssessmentAnswer.question_id == models.AssessmentQuestion.id
-        )
-        .join(
-            models.AssessmentAttempt,
-            models.AssessmentAttempt.id == models.AssessmentAnswer.attempt_id
-        )
-        .filter(models.AssessmentAnswer.user_id == curr_user.id)
-        .all()
-    )
-
-
-
-    result = [row._asdict() for row in data]
-
-    df = pd.DataFrame(result)
-    df["percentage_correct"] = (
-    df["total_correct"] / df["total_questions"] * 100
-)
-
-    file_name = "User_Assessment_Table.csv"
-    df.to_csv(file_name, index=False)
-
-    return FileResponse(
-        path=file_name,
-        filename=file_name,
-        media_type="text/csv"
-    )
 
 
 @router.get("/export-all")
-async def export_all_assessment_responses_csv(
-    db: Session = Depends(get_db),
-    curr_user = Depends(admin.get_current_admin)
-):
+async def export_all_assessment_responses_csv(curr_admin: Session = Depends(admin.get_current_admin)):
     """Export all quiz questions, attempts, answers, and user identifiers for admin analysis."""
-    data = (
-        db.query(
-            models.AssessmentQuestion.id.label("question_id"),
-            models.AssessmentQuestion.documentation_id,
-            models.Documentation.documentation_title,
-            models.AssessmentQuestion.question,
-            models.AssessmentQuestion.choices,
-            models.AssessmentQuestion.correct_response,
-            models.AssessmentQuestion.explanation,
-            models.AssessmentAttempt.id.label("attempt_id"),
-            models.AssessmentAttempt.user_id,
-            models.User.email.label("user_email"),
-            models.AssessmentAttempt.documentation_type,
-            models.AssessmentAttempt.total_questions,
-            models.AssessmentAttempt.total_correct,
-            models.AssessmentAttempt.created_at.label("attempt_created_at"),
-            models.AssessmentAnswer.id.label("answer_id"),
-            models.AssessmentAnswer.user_response,
-            models.AssessmentAnswer.is_correct,
-        )
-        .join(models.Documentation, models.Documentation.id == models.AssessmentQuestion.documentation_id)
-        .outerjoin(models.AssessmentAnswer, models.AssessmentAnswer.question_id == models.AssessmentQuestion.id)
-        .outerjoin(models.AssessmentAttempt, models.AssessmentAttempt.id == models.AssessmentAnswer.attempt_id)
-        .outerjoin(models.User, models.User.id == models.AssessmentAnswer.user_id)
-        .order_by(models.AssessmentQuestion.documentation_id.asc(), models.AssessmentQuestion.id.asc(), models.AssessmentAnswer.id.asc())
-        .all()
-    )
-
-    result = [row._asdict() for row in data]
-    df = pd.DataFrame(result)
-    if not df.empty and {"total_correct", "total_questions"}.issubset(df.columns):
-        df["percentage_correct"] = df.apply(
-            lambda row: (row["total_correct"] / row["total_questions"] * 100)
-            if row.get("total_questions") else None,
-            axis=1,
-        )
-
-    file_name = "All_Assessment_Responses.csv"
-    df.to_csv(file_name, index=False)
-    return FileResponse(
-        path=file_name,
-        filename=file_name,
-        media_type="text/csv"
-    )
+    task = export_all_assessment_responses_csv_celery.delay()
+    return {
+        "task_id":task.id, 
+        "status":"queued"
+    }
+    
