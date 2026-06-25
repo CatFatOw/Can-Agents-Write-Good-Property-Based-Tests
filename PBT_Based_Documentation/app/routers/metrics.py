@@ -5,9 +5,12 @@ FOLLOWING ROUTES
 2. Calculate mutation
 3. Generate mutation + summary
 4. Get the soundness/validity metric, get mutation and mutation summary
-"""
 
+Note, rewrite this alot of functionaility via redis + celery
+"""
+from celery_app import celery_app
 import sys
+from tasks.metric_task import calculate_metrics_celery, calculate_mutation_analysis_celery, rerun_generated_test_celery, calculate_documentation_coverage_celery
 from fastapi import APIRouter, HTTPException, status, Depends, Response
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
@@ -18,6 +21,7 @@ from database import get_db
 # To be used when calculating metrics
 from tempfile import TemporaryDirectory
 from pathlib import Path
+from celery.result import AsyncResult
 
 METRICS_DIR = Path(__file__).resolve().parents[2] / "metrics"
 if str(METRICS_DIR) not in sys.path:
@@ -41,37 +45,55 @@ def legacy_error(exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=status_code, content={"error": str(exc)})
 
 
+# Celery decode/get job id 
+@router.get("/{job_id}")
+async def get_job_id(job_id):
+    """Function decodes unique celery job_id and gets value """
+    result = AsyncResult(job_id, app=celery_app)
+    return {
+        "job_id":job_id,
+        "status":result.status, 
+        "ready":result.ready(),
+        "result":result.result if result.ready() else None
+    }
+
+
+# Use celery
 @api_router.post("/metrics")
 async def calculate_metrics(payload: dict):
     """Drop-in replacement for server.py's /api/metrics endpoint."""
-    try:
-        return await run_in_threadpool(legacy_backend.generate_metrics, payload)
-    except Exception as exc:
-        return legacy_error(exc)
+    task = calculate_metrics_celery.delay(payload)
+    return {
+        "task_id":task.id, 
+        "status":"queued",
+    }
 
-
+# Use celery
 @api_router.post("/mutation-analysis")
 async def calculate_mutation_analysis(payload: dict):
     """Analyze mutation survivors for one generated Hypothesis test."""
-    try:
-        return await run_in_threadpool(legacy_backend.generate_mutation_analysis, payload)
-    except Exception as exc:
-        return legacy_error(exc)
+    task = calculate_mutation_analysis_celery.delay(payload)
+    return {
+        "task_id":task.id,
+        "status":"queued"
+    }
 
-
+# Using celery
 @api_router.post("/rerun-test")
 async def rerun_generated_test(payload: dict):
     """Re-run one generated test and return the metric object."""
-    try:
-        return await run_in_threadpool(legacy_backend.rerun_test, payload)
-    except Exception as exc:
-        return legacy_error(exc)
+    task = rerun_generated_test_celery.delay(payload)
+    return {
+        "task_id":task.id,
+        "status":"queued"
+    }
 
-
+# Using celery
 @api_router.post("/coverage")
 async def calculate_documentation_coverage(payload: dict):
     """Map generated documentation claims back to source-code evidence."""
-    try:
-        return await run_in_threadpool(legacy_backend.generate_coverage, payload)
-    except Exception as exc:
-        return legacy_error(exc)
+    task = calculate_documentation_coverage_celery.delay(payload)
+    return {
+        "task_id":task.id,
+        "status":"queued",
+    }
