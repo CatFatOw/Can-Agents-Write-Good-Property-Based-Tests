@@ -1,6 +1,5 @@
 """File handles the routes to compare the "area-like game" of comparing IBD to TD and assigning an ELO rating :D """
 from fastapi import APIRouter, HTTPException, Depends, Query, status
-from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func 
 import models 
@@ -10,7 +9,8 @@ from schemas import ComparisonResponse, RandomComparisonResponse, ComparisonRequ
 import choix,math
 import oath2
 import admin
-import pandas as pd
+from task_runner import export_csv
+from tasks.export_tasks import export_comparison_votes_csv_celery
 
 
 router = APIRouter(prefix="/comparison", tags=["comparison"])
@@ -390,44 +390,14 @@ async def reset_all_comparison_attempts(
     }
 
 
+# Export Arena comparison votes through the Celery/Redis queue (the frontend
+# polls the returned task id), or inline as a direct CSV when the broker is down.
 @router.get("/export")
 async def export_comparison_votes_csv(
-    db: Session = Depends(get_db),
     curr_user: Session = Depends(admin.get_current_admin),
 ):
     """Export all Arena A/B comparison votes and aggregate document stats."""
-    rows = (
-        db.query(
-            models.Comparison.id.label("comparison_id"),
-            models.Comparison.documentation_id,
-            models.Documentation.documentation_title,
-            models.Comparison.winner,
-            models.Comparison.comments,
-            models.Comparison.user_id,
-            models.User.email.label("user_email"),
-            models.Comparison.created_at,
-            models.Documentation.comparison_count,
-            models.Documentation.ibd_wins,
-            models.Documentation.td_wins,
-            models.Documentation.ibd_doc_elo_rating,
-            models.Documentation.td_doc_elo_rating,
-            models.Documentation.bt_ibd_rating,
-            models.Documentation.bt_td_rating,
-            models.Documentation.bt_ibd_win_prob,
-        )
-        .join(models.Documentation, models.Documentation.id == models.Comparison.documentation_id)
-        .outerjoin(models.User, models.User.id == models.Comparison.user_id)
-        .order_by(models.Comparison.created_at.desc(), models.Comparison.id.desc())
-        .all()
-    )
-    df = pd.DataFrame([row._asdict() for row in rows])
-    file_name = "Arena_Comparison_Votes.csv"
-    df.to_csv(file_name, index=False)
-    return FileResponse(
-        path=file_name,
-        filename=file_name,
-        media_type="text/csv"
-    )
+    return await export_csv(export_comparison_votes_csv_celery)
 
 # Get the leaderboard :D . Using elo as the main ranking metric with supporting evidence of bradley-terry etc
 @router.get("/leaderboard")

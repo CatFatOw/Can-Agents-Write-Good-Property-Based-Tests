@@ -2,12 +2,14 @@ try:
     from celery_app import celery_app
     import models
     from database import SessionLocal
+    from schemas import DocumentationResponse
 except ImportError:
     from app.celery_app import celery_app
     from app import models
     from app.database import SessionLocal
-    
-import pandas as pd 
+    from app.schemas import DocumentationResponse
+
+import pandas as pd
 
 @celery_app.task(name="ibd.export_assessment_question_table_csv")
 def export_assessment_question_table_csv_celery(user_id: int):
@@ -106,6 +108,59 @@ def export_all_assessment_responses_csv_celery():
     file_name = "All_Assessment_Responses.csv"
     return {
         "filename": file_name,
+        "media_type": "text/csv",
+        "content": df.to_csv(index=False),
+    }
+
+
+@celery_app.task(name="ibd.export_documentation_table_csv")
+def export_documentation_table_csv_celery():
+    """Export every documentation row so future research can be done."""
+    with SessionLocal() as db:
+        data = db.query(models.Documentation).all()
+        result = [DocumentationResponse.model_validate(doc).model_dump() for doc in data]
+
+    df = pd.DataFrame(result)
+    return {
+        "filename": "Documentation_Table_Data.csv",
+        "media_type": "text/csv",
+        "content": df.to_csv(index=False),
+    }
+
+
+@celery_app.task(name="ibd.export_comparison_votes_csv")
+def export_comparison_votes_csv_celery():
+    """Export all Arena A/B comparison votes and aggregate document stats."""
+    with SessionLocal() as db:
+        rows = (
+            db.query(
+                models.Comparison.id.label("comparison_id"),
+                models.Comparison.documentation_id,
+                models.Documentation.documentation_title,
+                models.Comparison.winner,
+                models.Comparison.comments,
+                models.Comparison.user_id,
+                models.User.email.label("user_email"),
+                models.Comparison.created_at,
+                models.Documentation.comparison_count,
+                models.Documentation.ibd_wins,
+                models.Documentation.td_wins,
+                models.Documentation.ibd_doc_elo_rating,
+                models.Documentation.td_doc_elo_rating,
+                models.Documentation.bt_ibd_rating,
+                models.Documentation.bt_td_rating,
+                models.Documentation.bt_ibd_win_prob,
+            )
+            .join(models.Documentation, models.Documentation.id == models.Comparison.documentation_id)
+            .outerjoin(models.User, models.User.id == models.Comparison.user_id)
+            .order_by(models.Comparison.created_at.desc(), models.Comparison.id.desc())
+            .all()
+        )
+        result = [row._asdict() for row in rows]
+
+    df = pd.DataFrame(result)
+    return {
+        "filename": "Arena_Comparison_Votes.csv",
         "media_type": "text/csv",
         "content": df.to_csv(index=False),
     }

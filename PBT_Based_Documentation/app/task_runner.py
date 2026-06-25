@@ -14,6 +14,7 @@ import os
 import time
 from typing import Any, Callable
 
+from fastapi import Response
 from starlette.concurrency import run_in_threadpool
 
 # Support both `PYTHONPATH=app ...` and package-style `app....` launches, matching
@@ -98,3 +99,34 @@ async def run_task_inline(celery_task, *args) -> Any:
     without touching the broker, which is exactly what the inline fallback needs.
     """
     return await run_in_threadpool(celery_task, *args)
+
+
+def csv_response(result: dict) -> Response:
+    """Return a worker CSV payload as a direct download.
+
+    Used by the inline fallback when Redis/Celery is unavailable. The frontend
+    streams a real CSV response straight to a file (it only polls a task id when
+    the response is JSON with a task_id), so both paths download the same file.
+    """
+    filename = result.get("filename") or "export.csv"
+    return Response(
+        content=result.get("content") or "",
+        media_type=result.get("media_type") or "text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+async def export_csv(celery_task, *args) -> Any:
+    """Queue a CSV export task when a broker is reachable, else build it inline.
+
+    Returns ``{"task_id", "status": "queued"}`` for the frontend to poll, or a
+    direct CSV ``Response`` when run synchronously. Both are handled by the
+    frontend's admin-export download flow.
+    """
+    if broker_available():
+        try:
+            async_result = celery_task.delay(*args)
+            return {"task_id": async_result.id, "status": "queued"}
+        except Exception:
+            _mark_broker_down()
+    return csv_response(await run_task_inline(celery_task, *args))

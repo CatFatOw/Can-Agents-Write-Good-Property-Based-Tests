@@ -5,7 +5,6 @@ getting only IBD documentation, and getting on TD documentation
 
 import json
 import admin
-from fastapi.responses import FileResponse
 from fastapi import APIRouter, HTTPException, status, Depends, Response
 from fastapi.responses import JSONResponse
 from fastapi.responses import StreamingResponse
@@ -25,10 +24,11 @@ from schemas import (
 )
 import database 
 from database import get_db 
-import oath2 
-import utils 
+import oath2
+import utils
 import legacy_backend
-import pandas as pd 
+from task_runner import export_csv
+from tasks.export_tasks import export_documentation_table_csv_celery
 
 
 router = APIRouter(
@@ -252,23 +252,12 @@ async def get_current_user_td(db:Session = Depends(get_db), curr_user:Session = 
 # USER ENDPOINT LOGIC END----
 
 
-# Add a route to export all the data in documentation :) 
+# Export all the documentation data through the Celery/Redis queue (the frontend
+# polls the returned task id), or inline as a direct CSV when the broker is down.
 @router.get("/export")
-async def export_documentation_as_csv(db:Session = Depends(get_db), curr_user:Session = Depends(admin.get_current_admin)):
+async def export_documentation_as_csv(curr_user:Session = Depends(admin.get_current_admin)):
     """This function exports every single data in the documentation table so that future reserach can be done"""
-    data = db.query(models.Documentation).all()
-    # turn result into a hashmap
-    result = [DocumentationResponse.model_validate(doc).model_dump() for doc in data]
-
-    # turn it into a pdf dataframe and download 
-    df = pd.DataFrame(result)
-    file_name = "Documentation_Table_Data.csv"
-    df.to_csv(file_name, index=False)
-    return FileResponse(
-        path=file_name,
-        filename=file_name,
-        media_type="text/csv"
-    )
+    return await export_csv(export_documentation_table_csv_celery)
 
 
 # LOGIC FOR Invariants (used by stored documentation records)
