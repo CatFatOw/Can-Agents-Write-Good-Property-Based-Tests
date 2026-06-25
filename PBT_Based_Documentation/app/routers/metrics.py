@@ -45,17 +45,27 @@ def legacy_error(exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=status_code, content={"error": str(exc)})
 
 
+def celery_result_payload(job_id: str) -> dict:
+    result = AsyncResult(job_id, app=celery_app)
+    payload = {
+        "job_id": job_id,
+        "status": result.status,
+        "ready": result.ready(),
+        "result": None,
+    }
+    if result.ready():
+        if result.failed():
+            payload["result"] = {"error": str(result.result)}
+        else:
+            payload["result"] = result.result
+    return payload
+
+
 # Celery decode/get job id 
 @router.get("/{job_id}")
 async def get_job_id(job_id):
     """Function decodes unique celery job_id and gets value """
-    result = AsyncResult(job_id, app=celery_app)
-    return {
-        "job_id":job_id,
-        "status":result.status, 
-        "ready":result.ready(),
-        "result":result.result if result.ready() else None
-    }
+    return celery_result_payload(job_id)
 
 
 # Use celery

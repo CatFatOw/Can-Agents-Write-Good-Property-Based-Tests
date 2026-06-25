@@ -1,7 +1,11 @@
-from celery_app import celery_app
+try:
+    from app.celery_app import celery_app
+    from app import legacy_backend
+except ImportError:
+    from celery_app import celery_app
+    import legacy_backend
 from fastapi.encoders import jsonable_encoder
 from fastapi import status
-import legacy_backend
 
 # Helper function
 def legacy_error(exc: Exception) -> dict:
@@ -14,7 +18,7 @@ def task_result(result) -> dict:
     """Convert legacy metric output into a Celery JSON-backend friendly payload."""
     return jsonable_encoder(result)
 
-@celery_app.task 
+@celery_app.task(name="ibd.calculate_metrics")
 def calculate_metrics_celery(payload: dict):
     """Drop-in replacement for server.py's /api/metrics endpoint."""
     try:
@@ -23,7 +27,7 @@ def calculate_metrics_celery(payload: dict):
         return legacy_error(exc)
     
 
-@celery_app.task 
+@celery_app.task(name="ibd.calculate_mutation_analysis")
 def calculate_mutation_analysis_celery(payload: dict):
     """Analyze mutation survivors for one generated Hypothesis test."""
     try:
@@ -32,7 +36,7 @@ def calculate_mutation_analysis_celery(payload: dict):
         return legacy_error(exc)
     
 
-@celery_app.task
+@celery_app.task(name="ibd.rerun_generated_test")
 def rerun_generated_test_celery(payload: dict):
     """Re-run one generated test and return the metric object."""
     try:
@@ -41,7 +45,7 @@ def rerun_generated_test_celery(payload: dict):
         return legacy_error(exc)
     
 
-@celery_app.task
+@celery_app.task(name="ibd.calculate_documentation_coverage")
 def calculate_documentation_coverage_celery(payload: dict):
     """Map generated documentation claims back to source-code evidence."""
     try:

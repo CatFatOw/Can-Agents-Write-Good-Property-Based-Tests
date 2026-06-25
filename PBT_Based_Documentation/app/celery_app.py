@@ -18,6 +18,7 @@ celery_app = Celery(
     broker=_redis_url(),
     backend=_redis_url(),
 )
+app = celery_app
 
 celery_app.conf.update(
     task_serializer="json",
@@ -27,6 +28,11 @@ celery_app.conf.update(
     broker_connection_retry_on_startup=True,
 )
 
-# Import tasks here 
-from tasks import export_tasks
-from tasks import metric_task
+# Import tasks here. Support both `PYTHONPATH=app celery -A celery_app...`
+# and package-style `celery -A app.celery_app...` worker launches.
+try:
+    from .tasks import export_tasks
+    from .tasks import metric_task
+except ImportError:
+    from tasks import export_tasks
+    from tasks import metric_task

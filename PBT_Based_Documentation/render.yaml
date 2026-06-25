@@ -11,9 +11,28 @@ services:
         value: 3.12.4
       - key: DATABASE_URL
         sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: REDIS_TLS
+        value: "true"
       - key: JWT_KEY
         generateValue: true
       - key: FRONTEND_ORIGINS
         sync: false
       - key: WEB_CONCURRENCY
         value: 2
+  - type: worker
+    name: ibd-celery-worker
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.celery_app worker --loglevel=info --concurrency=1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: REDIS_TLS
+        value: "true"

@@ -836,12 +836,15 @@ async def get_stats(db:Session = Depends(get_db), curr_user:Session = Depends(oa
 async def get_job(job_id):
     """Function decodes a unique job-id from celery and gets the value"""
     result = AsyncResult(job_id, app=celery_app)
-    return {
+    payload = {
         "job_id":job_id,
         "status":result.status, 
         "ready":result.ready(),
-        "result":result.result if result.ready() else None 
+        "result": None,
     }
+    if result.ready():
+        payload["result"] = {"error": str(result.result)} if result.failed() else result.result
+    return payload
 
 
 # Allow the user to download the data as a CSV file

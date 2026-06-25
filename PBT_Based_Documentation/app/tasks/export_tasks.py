@@ -1,9 +1,14 @@
-from celery_app import celery_app 
-import models 
+try:
+    from app.celery_app import celery_app
+    from app import models
+    from app.database import SessionLocal
+except ImportError:
+    from celery_app import celery_app
+    import models
+    from database import SessionLocal
 import pandas as pd 
-from database import SessionLocal
 
-@celery_app.task
+@celery_app.task(name="ibd.export_assessment_question_table_csv")
 def export_assessment_question_table_csv_celery(user_id: int):
     """Function exports assessment data as a CSV."""
     with SessionLocal() as db:
@@ -56,7 +61,7 @@ def export_assessment_question_table_csv_celery(user_id: int):
     }
 
 
-@celery_app.task 
+@celery_app.task(name="ibd.export_all_assessment_responses_csv")
 def export_all_assessment_responses_csv_celery():
     """Export all quiz questions, attempts, answers, and user identifiers for admin analysis."""
     with SessionLocal() as db:
