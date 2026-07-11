@@ -1,9 +1,5 @@
-try:
-    from celery_app import celery_app
-    import legacy_backend
-except ImportError:
-    from app.celery_app import celery_app
-    from app import legacy_backend
+from app.celery_app import celery_app
+from app import legacy_backend
     
 from fastapi.encoders import jsonable_encoder
 from fastapi import status

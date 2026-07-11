@@ -1,170 +1,150 @@
 # Invariant-Based Documentation Generator
 
-## Can Invariant Based Documentation Generation Create Better Documentation Than Traditional Documentation?
+An experimental system for studying whether documentation reconstructed from
+implementation-backed invariants can be more useful than traditional
+documentation. It turns source code into candidate behavioral claims, supports
+human review, generates property-based tests, evaluates those tests, and
+produces contract-oriented Markdown documentation.
 
-## Interactive Website Demo
+The project includes both a reproducible command-line research workflow and an
+interactive FastAPI web application for comparing invariant-based and
+traditional documentation.
 
-This folder also includes a browser demo for the source-code-to-documentation
-workflow:
+## What it does
 
-**Use FastAPI for the current website. Do not start the new backend with
-`python3 server.py`; that file is only the old backup server.**
+- Extracts candidate invariants from Python source code with an LLM.
+- Keeps a human reviewer in the loop before claims are promoted.
+- Generates Hypothesis property-based tests for approved invariants.
+- Evaluates validity, soundness, and optional mutation resistance.
+- Reconstructs Markdown documentation from the supported claims.
+- Provides an Arena-style web UI for generating, reviewing, assessing, and
+  comparing documentation.
 
-```bash
-cd /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/PBT_Based_Documentation
-export JWT_KEY="dev-secret-change-me"
-export DATABASE_URL="postgresql://postgres:password@localhost/pbt_docs"
-python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8011
-```
+## Demo
 
-For quick local testing without Postgres, omit `DATABASE_URL`; the FastAPI app
-falls back to a local SQLite database:
-
-```bash
-cd /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/PBT_Based_Documentation
-export JWT_KEY="dev-secret-change-me"
-python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8011
-```
-
-Then open:
-
-```text
-http://127.0.0.1:8011
-```
-
-The site lets you paste source code on the left, load the exact `numpy.linspace`
-source example, choose a model API provider, paste an API key, click **Run**,
-review generated candidate invariants on the right, and then generate a
-Markdown comparison between the original source code and the invariant-based
-documentation.
-
-You can also try pulling source code from an installed Python object name. The
-site does the local backend equivalent of:
-
-```python
-import numpy as np
-import inspect
-
-print(inspect.getsource(np.linspace))
-```
-
-If lookup fails because the package is missing or the object cannot be
-inspected, paste the source code manually.
-
-Some library objects, such as `np.add`, are implemented as compiled ufuncs and
-do not expose Python source through `inspect.getsource`. In those cases the app
-loads a clearly labeled signature/docstring fallback so the button still gives
-useful context, but true source-code analysis still requires pasted source.
-
-### Demo Images
-
-Source lookup with `inspect.getsource(np.linspace)`:
+Source lookup for an inspectable Python object:
 
 ![Source lookup demo](./assets/demo-source-lookup.png)
 
-Backend key check before GPT calls:
+The UI checks for a provider API key before issuing generation requests:
 
-![OpenAI key required demo](./assets/demo-openai-key-required.png)
+![API key required demo](./assets/demo-openai-key-required.png)
 
-The FastAPI backend lives in `app/main.py`. It serves the existing static
-frontend and exposes the old `/api/...` endpoints through routers, so the
-browser workflow is still compatible with the previous `server.py` behavior.
-`server.py` is kept as a legacy backup.
+## Architecture
 
-Model provider options:
-
-- **GPT / OpenAI**: default. Uses `OPENAI_API_KEY` or the key pasted in the UI.
-- **Claude / Anthropic**: supports invariant and documentation generation with
-  Anthropic's Messages API. Metrics still require GPT/OpenAI or an
-  OpenAI-compatible gateway.
-- **CMU AI Gateway**: uses the key page at
-  `https://ai-gateway.andrew.cmu.edu/ui/?page=api-keys`. Paste the key from
-  that dashboard into the key field, not the dashboard URL. The app defaults to
-  the OpenAI-compatible gateway base URL `https://ai-gateway.andrew.cmu.edu/v1`;
-  override `CMU_AI_GATEWAY_BASE_URL` only if CMU documents a different API URL.
-
-The default documentation model is `gpt-5.5`, or set `OPENAI_MODEL` before
-starting the server to override it. Metrics use `OPENAI_METRICS_MODEL`, default
-`gpt-5.4-mini`.
-
-The website also exposes separate model fields:
-
-- **Markdown model** controls invariant extraction and Markdown documentation.
-  Leave blank for the provider default (`gpt-5.5` for GPT/OpenAI, Sonnet for
-  Claude).
-- **Metrics model** controls generated property-based tests and validity /
-  soundness scoring. Leave blank for the provider default (`gpt-5.4-mini` for
-  GPT/OpenAI, Sonnet for Claude).
-
-The overall metrics pass is intentionally fast: it generates tests and
-validity/soundness scores only. Mutation testing is still available, but it runs
-on demand from each generated test's **Run mutation** button instead of running
-for every invariant during the overall metrics pass.
-
-Note: viewing the files on GitHub or hosting only the static files will not run
-model generation. Real generation requires this Python backend, or another
-server host that can run the FastAPI app.
-
-
-This directory contains a prototype workflow for reconstructing API
-documentation from implementation-backed behavioral claims. The system extracts
-candidate invariants from source code, asks for human review, generates
-property-based tests, evaluates those tests, and promotes only sufficiently
-supported claims into Markdown documentation.
-
-## Workflow
+The web application uses a layered FastAPI backend. Routers own HTTP concerns;
+services implement workflows and authorization; repositories own SQLAlchemy
+queries.
 
 ```text
-source code + JSON config
-  -> candidate invariants
-  -> human review
-  -> generated Hypothesis tests
-  -> validity / soundness / optional mutation metrics
-  -> reconstructed documentation
+app/
+├── main.py                  # FastAPI application and router registration
+├── routers/                 # HTTP endpoints
+├── services/                # Auth, user, and documentation workflows
+├── repository/              # Database access functions
+├── models/                  # SQLAlchemy models
+├── schemas/                 # Pydantic request/response models
+├── security/                # JWT, password, and admin authorization helpers
+├── tasks/                   # Celery jobs for long-running work
+└── alembic/                 # Database migrations
 ```
 
-The final documentation should not mention test metrics or mutation testing.
-Those signals are used only as an internal filter for deciding which semantic
-claims are strong enough to document.
+The static frontend (`index.html`, `app.js`, and `styles.css`) is served by the
+same FastAPI process. `server.py` is retained only as a legacy reference; use
+`app.main:app` for all new development and deployments.
 
-## Recommended JSON Run
+## Quick start
 
-Use JSON configs for reproducible runs. The active NumPy example is:
+### Prerequisites
 
-```text
-numpy_docs_config.json
-```
+- Python 3.11+
+- An OpenAI, Anthropic, or CMU AI Gateway API key for generation
+- PostgreSQL for a production-like setup (SQLite is used automatically for
+  local smoke testing)
+- Redis when using the background Celery jobs
 
-Run from this directory:
+### Install
 
 ```bash
-cd /Users/michaelwu/cmu-research_PBT/Can-Agents-Write-Good-Property-Based-Tests/PBT_Based_Documentation
-export OPENAI_API_KEY="your_api_key_here"
+git clone https://github.com/CatFatOw/Can-Agents-Write-Good-Property-Based-Tests.git
+cd Can-Agents-Write-Good-Property-Based-Tests/PBT_Based_Documentation
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Configure
+
+Set a JWT signing key. Set `DATABASE_URL` for PostgreSQL, or leave it unset to
+use the local SQLite fallback.
+
+```bash
+export JWT_KEY="replace-with-a-long-random-secret"
+export DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/pbt_docs"
+
+# Optional provider configuration
+export OPENAI_API_KEY="..."
+export OPENAI_MODEL="gpt-5.5"
+export OPENAI_METRICS_MODEL="gpt-5.4-mini"
+```
+
+For the CMU AI Gateway, use the OpenAI-compatible API endpoint and a key from
+its dashboard:
+
+```bash
+export CMU_AI_GATEWAY_BASE_URL="https://ai-gateway.andrew.cmu.edu/v1"
+```
+
+### Run the web application
+
+```bash
+python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8011 --reload
+```
+
+Open [http://127.0.0.1:8011](http://127.0.0.1:8011).
+
+For PostgreSQL, apply migrations before starting the application:
+
+```bash
+alembic -c app/alembic.ini upgrade head
+```
+
+### Background jobs (optional)
+
+Metric generation, mutation analysis, and CSV exports can run through Celery.
+With Redis available at `REDIS_URL`, start a worker in another terminal:
+
+```bash
+celery -A app.celery_app worker --loglevel=info
+```
+
+## Research workflow
+
+The command-line workflow uses JSON configurations for reproducible runs.
+
+```bash
+export OPENAI_API_KEY="..."
 python3 gpt_documentation_generator.py --config numpy_docs_config.json
 ```
 
-The first run writes review files and stops:
+The first run creates reviewer files under `artifacts/<api_name>/`. Keep only
+accepted claims in `human_review.md`, then run the command again to generate
+tests, metrics, and reconstructed documentation. Setting `"auto_continue":
+true` in the configuration continues automatically once review files exist.
 
 ```text
-artifacts/numpy/norm/human_review.md
-artifacts/numpy/dot/human_review.md
-artifacts/numpy/add/human_review.md
+source code
+  → candidate invariants
+  → human review
+  → Hypothesis tests
+  → validity / soundness / optional mutation analysis
+  → reconstructed documentation
 ```
 
-Edit each review file so it contains only accepted invariants. Then run the
-same command again:
+The final documentation is deliberately free of evaluation statistics. Metrics
+are an internal quality gate, not part of the resulting API documentation.
 
-```bash
-python3 gpt_documentation_generator.py --config numpy_docs_config.json
-```
-
-With `"auto_continue": true`, the runner automatically detects existing
-`human_review.md` files and proceeds to test generation, metrics, and
-documentation.
-
-## JSON Format
-
-Single API:
+### Example configuration
 
 ```json
 {
@@ -177,131 +157,57 @@ Single API:
   "min_validity": 0.8,
   "min_soundness": 0.8,
   "min_confidence": 0.75,
-  "min_mutation": 0.25,
-  "reviewer_notes": "Input-domain constraints or import notes."
+  "min_mutation": 0.25
 }
 ```
 
-Multiple APIs:
+## Model providers
 
-```json
-{
-  "model": "gpt-5.4-mini",
-  "artifact_root": "artifacts/numpy",
-  "run_mutation": false,
-  "auto_continue": true,
-  "apis": [
-    {
-      "source": "source_code/numpy/linalg/_linalg.py",
-      "function": "norm",
-      "reviewer_notes": "Document this as numpy.linalg.norm."
-    },
-    {
-      "source": "source_code/numpy/_core/multiarray.py",
-      "function": "dot",
-      "reviewer_notes": "Document this as numpy.dot."
-    }
-  ]
-}
-```
+| Provider | Use case | Configuration |
+| --- | --- | --- |
+| OpenAI | Default generation and metrics | `OPENAI_API_KEY` |
+| Anthropic | Invariants and Markdown generation | API key in the UI or environment |
+| CMU AI Gateway | OpenAI-compatible CMU deployment | Gateway key and `/v1` base URL |
 
-Keep mutation testing disabled until validity and soundness are acceptable. Then
-set:
+Markdown generation and metrics can use separate models. The UI exposes both
+settings; environment variables provide defaults.
 
-```json
-"run_mutation": true,
-"mutation_dir": "metrics"
-```
+## Outputs
 
-## Artifacts
-
-Each API writes:
+Each run produces an artifact directory such as:
 
 ```text
 artifacts/<api_name>/
-  candidate_invariants.md
-  human_review.md
-  generated_tests.py
-  metrics_report.md
-  documentation_blocked.md          # only if the metric gate fails
-  mutation_analysis.md              # only if mutation analysis runs
-  reconstructed_documentation.md
+├── candidate_invariants.md
+├── human_review.md
+├── generated_tests.py
+├── metrics_report.md
+├── mutation_analysis.md          # when enabled
+├── documentation_blocked.md      # when the quality gate fails
+└── reconstructed_documentation.md
 ```
 
-Terminal statuses:
+Examples generated in this repository include
+[`numpy.linalg.norm`](./artifacts/numpy/norm/reconstructed_documentation.md)
+and [`numpy.dot`](./artifacts/numpy/dot/reconstructed_documentation.md).
 
-```text
-[RUN]      active generation or execution
-[OK]       artifact written or stage completed
-[STOP]     waiting for human review
-[BLOCKED]  metric gate failed
+## Verification
+
+Run the available tests and a minimal application smoke check:
+
+```bash
+pytest -q
+python3 -c 'from fastapi.testclient import TestClient; from app.main import app; print(TestClient(app).get("/health").json())'
 ```
 
-Set `NO_COLOR=1` to disable colored output.
+## Deployment
 
-## NumPy Documentation Comparison
+The repository includes `render.yaml` and `scripts/render-start.sh` for Render.
+Set the production values for `JWT_KEY`, `DATABASE_URL`, `REDIS_URL`, and the
+selected model provider credentials in the hosting environment. The startup
+script runs migrations before launching `uvicorn app.main:app`.
 
-Generated documentation in this repository:
+## License and research status
 
-- [`numpy.linalg.norm`](./artifacts/numpy/norm/reconstructed_documentation.md)
-- [`numpy.dot`](./artifacts/numpy/dot/reconstructed_documentation.md)
-
-Official NumPy documentation:
-
-- [`numpy.linalg.norm`](https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html)
-- [`numpy.dot`](https://numpy.org/doc/stable/reference/generated/numpy.dot.html)
-
-### Documentation Styles
-
-The generated documentation is intentionally contract-oriented. It organizes
-behavior around explicit invariants, preconditions, semantic guarantees, and
-known edge cases. The standard NumPy documentation is usage-oriented. It gives
-the public API signature, parameter descriptions, examples, and mathematical
-reference material.
-
-| Dimension | Invariant-based documentation | Standard NumPy documentation |
-|---|---|---|
-| Core philosophy | Contract-first: documents rules, guarantees, and failure modes. | Usage-first: describes what the function does and shows representative outputs. |
-| Edge-case handling | Explicit: edge cases are separated into dedicated sections. | Often implicit: edge cases may be embedded in notes, tables, or examples. |
-| Error visibility | Defensive: invalid combinations and likely exceptions are surfaced near the relevant behavior. | Reference-oriented: exceptions are documented, but not always connected to each semantic mode. |
-| Readability | Scannable: separates vector, matrix, scalar, axis, and dtype behavior where possible. | Dense: compact tables and long examples can require more cross-reading. |
-| Examples | Minimal and targeted toward semantic distinctions. | Broad and literal, often matching interactive numerical exploration. |
-| Research utility | Useful for deriving tests, wrappers, static checks, and documentation claims. | Useful as the canonical public reference and mathematical baseline. |
-
-### Invariant-Based Documentation Generator
-
-The official documentation is the better complete reference for quick syntax
-lookups, mathematical context, and raw API signatures. The invariant-based
-documentation is more useful as a behavioral contract: it foregrounds
-preconditions, semantic guarantees, boundary cases, and predictable failure
-modes.
-
-For a developer concerned with robustness, readability, and reducing runtime
-edge-case failures, the invariant-based version is the better starting point.
-For raw API completeness and interactive verification, the official reference
-remains necessary.
-
-In particular, the invariant-based documentation style is stronger for:
-
-- codifying strict semantic guarantees over loose textual descriptions,
-- making explicit which inputs should trigger documented exceptions,
-- isolating high-risk edge cases into dedicated, scannable sections,
-- shifting documentation from passive description toward an active, testable
-  software contract.
-
-The official documentation style is stronger for:
-
-- comprehensive coverage of minor internal flags and low-level parameters,
-- historical evolutionary context and mathematical/academic citations,
-- copy-pasteable terminal outputs for immediate interactive verification in a REPL.
-
-Overall, the invariant-based style is better when the goal is to write robust production code, automated test suites, input validators, or static-analysis rules. The standard documentation style is better when the goal is a complete public reference or a quick confirmation of raw numerical output.
-
-## Notes
-
-- Traditional documentation is optimized for reference and examples;
-  invariant-based documentation is optimized for explicit behavioral claims.
-- Ambiguous edge cases are a source of implementation and integration risk.
-  Making them explicit improves testability and defensive use.
-- An invariant-first workflow treats documentation claims as artifacts that can
-  be reviewed, tested, and revised.
+This is a research prototype. Generated documentation and test artifacts should
+be reviewed by a human before being used as authoritative API documentation.

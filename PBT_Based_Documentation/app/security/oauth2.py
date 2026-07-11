@@ -1,13 +1,13 @@
-"""oath2 handles the logic of creating, validing, and finding users via JWT token"""
+"""Create, validate, and resolve users from JWT access tokens."""
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone 
 import os 
-from fastapi import FastAPI, Depends, status, HTTPException
+from fastapi import Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from schemas import TokenData
-from database import get_db
+from app.schemas import TokenData
+from app.database import get_db
 from sqlalchemy.orm import Session
-import models 
+from app import models
 
 # Tells FastAPi where clients can obtain a token and makes token available
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
@@ -60,8 +60,6 @@ def get_current_user(token:str = Depends(oauth2_scheme), db:Session = Depends(ge
     token = verify_access_token(token, credential_exception)
     user = db.query(models.User).filter(models.User.id == token.id).first()
     return user
-
-
 
 
 

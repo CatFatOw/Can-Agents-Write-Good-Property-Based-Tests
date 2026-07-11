@@ -2,15 +2,13 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func 
-import models 
-import database 
-from database import get_db 
-from schemas import ComparisonResponse, RandomComparisonResponse, ComparisonRequest
+from app import database, models
+from app.database import get_db
+from app.schemas import ComparisonResponse, RandomComparisonResponse, ComparisonRequest
+from app.security import admin, oauth2
 import choix,math
-import oath2
-import admin
-from task_runner import export_csv
-from tasks.export_tasks import export_comparison_votes_csv_celery
+from app.task_runner import export_csv
+from app.tasks.export_tasks import export_comparison_votes_csv_celery
 
 
 router = APIRouter(prefix="/comparison", tags=["comparison"])
@@ -125,7 +123,7 @@ async def get_random_api(db:Session = Depends(get_db)):
 @router.get("/random-user", response_model=RandomComparisonResponse)
 async def get_random_api_for_user(
     db: Session = Depends(get_db),
-    curr_user: Session = Depends(oath2.get_current_user),
+    curr_user: Session = Depends(oauth2.get_current_user),
 ):
     """Get a random comparison this user has not already voted on."""
     voted_doc_ids = (
@@ -227,7 +225,7 @@ def calculate_bradley_terry(comparisons):
 async def vote_preference(
     vote: ComparisonRequest,
     db: Session = Depends(get_db),
-    curr_user: Session = Depends(oath2.get_current_user)
+    curr_user: Session = Depends(oauth2.get_current_user)
 ):
     compared_doc = db.query(models.Documentation).filter(
         models.Documentation.id == vote.documentation_id

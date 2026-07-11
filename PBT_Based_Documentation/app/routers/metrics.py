@@ -8,17 +8,16 @@ FOLLOWING ROUTES
 
 Note, rewrite this alot of functionaility via redis + celery
 """
-from celery_app import celery_app
+from app.celery_app import celery_app
 import sys
-from tasks.metric_task import calculate_metrics_celery, calculate_mutation_analysis_celery, rerun_generated_test_celery, calculate_documentation_coverage_celery
-from task_runner import dispatch_json
+from app.tasks.metric_task import calculate_metrics_celery, calculate_mutation_analysis_celery, rerun_generated_test_celery, calculate_documentation_coverage_celery
+from app.task_runner import dispatch_json
 from fastapi import APIRouter, HTTPException, status, Depends, Response
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
-import models
-import database
-from database import get_db
+from app import database, legacy_backend, models
+from app.database import get_db
 # To be used when calculating metrics
 from tempfile import TemporaryDirectory
 from pathlib import Path
@@ -34,7 +33,6 @@ from metric_code import (
     evaluate_validity_soundness,
     score_validity_soundness_mutation,
 )
-import legacy_backend
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 api_router = APIRouter(prefix="/api", tags=["legacy metrics api"])

@@ -1,22 +1,14 @@
-from pathlib import Path
 import os
-import sys
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-# Existing route files use local imports like `import models`.
-# Adding app/ to sys.path lets both `python app/main.py` and
-# `uvicorn app.main:app` resolve those imports consistently.
 APP_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = APP_DIR.parent
-if str(APP_DIR) not in sys.path:
-    sys.path.insert(0, str(APP_DIR))
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
 
-import database
+from app import database
 from app.routers import auth, comparison, documentation, metrics, model_api, users, assessments
 
 # Define the app
@@ -67,13 +59,6 @@ app.include_router(metrics.api_router)
 app.include_router(model_api.api_router)
 
 
-
-# Check to see if the database loaded properly.
-print(database.Base.metadata.tables.keys())
-
-# Create all tables defined by the ORM models.
-# Alembic should auto do this :D
-#database.Base.metadata.create_all(bind=database.engine)
 
 # Serve index.html, app.js, styles.css, assets/, examples/, etc. from the same
 # project root that server.py used to host through SimpleHTTPRequestHandler.

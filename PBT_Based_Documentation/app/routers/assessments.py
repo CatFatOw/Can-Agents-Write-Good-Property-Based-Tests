@@ -1,19 +1,18 @@
-import admin
+from app import legacy_backend, models
+from app.security import admin
 from fastapi import APIRouter, Body, HTTPException, Depends, Query, status
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func
 from starlette.concurrency import run_in_threadpool
-import models
-from database import get_db
+from app.database import get_db
 from openai import OpenAI
 import os, json
-import legacy_backend
 import random
-import oath2
+from app.security import oauth2
 from collections import defaultdict
 from fastapi import Response
-from schemas import (
+from app.schemas import (
     AssessmentQuestionSubmit,
     AssessmentAnswerResponse,
     AssessmentAnswerAdminResponse,
@@ -28,11 +27,11 @@ from schemas import (
     DocumentationResponse,
 )
 
-# Import the celery tasks
-from tasks.export_tasks import export_assessment_question_table_csv_celery, export_all_assessment_responses_csv_celery
-from task_runner import export_csv
+# Import the celery tasks.
+from app.tasks.export_tasks import export_assessment_question_table_csv_celery, export_all_assessment_responses_csv_celery
+from app.task_runner import export_csv
 from celery.result import AsyncResult
-from celery_app import celery_app
+from app.celery_app import celery_app
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 ASSESSMENT_MODEL = os.environ.get("OPENAI_ASSESSMENT_METRICS_MODEL", "gpt-5.5")
@@ -190,7 +189,7 @@ async def list_documentation_answers(
 async def list_my_documentation_answers(
     documentation_id:int,
     db:Session=Depends(get_db),
-    curr_user:models.User=Depends(oath2.get_current_user),
+    curr_user:models.User=Depends(oauth2.get_current_user),
 ):
     """List the current user's submitted answers for one documentation row."""
     doc = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
@@ -614,7 +613,7 @@ def user_can_start_documentation(documentation_id:int, db:Session, curr_user:mod
 
 
 @router.get("/documentation-options", response_model=list[AssessmentDocumentationOption])
-async def list_assessment_documentation_options(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+async def list_assessment_documentation_options(db:Session = Depends(get_db), curr_user:Session = Depends(oauth2.get_current_user)):
     """List documentation rows that have at least one assessment question."""
     rows = (
         db.query(
@@ -692,7 +691,7 @@ async def start_documentation_assessment(
     documentation_id:int,
     doc_type: str = Query("random"),
     db:Session = Depends(get_db),
-    curr_user:Session = Depends(oath2.get_current_user),
+    curr_user:Session = Depends(oauth2.get_current_user),
 ):
     """Start an assessment for one selected documentation row."""
     documentation = db.query(models.Documentation).filter(models.Documentation.id == documentation_id).first()
@@ -708,7 +707,7 @@ async def start_documentation_assessment(
 async def get_random_assessment(
     doc_type: str = Query("random"),
     db:Session = Depends(get_db),
-    curr_user:Session = Depends(oath2.get_current_user),
+    curr_user:Session = Depends(oauth2.get_current_user),
 ):
     """function gets random assessment and also ranodmly chooses to do TD or IBD """
     query = (
@@ -737,7 +736,7 @@ async def get_random_assessment(
 
 # Route allows user to submit their answer
 @router.post("/submit", response_model=AssessmentAnswerResponse)
-async def submit_answers(response:AssessmentSubmit, db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+async def submit_answers(response:AssessmentSubmit, db:Session = Depends(get_db), curr_user:Session = Depends(oauth2.get_current_user)):
     """Function allows user to submit response to the database"""
     attempting_question = db.query(models.AssessmentQuestion).filter(models.AssessmentQuestion.id == response.question_id).first()
     if not attempting_question:
@@ -807,7 +806,7 @@ async def submit_answers(response:AssessmentSubmit, db:Session = Depends(get_db)
 
 # Get assessment statistics
 @router.get("/stats", response_model=AssessmentStatsResponse)
-async def get_stats(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+async def get_stats(db:Session = Depends(get_db), curr_user:Session = Depends(oauth2.get_current_user)):
     """function gets the statistics of the current user """
     all_user_attempts = db.query(models.AssessmentAnswer).filter(models.AssessmentAnswer.user_id == curr_user.id).all()
     if not all_user_attempts:
@@ -852,7 +851,7 @@ async def get_job(job_id):
 
 
 @router.get("/export")
-async def export_assessment_question_table_csv(curr_user: Session = Depends(oath2.get_current_user)):
+async def export_assessment_question_table_csv(curr_user: Session = Depends(oauth2.get_current_user)):
     """Export the current user's assessment data as a CSV via Celery/Redis, or inline if the queue is down."""
     return await export_csv(export_assessment_question_table_csv_celery, curr_user.id)
 

@@ -1,13 +1,7 @@
-try:
-    from celery_app import celery_app
-    import models
-    from database import SessionLocal
-    from schemas import DocumentationResponse
-except ImportError:
-    from app.celery_app import celery_app
-    from app import models
-    from app.database import SessionLocal
-    from app.schemas import DocumentationResponse
+from app.celery_app import celery_app
+from app import models
+from app.database import SessionLocal
+from app.schemas import DocumentationResponse
 
 import pandas as pd
 

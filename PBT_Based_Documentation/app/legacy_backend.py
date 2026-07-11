@@ -30,7 +30,7 @@ if str(ROOT) not in sys.path:
 
 from gpt_documentation_generator import response_text as project_response_text
 from gpt_documentation_generator import strip_markdown_fences
-from routers.model_api import DEFAULT_CMU_GATEWAY_BASE_URL, PROVIDERS
+from app.routers.model_api import DEFAULT_CMU_GATEWAY_BASE_URL, PROVIDERS
 
 
 def _load_root_module(module_name: str, filename: str):

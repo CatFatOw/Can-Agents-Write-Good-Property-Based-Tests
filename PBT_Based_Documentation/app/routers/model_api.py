@@ -9,8 +9,8 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import text
 from starlette.concurrency import run_in_threadpool
 
-import database
-from schemas import ModelProviderResponse, ModelProviderSelection
+from app import database
+from app.schemas import ModelProviderResponse, ModelProviderSelection
 
 router = APIRouter(prefix="/model-api", tags=["model api"])
 api_router = APIRouter(prefix="/api", tags=["legacy model api"])

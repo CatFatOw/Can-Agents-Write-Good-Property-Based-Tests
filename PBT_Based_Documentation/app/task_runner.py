@@ -17,12 +17,7 @@ from typing import Any, Callable
 from fastapi import Response
 from starlette.concurrency import run_in_threadpool
 
-# Support both `PYTHONPATH=app ...` and package-style `app....` launches, matching
-# the dual-import pattern the rest of the app uses.
-try:
-    from celery_app import celery_app
-except ImportError:
-    from app.celery_app import celery_app
+from app.celery_app import celery_app
 
 
 # Probing the broker on every request would add a Redis round-trip to each call,

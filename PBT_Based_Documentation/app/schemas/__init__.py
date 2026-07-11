@@ -22,7 +22,7 @@ class InvariantsUpdate(BaseModel):
     """Payload for updating saved invariants without replacing the whole doc."""
     invariants: str | list[Any] | dict[str, Any]
 
-# Create the oath2 scheme
+# JWT token payload
 class TokenData(BaseModel):
     id:Optional[int] = None
 

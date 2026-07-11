@@ -28,12 +28,5 @@ celery_app.conf.update(
     broker_connection_retry_on_startup=True,
 )
 
-# Import tasks here. Support both `PYTHONPATH=app celery -A celery_app...`
-# and package-style `celery -A app.celery_app...` worker launches.
-
-try:
-    from tasks import export_tasks
-    from tasks import metric_task
-except ImportError:
-    from app.tasks import export_tasks
-    from app.tasks import metric_task
+# Import task modules so package-style Celery workers discover them.
+from app.tasks import export_tasks, metric_task

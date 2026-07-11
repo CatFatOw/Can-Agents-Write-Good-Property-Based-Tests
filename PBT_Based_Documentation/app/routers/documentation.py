@@ -4,16 +4,15 @@ getting only IBD documentation, and getting on TD documentation
 """
 
 import json
-import admin
+from app import database, legacy_backend, models
 from fastapi import APIRouter, HTTPException, status, Depends, Response
 from fastapi.responses import JSONResponse
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func
-import models 
-import schemas
-from schemas import (
+from app import schemas
+from app.schemas import (
     Documentation,
     DocumentationResponse,
     InvariantsUpdate,
@@ -22,13 +21,12 @@ from schemas import (
     UserIBDResponse,
     UserTDResponse,
 )
-import database 
-from database import get_db 
-import oath2
-import utils
-import legacy_backend
-from task_runner import export_csv
-from tasks.export_tasks import export_documentation_table_csv_celery
+from app.database import get_db
+from app.security import admin, oauth2
+from app.security import password as utils
+from app.services import documentation_service
+from app.task_runner import export_csv
+from app.tasks.export_tasks import export_documentation_table_csv_celery
 
 
 router = APIRouter(
@@ -230,22 +228,19 @@ async def get_all_documentation(
 @router.get("/me", response_model=list[DocumentationResponse])
 async def get_current_user_documentation(
     db:Session = Depends(get_db),
-    curr_user:models.User = Depends(oath2.get_current_user)
+    curr_user:models.User = Depends(oauth2.get_current_user)
 ):
     """Function gets all documentation owned by the current user"""
-    if db.query(models.AdminUser).filter(models.AdminUser.email == curr_user.email).first():
-        return documentation_response_rows(db, db.query(models.Documentation).all(), curr_user)
-    all_docs = db.query(models.Documentation).filter(models.Documentation.owner_id == curr_user.id).all()
-    return documentation_response_rows(db, all_docs, curr_user)
+    return documentation_response_rows(db, documentation_service.list_visible(db, curr_user), curr_user)
 
 @router.get("/me/ibd", response_model=UserIBDResponse)
-async def get_current_user_ibd(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+async def get_current_user_ibd(db:Session = Depends(get_db), curr_user:Session = Depends(oauth2.get_current_user)):
     """Function gets the IBD documentation relating to the user"""
     ibd = db.query(models.Documentation.IBD_generated_md).filter(models.Documentation.owner_id == curr_user.id).all()
     return {"user_ibd": [row[0] for row in ibd]}
 
 @router.get("/me/td", response_model=UserTDResponse)
-async def get_current_user_td(db:Session = Depends(get_db), curr_user:Session = Depends(oath2.get_current_user)):
+async def get_current_user_td(db:Session = Depends(get_db), curr_user:Session = Depends(oauth2.get_current_user)):
     """Function gets the td documentation relating to the user"""
     td = db.query(models.Documentation.TD_md).filter(models.Documentation.owner_id == curr_user.id).all()
     return {"user_td": [row[0] for row in td]}
@@ -278,39 +273,17 @@ async def update_invariants(
     id: int,
     payload: InvariantsUpdate,
     db: Session = Depends(get_db),
-    curr_user: models.User = Depends(oath2.get_current_user)
+    curr_user: models.User = Depends(oauth2.get_current_user)
 ):
     """Update only the invariants column for a stored documentation row."""
-    doc = db.query(models.Documentation).filter(
-        models.Documentation.id == id
-    ).first()
-
-    if not doc:
-        raise HTTPException(status_code=404, detail="Documentation not found")
-
-    if not can_manage_documentation(doc, curr_user, db):
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    # Store lists/dicts as JSON text while still allowing hand-written strings.
-    doc.invariants = (
-        json.dumps(payload.invariants)
-        if not isinstance(payload.invariants, str)
-        else payload.invariants
-    )
-    db.commit()
-    db.refresh(doc)
-
-    return doc
+    return documentation_service.update_invariants(db, id, curr_user, payload.invariants)
 
 
 # POST ID ENDPOINT LOGIC START----
 @router.get("/{id}", response_model = DocumentationResponse)
 async def get_documentation_by_post_id(id:int, db:Session = Depends(get_db)):
     """Function gets the documentation based off of the post id"""
-    docs = db.query(models.Documentation).filter(models.Documentation.id == id).first()
-    if not docs:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"POST ID: {id} not found")
-    return docs
+    return documentation_service.get_required(db, id)
 
 @router.get("/{id}/ibd", response_model=PostIBDResponse)
 async def get_only_ibd(id:int, db:Session = Depends(get_db)):
@@ -330,27 +303,15 @@ async def get_only_ibd(id:int, db:Session = Depends(get_db)):
 
 # Create Documentation Endpoint
 @router.post("/create_ibd", response_model=DocumentationResponse)
-async def create_IBD(ibd_doc:Documentation, db:Session=Depends(get_db), curr_user:Session=Depends(oath2.get_current_user)):
+async def create_IBD(ibd_doc:Documentation, db:Session=Depends(get_db), curr_user:Session=Depends(oauth2.get_current_user)):
     """Function lets user create their own posts :D """
-    new_ibd_docs = models.Documentation(owner_id=curr_user.id, **ibd_doc.model_dump())
-    db.add(new_ibd_docs)
-    db.commit()
-    db.refresh(new_ibd_docs)
-    return new_ibd_docs
+    return documentation_service.create(db, curr_user, ibd_doc.model_dump())
 
 # Update the Documentation Endpoint
 @router.put("/update_ibd/{id}", response_model=DocumentationResponse)
-async def update_IBD(id:int, ibd_doc:Documentation, db:Session=Depends(get_db), curr_user:Session=Depends(oath2.get_current_user)):
+async def update_IBD(id:int, ibd_doc:Documentation, db:Session=Depends(get_db), curr_user:Session=Depends(oauth2.get_current_user)):
     """Function lets users update their documentation"""
-    post_query = db.query(models.Documentation).filter(models.Documentation.id == id)
-    post = post_query.first()
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"POST ID: {id} CANNOT BE FOUND")
-    if not can_manage_documentation(post, curr_user, db):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
-    post_query.update(ibd_doc.model_dump(), synchronize_session=False)
-    db.commit()
-    return post_query.first()
+    return documentation_service.update(db, id, curr_user, ibd_doc.model_dump())
 
 
 @router.put("/{id}/td", response_model=DocumentationResponse)
@@ -358,18 +319,10 @@ async def update_TD(
     id: int,
     payload: dict,
     db: Session = Depends(get_db),
-    curr_user: models.User = Depends(oath2.get_current_user)
+    curr_user: models.User = Depends(oauth2.get_current_user)
 ):
     """Update only the traditional/reference Markdown for a saved document."""
-    post = db.query(models.Documentation).filter(models.Documentation.id == id).first()
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"POST ID: {id} CANNOT BE FOUND")
-    if not can_manage_documentation(post, curr_user, db):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
-    post.TD_md = str(payload.get("TD_md") or payload.get("td_md") or "")
-    db.commit()
-    db.refresh(post)
-    return post
+    return documentation_service.update_traditional_markdown(db, id, curr_user, payload)
 
 # DELETE the documentation endpoint
 
@@ -377,15 +330,8 @@ async def update_TD(
 async def delete_docs(
     id:int,
     db:Session=Depends(get_db),
-    curr_user:models.User=Depends(oath2.get_current_user)
+    curr_user:models.User=Depends(oauth2.get_current_user)
 ):
     """Delete one saved documentation row owned by the current user."""
-    post_query = db.query(models.Documentation).filter(models.Documentation.id == id)
-    post = post_query.first()
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"ID: {id} NOT FOUND")
-    if not can_manage_documentation(post, curr_user, db):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
-    post_query.delete(synchronize_session=False)
-    db.commit()
+    documentation_service.delete(db, id, curr_user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
